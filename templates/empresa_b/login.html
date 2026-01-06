@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Solis Serviço</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            --imes-dark-blue: #0a2351;
+            --imes-gold: #fdb913;
+        }
+        .btn-accent { 
+            background-color: var(--imes-gold); 
+            color: var(--imes-dark-blue); 
+            transition: background-color 0.3s; 
+        }
+        .btn-accent:hover { background-color: #e8a800; }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-xl p-8 m-4">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800" style="color: var(--imes-dark-blue);">Acessar Sistema</h1>
+            <p class="text-gray-500">Por favor, insira suas credenciais</p>
+        </div>
+
+        <form method="POST" action="/login">
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Usuário</label>
+                <input type="text" id="username" name="username" class="shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Senha</label>
+                <input type="password" id="password" name="password" class="shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+            </div>
+            
+            <!-- Exibe mensagem de erro, se houver -->
+            {% if error %}
+                <p class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-sm">{{ error }}</p>
+            {% endif %}
+
+            <div class="flex items-center justify-between">
+                <button type="submit" class="w-full btn-accent font-bold py-3 px-4 rounded-md text-lg focus:outline-none focus:shadow-outline">
+                    Entrar
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

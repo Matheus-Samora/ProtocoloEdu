@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROTOCOLO IMES - Portal do Aluno</title>
+    
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='50' fill='%230a2351'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='70' fill='%23fdb913'%3eI%3c/text%3e%3c/svg%3e">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Plus Jakarta Sans (Mais moderna que Inter para dashboards) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons (Ícones mais limpos e modernos) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        imes: {
+                            blue: '#0a2351',
+                            blueLight: '#153a7a',
+                            gold: '#fdb913',
+                            goldHover: '#e8a800',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- ESTILOS GERAIS E MODERNOS --- */
+        :root {
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.15);
+        }
+
+        body {
+            background-color: #f8fafc;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            background-color: #0f172a; /* Slate 900 */
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .sidebar-gradient {
+            background: linear-gradient(145deg, #0a2351 0%, #051433 100%);
+        }
+
+        /* Scrollbar Personalizada */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        body.dark-mode .custom-scroll::-webkit-scrollbar-thumb { background: #334155; }
+        body.dark-mode .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Card Moderno */
+        .modern-card {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body.dark-mode .modern-card {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3);
+        }
+
+        .modern-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: #fdb913;
+        }
+
+        /* Inputs Modernos */
+        .input-group { position: relative; }
+        
+        .modern-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem; /* Espaço para ícone */
+            border-radius: 0.75rem;
+            background-color: #f1f5f9;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        body.dark-mode .modern-input {
+            background-color: #1e293b;
+            color: white;
+            border-color: #334155;
+        }
+
+        .modern-input:focus {
+            outline: none;
+            background-color: white;
+            border-color: #0a2351;
+            box-shadow: 0 0 0 4px rgba(10, 35, 81, 0.1);
+        }
+        
+        body.dark-mode .modern-input:focus {
+            background-color: #0f172a;
+            border-color: #fdb913;
+            box-shadow: 0 0 0 4px rgba(253, 185, 19, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1.25rem;
+            pointer-events: none;
+            transition: color 0.3s;
+        }
+        
+        .modern-input:focus + .input-icon { color: #0a2351; }
+        body.dark-mode .modern-input:focus + .input-icon { color: #fdb913; }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #0a2351 0%, #153a7a 100%);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(10, 35, 81, 0.2);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(10, 35, 81, 0.3);
+        }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #fdb913 0%, #f59e0b 100%);
+            color: #0a2351;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(253, 185, 19, 0.3);
+        }
+        .btn-gold:hover:not(:disabled) {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 8px 16px rgba(253, 185, 19, 0.4);
+        }
+        .btn-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; filter: grayscale(0.5); }
+
+        /* Status Badges */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-pending { background-color: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+        .badge-success { background-color: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+        
+        body.dark-mode .badge-pending { background-color: #451a03; color: #fbbf24; border-color: #92400e; }
+        body.dark-mode .badge-success { background-color: #064e3b; color: #4ade80; border-color: #065f46; }
+
+        /* Loader Overlay */
+        .loader-overlay {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+        }
+        body.dark-mode .loader-overlay { background: rgba(15, 23, 42, 0.9); }
+
+        /* 3D Ring Loader Animation Styles */
+        #ring-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 2rem;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        .ring {
+            width: 150px;
+            height: 150px;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .ring:nth-child(1) { border-bottom: 8px solid #fdb913; animation: rotate1 2s linear infinite; }
+        .ring:nth-child(2) { border-bottom: 8px solid #0a2351; animation: rotate2 2s linear infinite; }
+        .ring:nth-child(3) { border-bottom: 8px solid #fdb913; animation: rotate3 2s linear infinite; }
+        .ring:nth-child(4) { border-bottom: 8px solid #0a2351; animation: rotate4 2s linear infinite; }
+        
+        body.dark-mode .ring:nth-child(2),
+        body.dark-mode .ring:nth-child(4) { border-bottom-color: #3b82f6; box-shadow: 0 0 15px #3b82f6; }
+        body.dark-mode .ring:nth-child(1),
+        body.dark-mode .ring:nth-child(3) { box-shadow: 0 0 15px #fdb913; }
+
+        @keyframes rotate1 { from { transform: rotateX(50deg) rotateZ(110deg); } to { transform: rotateX(50deg) rotateZ(470deg); } }
+        @keyframes rotate2 { from { transform: rotateX(20deg) rotateY(50deg) rotateZ(20deg); } to { transform: rotateX(20deg) rotateY(50deg) rotateZ(380deg); } }
+        @keyframes rotate3 { from { transform: rotateX(40deg) rotateY(130deg) rotateZ(450deg); } to { transform: rotateX(40deg) rotateY(130deg) rotateZ(90deg); } }
+        @keyframes rotate4 { from { transform: rotateX(70deg) rotateZ(270deg); } to { transform: rotateX(70deg) rotateZ(630deg); } }
+
+        /* Switch CSS (Lua/Sol) - Mantido e ajustado */
+        .switch { font-size: 10px; position: relative; display: inline-block; width: 4em; height: 2.2em; border-radius: 30px; margin-top: 0.5rem; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1e293b; transition: 0.4s; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        .slider:before { position: absolute; content: ""; height: 1.4em; width: 1.4em; border-radius: 50%; left: 0.4em; bottom: 0.35em; transition: 0.4s; background: white; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        input:checked + .slider { background-color: #3b82f6; }
+        input:checked + .slider:before { transform: translateX(1.8em); background: #fdb913; box-shadow: 0 0 10px #fdb913; }
+    </style>
+</head>
+<body class="antialiased text-slate-600 dark:text-slate-300">
+
+    <!-- OVERLAY DE ANÁLISE (LOADER) -->
+    <div id="loading-overlay" class="loader-overlay fixed inset-0 hidden z-[100] flex flex-col justify-center items-center transition-opacity duration-300">
+        <div id="ring-container">
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div id="loading-step-text" class="absolute text-imes-blue dark:text-white font-black text-sm uppercase tracking-widest animate-pulse">Iniciando</div>
+        </div>
+        
+        <div class="text-center w-full max-w-sm px-6 z-10">
+            <h3 class="text-xl font-bold text-imes-blue dark:text-white mb-2">Analisando Documentos</h3>
+            <p id="loading-doc-name" class="text-sm font-semibold text-imes-gold mb-4 truncate w-full h-6">Preparando...</p>
+            
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden shadow-inner">
+                <div id="loading-progress-bar" class="bg-gradient-to-r from-imes-blue to-blue-500 h-3 rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]" style="width: 0%"></div>
+            </div>
+            <p id="loading-percentage" class="text-xs text-slate-500 dark:text-slate-400 mt-2 text-right font-mono">0%</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app-container" class="flex flex-col md:flex-row h-[100dvh] overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar-gradient w-full md:w-[400px] p-6 md:p-8 flex flex-col flex-shrink-0 md:h-full relative z-20 shadow-2xl overflow-y-auto custom-scroll text-white">
+            
+            <!-- Logo Area -->
+            <div class="flex flex-row md:flex-col items-center gap-4 md:gap-6 mb-8 md:mb-10">
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-imes-gold to-orange-400 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                    <img src="/static/images/logo-imes.jpg" alt="Logo IMES" class="relative w-16 h-16 md:w-28 md:h-28 rounded-full object-cover border-4 border-white/10 shadow-2xl" onerror="this.onerror=null;this.src='https://placehold.co/96x96/0a2351/fdb913?text=IMES';">
+                </div>
+                
+                <div class="flex-1 md:text-center">
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">Faculdade IMES</h1>
+                    <p class="text-blue-200 text-sm font-medium">Portal Acadêmico Inteligente</p>
+                </div>
+
+                <!-- Theme Switch (Mobile: Right aligned / Desktop: Center below text) -->
+                <div class="ml-auto md:ml-0 md:mt-2">
+                    <label class="switch" title="Alternar Tema">
+                        <input checked="true" id="theme-toggle" type="checkbox" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Sidebar Content -->
+            <div class="flex-1 space-y-6">
+                
+                <!-- Buscador de Aluno -->
+                <div id="student-search-container" class="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-lg">
+                    <div id="student-cpf-container">
+                        <label for="student-cpf" class="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-2">Identificação do Aluno</label>
+                        <div class="input-group">
+                            <input type="tel" id="student-cpf" class="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-300/50 focus:outline-none focus:bg-white/20 focus:border-imes-gold transition-all" placeholder="CPF do Aluno" maxlength="14">
+                            <i class="ph ph-identification-card absolute left-3 top-1/2 -translate-y-1/2 text-blue-300 text-lg"></i>
+                            
+                            <button id="search-cpf-btn" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-imes-gold text-imes-blue rounded-lg hover:bg-white hover:scale-105 transition-all shadow-lg">
+                                <i id="search-cpf-btn-icon" class="ph-bold ph-magnifying-glass"></i>
+                                <div id="search-cpf-btn-loader" class="hidden w-4 h-4 border-2 border-imes-blue border-t-transparent rounded-full animate-spin"></div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="student-name-display-container" class="hidden animate-fade-in">
+                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-2">Aluno Identificado</label>
+                        <div class="flex items-center gap-2 bg-white/20 p-2 rounded-xl border border-white/10">
+                            <div class="w-10 h-10 rounded-lg bg-imes-gold flex items-center justify-center text-imes-blue font-bold text-lg shadow-inner flex-shrink-0">
+                                <i class="ph-fill ph-student"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p id="student-name-display" class="text-white font-semibold text-sm truncate leading-tight"></p>
+                                <p class="text-blue-200 text-xs">Acesso validado</p>
+                            </div>
+                            <button id="change-student-btn" class="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition" title="Trocar Aluno">
+                                <i class="ph-bold ph-arrows-left-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seletor de Curso -->
+                <div>
+                    <label for="course-type" class="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-2">Selecione o Serviço</label>
+                    <div class="relative">
+                        <select id="course-type" class="w-full pl-10 pr-10 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:bg-white/20 focus:border-imes-gold appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all" disabled>
+                            <option class="text-gray-800" value="">Aguardando identificação...</option>
+                        </select>
+                        <i class="ph ph-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-blue-300 text-lg"></i>
+                        <i class="ph-bold ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-blue-300 pointer-events-none"></i>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="pt-4 space-y-3">
+                    <button id="check-docs-btn" class="w-full py-3.5 px-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/20 hover:border-white/40 transition-all flex items-center justify-center gap-2 group active:scale-95 disabled:opacity-50 disabled:pointer-events-none" disabled>
+                        <i class="ph-bold ph-list-checks text-xl text-imes-gold group-hover:scale-110 transition-transform"></i>
+                        <span id="check-docs-btn-text">Verificar Pendências</span>
+                    </button>
+                    
+                    <button id="send-files-btn" class="w-full py-4 px-4 btn-gold rounded-xl flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none" disabled>
+                        <i class="ph-bold ph-paper-plane-right text-xl"></i>
+                        <span>Enviar para Análise</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer Sidebar -->
+            <div class="mt-8 text-center md:text-left text-xs text-blue-300/60 border-t border-white/10 pt-4">
+                &copy; 2024 Faculdade IMES. Todos os direitos reservados.
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col relative bg-slate-50 dark:bg-[#0f172a] overflow-hidden transition-colors duration-300">
+            <!-- Header Mobile/Desktop -->
+            <header class="w-full p-6 flex justify-between items-center z-10">
+                <div class="flex flex-col">
+                    <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Painel de Documentos</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie seus envios e status de análise</p>
+                </div>
+
+                <div class="hidden md:flex items-center gap-4 bg-white dark:bg-slate-800 p-2 pl-4 pr-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-700">
+                    <span id="user-greeting" class="text-sm font-medium text-slate-600 dark:text-slate-300">Olá, <strong>Visitante</strong></span>
+                    <a href="/logout" class="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white p-2 rounded-full transition-all duration-300" title="Sair do Sistema">
+                        <i class="ph-bold ph-sign-out text-lg"></i>
+                    </a>
+                </div>
+                
+                <!-- Mobile Logout -->
+                <a href="/logout" class="md:hidden text-red-500 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <i class="ph-bold ph-sign-out text-xl"></i>
+                </a>
+            </header>
+
+            <!-- Content Area -->
+            <div id="docs-area" class="flex-1 px-4 md:px-8 pb-8 overflow-y-auto custom-scroll relative">
+                
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#0a2351 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+                <div id="docs-list" class="max-w-5xl mx-auto space-y-4 pb-24 md:pb-0 relative z-10">
+                    <!-- Empty State -->
+                    <div class="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in opacity-50">
+                        <div class="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                            <i class="ph-duotone ph-files text-4xl text-slate-400"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">Nenhum documento selecionado</h3>
+                        <p class="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Identifique-se na barra lateral e selecione o curso para visualizar suas pendências.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- ASSISTENTE FLUTUANTE (Floating Action Button) -->
+    <div id="assistant-icon" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-16 h-16 rounded-full bg-imes-blue text-white shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-all duration-300 z-50 group hover:bg-imes-gold hover:text-imes-blue animate-float">
+        <div class="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-20"></div>
+        <i class="ph-fill ph-chat-teardrop-text text-3xl"></i>
+        <!-- Tooltip -->
+        <span class="absolute right-full mr-4 bg-slate-800 text-white text-xs font-bold py-1 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">Precisa de ajuda?</span>
+    </div>
+
+    <!-- CHAT INTERFACE -->
+    <div id="chat-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-40 transition-opacity duration-300 opacity-0 md:hidden"></div>
+
+    <div id="chat-bubble" class="fixed inset-x-0 bottom-0 md:inset-auto md:bottom-28 md:right-10 w-full md:w-[400px] h-[85vh] md:h-[600px] bg-white dark:bg-[#1e293b] md:rounded-2xl shadow-2xl flex flex-col hidden opacity-0 translate-y-20 md:translate-y-10 z-50 overflow-hidden border border-slate-200 dark:border-slate-700 transition-all duration-300 ease-out">
+        
+        <!-- Chat Header -->
+        <div class="bg-imes-blue p-4 flex justify-between items-center text-white shadow-md z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                    <i class="ph-fill ph-robot text-2xl text-imes-gold"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm">Assistente Acadêmico</h3>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                        <span class="text-xs text-blue-200">Online agora</span>
+                    </div>
+                </div>
+            </div>
+            <button id="close-chat-btn" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition">
+                <i class="ph-bold ph-x text-lg"></i>
+            </button>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div id="chat-area" class="flex-1 p-4 overflow-y-auto custom-scroll bg-slate-50 dark:bg-[#0f172a] space-y-4">
+            <!-- Mensagens serão inseridas aqui via JS -->
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="p-4 bg-white dark:bg-[#1e293b] border-t border-slate-200 dark:border-slate-700">
+            <form id="chat-form" class="relative flex items-center gap-2">
+                <input type="text" id="chat-input" class="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-imes-blue dark:focus:ring-imes-gold text-slate-800 dark:text-white placeholder-slate-400 transition-all" placeholder="Digite sua dúvida..." autocomplete="off">
+                <button type="submit" id="chat-send-btn" class="absolute right-2 p-2 bg-imes-blue text-white rounded-lg hover:bg-imes-gold hover:text-imes-blue transition-colors shadow-sm disabled:opacity-50">
+                    <i class="ph-bold ph-paper-plane-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODAL GENÉRICO -->
+    <div id="modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        
+        <!-- Content -->
+        <div class="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full relative z-10 animate-fade-in transform transition-all scale-100 border border-slate-100 dark:border-slate-700">
+            <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+            
+            <div id="modal-content-wrapper" class="text-center">
+                <h3 id="modal-title" class="text-2xl font-bold mb-4">Título</h3>
+                <div id="modal-body" class="text-slate-600 dark:text-slate-300 space-y-4 text-left max-h-[60vh] overflow-y-auto custom-scroll"></div>
+                
+                <button id="modal-close-btn" class="w-full mt-8 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Portal Aluno - UI Modernizada Carregada");
+
+            /* --- MANIPULAÇÃO DE TEMA --- */
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                document.documentElement.classList.add('dark');
+                themeToggle.checked = false; 
+            } else {
+                body.classList.remove('dark-mode');
+                document.documentElement.classList.remove('dark');
+                themeToggle.checked = true;
+            }
+
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    body.classList.remove('dark-mode');
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('dark-mode');
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+
+            /* --- LÓGICA DE DADOS (Mantida do Original) --- */
+            const criteria = {
+                "graduacao_1": {
+                    label: "1ª Graduação",
+                    docs: {
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
+                        "RNE": {"display_name": "Registro Nacional Estrangeiro (RNE/CRNM)"},
+                        "HISTORICO_ENSINO_MEDIO": {"display_name": "Histórico Escolar do Ensino Médio"},
+                        "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio"}, 
+                        "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "Certidão de Nascimento ou Casamento"},
+                        "DOCUMENTO_MILITAR": {"display_name": "Certificado de Reservista"},
+                        "QUITACAO_ELEITORAL": {"display_name": "Comprovante de Quitação Eleitoral"},
+                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
+                    }
+                },
+                "graduacao_2": {
+                    label: "2ª Graduação",
+                    docs: {
+                        "DIPLOMA_GRADUACAO": {"display_name": "Diploma da 1ª Graduação"},
+                        "HISTORICO_GRADUACAO": {"display_name": "Histórico Escolar da 1ª Graduação"},
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
+                        "QUITACAO_ELEITORAL": {"display_name": "Comprovante de Quitação Eleitoral"},
+                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
+                    }
+                },
+                "pos_graduacao": {
+                    label: "Pós-Graduação",
+                    docs: {
+                        "DIPLOMA_GRADUACAO": {"display_name": "Diploma da Graduação"},
+                        "HISTORICO_GRADUACAO": {"display_name": "Histórico Escolar da Graduação"},
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
+                        "CNH": { "display_name": "Carteira Nacional de Habilitação (CNH)"},
+                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
+                    }
+                },
+                "cursos_rapidos": {
+                    label: "Cursos Rápidos",
+                    docs: {
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"}
+                    }
+                }
+            };
+            
+            let selectedFiles = {};
+            let chatHistory = [];
+            let studentData = { id: null, name: null, cpf: null, existingDocs: {} };
+            
+            // --- SELETORES ---
+            const studentCpfInput = document.getElementById('student-cpf');
+            const studentCpfContainer = document.getElementById('student-cpf-container');
+            const searchCpfBtn = document.getElementById('search-cpf-btn');
+            const searchCpfBtnIcon = document.getElementById('search-cpf-btn-icon');
+            const searchCpfBtnLoader = document.getElementById('search-cpf-btn-loader');
+            const studentNameDisplay = document.getElementById('student-name-display');
+            const studentNameDisplayContainer = document.getElementById('student-name-display-container');
+            const changeStudentBtn = document.getElementById('change-student-btn');
+            const courseTypeSelect = document.getElementById('course-type');
+            const checkDocsBtn = document.getElementById('check-docs-btn');
+            const checkDocsBtnText = document.getElementById('check-docs-btn-text');
+            const sendFilesBtn = document.getElementById('send-files-btn');
+            const userGreeting = document.getElementById('user-greeting');
+            const docsList = document.getElementById('docs-list');
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalCloseX = document.getElementById('modal-close-x');
+            const assistantIcon = document.getElementById('assistant-icon');
+            const chatBubble = document.getElementById('chat-bubble');
+            const chatOverlay = document.getElementById('chat-overlay');
+            const closeChatBtn = document.getElementById('close-chat-btn');
+            const chatArea = document.getElementById('chat-area');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const chatForm = document.getElementById('chat-form');
+            
+            // Seletores do Loader
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingStepText = document.getElementById('loading-step-text');
+            const loadingDocName = document.getElementById('loading-doc-name');
+            const loadingProgressBar = document.getElementById('loading-progress-bar');
+            const loadingPercentage = document.getElementById('loading-percentage');
+
+            function initialize() {
+                courseTypeSelect.innerHTML = '<option value="">Aguardando identificação...</option>';
+                
+                Object.entries(criteria).forEach(([key, config]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = config.label;
+                    courseTypeSelect.appendChild(option);
+                });
+                
+                addMessageToChat("Olá! Sou o assistente virtual do IMES. Estou aqui para ajudar com sua documentação. Como posso ser útil?", "assistant");
+            }
+
+            // --- FUNÇÕES DE BUSCA ---
+            function setSearchButtonLoading(isLoading) {
+                searchCpfBtn.disabled = isLoading;
+                studentCpfInput.disabled = isLoading;
+                searchCpfBtnIcon.classList.toggle('hidden', isLoading);
+                searchCpfBtnLoader.classList.toggle('hidden', !isLoading);
+            }
+
+            async function handleStudentSearch() {
+                const cleanedCpf = studentCpfInput.value.replace(/\D/g, '');
+                if (cleanedCpf.length !== 11) {
+                    showModal("Atenção", "<p>Por favor, digite um CPF válido com 11 dígitos.</p>", true);
+                    return;
+                }
+                setSearchButtonLoading(true);
+                
+                // SIMULAÇÃO DE FETCH (Para funcionar sem backend real neste exemplo)
+                // Remova este bloco setTimeout e descomente o fetch real em produção
+                setTimeout(() => {
+                    const mockAluno = { id: 123, name: "Maria Silva Santos", cpf: cleanedCpf };
+                    
+                    // --- MOCK RESPONSE ---
+                    studentData = { id: mockAluno.id, name: mockAluno.name, cpf: mockAluno.cpf, existingDocs: {} };
+                    const firstName = studentData.name.split(' ')[0];
+                    if(userGreeting) userGreeting.querySelector('strong').textContent = firstName;
+                    studentNameDisplay.textContent = studentData.name;
+                    
+                    studentCpfContainer.classList.add('hidden');
+                    studentNameDisplayContainer.classList.remove('hidden');
+
+                    courseTypeSelect.disabled = false;
+                    checkDocsBtn.disabled = false;
+                    courseTypeSelect.value = '';
+                    courseTypeSelect.querySelector('option').textContent = "Selecione o curso...";
+                    
+                    docsList.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in">
+                            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
+                                <i class="ph-bold ph-check text-4xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">Aluno Identificado!</h3>
+                            <p class="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Agora selecione o tipo de curso na barra lateral e clique em "Verificar Pendências".</p>
+                        </div>`;
+                    
+                    setSearchButtonLoading(false);
+                }, 1000);
+
+                /* CÓDIGO REAL DE FETCH (MANTIDO DO ORIGINAL, COMENTADO PARA DEMO)
+                try {
+                    const response = await fetch(`/search-student`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cpf: cleanedCpf }),
+                    });
+
+                    if (response.status === 404) {
+                        showModal("Aluno não encontrado", "Não foi possível localizar um aluno com o CPF informado.");
+                        resetStudentSearch();
+                        return;
+                    }
+                    if (!response.ok) throw new Error(`Erro: ${response.status}`);
+
+                    const aluno = await response.json();
+                    // ... (logica de sucesso igual ao mock acima) ...
+                } catch (error) {
+                    console.error(error);
+                    showModal("Erro de Conexão", "Não foi possível comunicar com o servidor.");
+                    resetStudentSearch();
+                } finally {
+                    setSearchButtonLoading(false);
+                }
+                */
+            }
+
+            async function displayCourseDocuments() {
+                const courseTypeId = courseTypeSelect.value;
+                if (!studentData.id || !courseTypeId) {
+                    showModal("Atenção", "<p>Por favor, selecione um tipo de curso na barra lateral.</p>", true);
+                    return;
+                }
+
+                checkDocsBtn.disabled = true;
+                checkDocsBtnText.textContent = "Verificando...";
+                studentData.existingDocs = {};
+
+                const selectedConfig = criteria[courseTypeId] || {};
+                const requiredDocsConfig = selectedConfig.docs || {};
+                const requiredKeys = Object.keys(requiredDocsConfig);
+
+                // SIMULAÇÃO DE VERIFICAÇÃO (MOCK)
+                setTimeout(() => {
+                    studentData.existingDocs = { "RG": { encontrado: true, nome_arquivo: "rg_scan.pdf" } }; // Exemplo
+                    renderDocuments(requiredKeys, requiredDocsConfig);
+                    checkDocsBtn.disabled = false;
+                    checkDocsBtnText.textContent = "Verificar Pendências";
+                }, 800);
+            }
+
+            function renderDocuments(requiredKeys, requiredDocsConfig) {
+                docsList.innerHTML = '';
+                selectedFiles = {};
+
+                if (requiredKeys.length === 0) {
+                    docsList.innerHTML = `<div class="text-center py-12 text-slate-500">Nenhum documento necessário.</div>`;
+                    sendFilesBtn.disabled = true;
+                    return;
+                }
+
+                requiredKeys.forEach((key, index) => {
+                    const info = requiredDocsConfig[key];
+                    const docInfoFromServer = studentData.existingDocs[key];
+                    const isAlreadySubmitted = docInfoFromServer?.encontrado === true;
+
+                    // CARD MODERNO
+                    const card = document.createElement('div');
+                    card.className = 'modern-card p-5 animate-slide-up flex flex-col md:flex-row gap-5 items-start md:items-center justify-between';
+                    card.style.animationDelay = `${index * 0.1}s`;
+
+                    // Status UI
+                    const statusBadge = isAlreadySubmitted 
+                        ? `<span class="badge badge-success flex items-center gap-1"><i class="ph-bold ph-check"></i> Entregue</span>` 
+                        : `<span class="badge badge-pending flex items-center gap-1"><i class="ph-bold ph-warning-circle"></i> Pendente</span>`;
+                    
+                    const iconColor = isAlreadySubmitted ? 'text-green-500' : 'text-slate-300 dark:text-slate-600';
+
+                    card.innerHTML = `
+                        <div class="flex items-start gap-4 flex-1">
+                            <div class="hidden sm:flex w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 items-center justify-center border border-slate-100 dark:border-slate-700 flex-shrink-0">
+                                <i class="ph-duotone ph-file-text text-2xl ${iconColor}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-white text-lg">${info.display_name}</h4>
+                                <div class="flex items-center gap-3 mt-1.5">
+                                    ${statusBadge}
+                                    ${isAlreadySubmitted && docInfoFromServer.nome_arquivo ? `<span class="text-xs text-slate-400 flex items-center gap-1"><i class="ph-bold ph-paperclip"></i> ${docInfoFromServer.nome_arquivo}</span>` : ''}
+                                </div>
+                                <div id="files-container-${key}" class="w-full mt-3 flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
+                            <!-- Botão Câmera -->
+                            <label class="flex-1 md:flex-none py-2.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-semibold rounded-lg cursor-pointer transition flex items-center justify-center gap-2 text-sm active:scale-95 border border-slate-200 dark:border-slate-600">
+                                <i class="ph-bold ph-camera"></i>
+                                <span class="hidden md:inline">Foto</span>
+                                <input type="file" data-key="${key}" class="hidden" accept="image/*" capture="environment">
+                            </label>
+                            
+                            <!-- Botão Anexar -->
+                            <label class="flex-1 md:flex-none py-2.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-semibold rounded-lg cursor-pointer transition flex items-center justify-center gap-2 text-sm active:scale-95 border border-slate-200 dark:border-slate-600">
+                                <i class="ph-bold ph-upload-simple"></i>
+                                <span>Anexar</span>
+                                <input type="file" data-key="${key}" class="hidden" multiple accept="image/*,application/pdf">
+                            </label>
+                        </div>
+                    `;
+                    docsList.appendChild(card);
+                });
+
+                sendFilesBtn.disabled = false;
+                
+                // Scroll suave para área de docs no mobile
+                if(window.innerWidth < 768) {
+                    setTimeout(() => {
+                        document.getElementById('docs-area').scrollIntoView({behavior: 'smooth'});
+                    }, 100);
+                }
+            }
+
+            function resetStudentSearch() {
+                studentCpfInput.value = '';
+                studentCpfInput.disabled = false;
+                studentData = { id: null, name: null, cpf: null, existingDocs: {} };
+                studentNameDisplayContainer.classList.add('hidden');
+                studentCpfContainer.classList.remove('hidden');
+                courseTypeSelect.disabled = true;
+                checkDocsBtn.disabled = true;
+                sendFilesBtn.disabled = true;
+                courseTypeSelect.value = '';
+                courseTypeSelect.querySelector('option').textContent = "Aguardando identificação...";
+                
+                docsList.innerHTML = `<div class="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in opacity-50">
+                        <div class="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                            <i class="ph-duotone ph-user-focus text-4xl text-slate-400"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">Aguardando Aluno</h3>
+                        <p class="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Identifique-se na barra lateral para começar.</p>
+                    </div>`;
+                selectedFiles = {};
+                studentCpfInput.focus();
+            }
+
+            function handleFileSelect(event) {
+                const fileInput = event.target;
+                const docKey = fileInput.dataset.key;
+                const newFiles = Array.from(fileInput.files);
+
+                if (!selectedFiles[docKey]) selectedFiles[docKey] = [];
+
+                if (selectedFiles[docKey].length + newFiles.length > 3) {
+                    showModal("Limite Atingido", "<p>Máximo de 3 arquivos por documento.</p>", true);
+                    fileInput.value = '';
+                    return;
+                }
+
+                selectedFiles[docKey].push(...newFiles);
+                renderFilePills(docKey);
+                fileInput.value = '';
+            }
+
+            function renderFilePills(docKey) {
+                const container = document.getElementById(`files-container-${docKey}`);
+                if (!container) return;
+
+                container.innerHTML = '';
+                const files = selectedFiles[docKey] || [];
+
+                files.forEach((file, index) => {
+                    const pill = document.createElement('div');
+                    pill.className = 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-2 animate-fade-in border border-blue-100 dark:border-blue-800';
+                    pill.innerHTML = `
+                        <i class="ph-bold ph-file"></i>
+                        <span class="truncate max-w-[150px] sm:max-w-xs" title="${file.name}">${file.name}</span>
+                        <button class="remove-file-btn hover:text-red-500 transition ml-1" data-key="${docKey}" data-index="${index}">
+                            <i class="ph-bold ph-x"></i>
+                        </button>`;
+                    container.appendChild(pill);
+                });
+            }
+
+            function removeFile(docKey, index) {
+                if (selectedFiles[docKey]) {
+                    selectedFiles[docKey].splice(index, 1);
+                    renderFilePills(docKey);
+                }
+            }
+
+            function showModal(title, message, isWarning = false) {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = message;
+                modalTitle.className = `text-2xl font-bold mb-4 ${isWarning ? 'text-orange-500' : 'text-green-600'}`;
+                
+                // Icon Header
+                const icon = isWarning ? '<i class="ph-duotone ph-warning-circle text-5xl text-orange-400 mb-4 inline-block"></i>' : '<i class="ph-duotone ph-check-circle text-5xl text-green-500 mb-4 inline-block"></i>';
+                
+                const wrapper = document.getElementById('modal-content-wrapper');
+                if(!wrapper.querySelector('i')) {
+                    wrapper.insertAdjacentHTML('afterbegin', icon);
+                } else {
+                     wrapper.querySelector('i').className = isWarning ? 'ph-duotone ph-warning-circle text-5xl text-orange-400 mb-4 inline-block' : 'ph-duotone ph-check-circle text-5xl text-green-500 mb-4 inline-block';
+                }
+
+                modal.classList.remove('hidden');
+            }
+            
+            window.closeModal = function() { // Global para o onclick do backdrop
+                modal.classList.add('hidden');
+            }
+
+            /* --- UI LOADER --- */
+            function updateLoaderUI(step, docName, progress) {
+                loadingStepText.textContent = step;
+                loadingDocName.textContent = docName;
+                loadingProgressBar.style.width = `${progress}%`;
+                loadingPercentage.textContent = `${progress}%`;
+            }
+
+            async function sendFiles() {
+                 const hasFiles = Object.values(selectedFiles).some(arr => arr && arr.length > 0);
+                 if (!studentData.name) return showModal("Atenção", "<p>Identifique o aluno primeiro.</p>", true);
+                 if (!hasFiles) return showModal("Vazio", "<p>Anexe pelo menos um documento.</p>", true);
+
+                 loadingOverlay.classList.remove('hidden');
+                 
+                 // Simulação de Progresso
+                 let p = 0;
+                 const interval = setInterval(() => {
+                     p += 5;
+                     updateLoaderUI("Processando", "Validando arquivos...", p);
+                     if (p >= 100) {
+                         clearInterval(interval);
+                         loadingOverlay.classList.add('hidden');
+                         showModal("Sucesso", `<p>Documentos enviados para análise da secretaria.</p>`);
+                         selectedFiles = {};
+                         displayCourseDocuments();
+                     }
+                 }, 200);
+            }
+            
+            /* --- CHAT FUNCTIONS --- */
+            function toggleChat() {
+                const isHidden = chatBubble.classList.contains('hidden');
+                
+                if (isHidden) {
+                    chatOverlay.classList.remove('hidden');
+                    chatBubble.classList.remove('hidden');
+                    // Pequeno delay para permitir a transição CSS
+                    setTimeout(() => {
+                        chatOverlay.classList.remove('opacity-0');
+                        chatBubble.classList.remove('opacity-0', 'translate-y-20', 'md:translate-y-10');
+                    }, 10);
+                    if(window.innerWidth >= 768) chatInput.focus();
+                } else {
+                    chatOverlay.classList.add('opacity-0');
+                    chatBubble.classList.add('opacity-0', 'translate-y-20', 'md:translate-y-10');
+                    setTimeout(() => {
+                        chatOverlay.classList.add('hidden');
+                        chatBubble.classList.add('hidden');
+                    }, 300);
+                }
+            }
+
+            function addMessageToChat(message, sender) {
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = `flex flex-col mb-4 animate-fade-in ${sender === 'user' ? 'items-end' : 'items-start'}`;
+                
+                const msgBubble = document.createElement('div');
+                // Estilo "WhatsApp" moderno
+                if (sender === 'user') {
+                    msgBubble.className = `py-2 px-4 rounded-2xl rounded-tr-none bg-imes-blue text-white shadow-md max-w-[85%] text-sm`;
+                } else {
+                    msgBubble.className = `py-2 px-4 rounded-2xl rounded-tl-none bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-600 shadow-sm max-w-[85%] text-sm`;
+                }
+                
+                msgBubble.innerHTML = message.replace(/\n/g, '<br>');
+                msgWrapper.appendChild(msgBubble);
+                
+                // Timestamp miniatura
+                const time = document.createElement('span');
+                time.className = `text-[10px] text-slate-400 mt-1 px-1`;
+                time.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                msgWrapper.appendChild(time);
+
+                chatArea.appendChild(msgWrapper);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            async function sendChatMessage(e) {
+                 if(e) e.preventDefault();
+                 const userMessage = chatInput.value.trim();
+                 if (!userMessage) return;
+                 
+                 addMessageToChat(userMessage, "user");
+                 chatInput.value = '';
+                 
+                 // Simula resposta "Digitando..."
+                 const typingInd = document.createElement('div');
+                 typingInd.id = 'typing';
+                 typingInd.className = 'flex items-center gap-1 ml-2 mb-4 text-slate-400 text-xs animate-pulse';
+                 typingInd.innerHTML = '<i class="ph-fill ph-circles-three-plus"></i> Digitando...';
+                 chatArea.appendChild(typingInd);
+                 chatArea.scrollTop = chatArea.scrollHeight;
+
+                 setTimeout(() => {
+                     typingInd.remove();
+                     addMessageToChat("Entendi. Como esta é uma demonstração visual, não posso processar essa solicitação real, mas o layout está bonito, não?", "assistant");
+                 }, 1500);
+            }
+            
+            // Listeners
+            studentCpfInput.addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g, '');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = v;
+            });
+            searchCpfBtn.addEventListener('click', handleStudentSearch);
+            studentCpfInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleStudentSearch(); });
+            courseTypeSelect.addEventListener('change', () => { /* Lógica de reset visual se necessário */ });
+            checkDocsBtn.addEventListener('click', displayCourseDocuments);
+            sendFilesBtn.addEventListener('click', sendFiles);
+            changeStudentBtn.addEventListener('click', resetStudentSearch);
+            
+            docsList.addEventListener('change', (e) => { if (e.target.type === 'file') handleFileSelect(e); });
+            docsList.addEventListener('click', (e) => {
+                const btn = e.target.closest('.remove-file-btn');
+                if (btn) removeFile(btn.dataset.key, parseInt(btn.dataset.index, 10));
+            });
+
+            assistantIcon.addEventListener('click', toggleChat);
+            closeChatBtn.addEventListener('click', toggleChat);
+            chatOverlay.addEventListener('click', toggleChat);
+            chatForm.addEventListener('submit', sendChatMessage);
+            modalCloseBtn.addEventListener('click', closeModal);
+            if(modalCloseX) modalCloseX.addEventListener('click', closeModal);
+
+            initialize();
+        });
+    </script>
+</body>
+</html>

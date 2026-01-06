@@ -1,0 +1,22 @@
+# Ficheiro .gcloudignore corrigido e simplificado
+
+# Ignora o ambiente virtual. É muito importante!
+# Isto impede que bibliotecas do seu PC sejam enviadas para a nuvem.
+venv/
+.venv/
+env/
+
+# Ignora ficheiros de cache do Python e outros ficheiros temporários
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignora ficheiros de configuração do Git e do editor
+.git/
+.gitignore
+.vscode/
+
+# Ignora o próprio ficheiro .gcloudignore da lista de upload
+.gcloudignore
+

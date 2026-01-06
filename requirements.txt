@@ -1,0 +1,44 @@
+# Para a API web com Flask
+Flask
+Flask-Cors
+Flask-Login
+fastapi
+uvicorn
+requests
+thefuzz[speedup]
+# Para o Gemini
+google-generativeai
+google-cloud-firestore
+google-cloud-aiplatform
+# Para extração de dados de ficheiros
+pypdf
+python-docx
+Pillow
+PyMuPDF
+PyPDF2
+requests
+pydantic
+python-dotenv
+pillow-heif
+# Para templates
+jinja2
+
+# --- Bibliotecas ESSENCIAIS para o Google Cloud ---
+# Para aceder ao armazenamento de ficheiros na nuvem (mantemos para o cache)
+google-cloud-storage
+google-cloud-documentai
+# Bibliotecas para a API do Google Drive
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+# FORÇA A VERSÃO CORRETA DA BIBLIOTECA DE AUTENTICAÇÃO
+google-auth>=2.0.0
+
+# Servidor de produção WSGI/ASGI
+gunicorn
+# Versão de teste para limpar o cache
+beautifulsoup4
+watchdog
+functions-framework
+gspread 
+google-auth

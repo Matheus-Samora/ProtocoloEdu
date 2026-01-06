@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Protocolo IMES</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+
+    <!-- Fonte Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',       
+                            card: '#1e293b',     
+                            hover: '#334155',    
+                            border: '#334155',   
+                            input: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: radial-gradient(circle at top center, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Animações */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* TABS - CORES */
+        .tab-btn {
+            position: relative;
+            color: #94a3b8; 
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover { color: #e2e8f0; background: rgba(255,255,255,0.03); }
+        .tab-btn.active { font-weight: 700; background: rgba(255,255,255,0.02); }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+        }
+
+        #tab-imes.active { color: #60a5fa; }
+        #tab-imes.active::after { background: #60a5fa; box-shadow: 0 -2px 10px rgba(96, 165, 250, 0.5); }
+        
+        #tab-solis.active { color: #fbbf24; }
+        #tab-solis.active::after { background: #fbbf24; box-shadow: 0 -2px 10px rgba(251, 191, 36, 0.5); }
+
+        #tab-saida.active { color: #34d399; }
+        #tab-saida.active::after { background: #34d399; box-shadow: 0 -2px 10px rgba(52, 211, 153, 0.5); }
+
+        #tab-erros.active { color: #f87171; }
+        #tab-erros.active::after { background: #f87171; box-shadow: 0 -2px 10px rgba(248, 113, 113, 0.5); }
+
+        /* Input */
+        .modern-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .modern-input:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2), inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* CARDS 3D */
+        .card { width: 100%; height: 180px; cursor: pointer; perspective: 1200px; }
+        .content { width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 16px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+        .card.flipped .content { transform: rotateY(180deg); }
+        .front, .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .back { background: #1e293b; display: flex; align-items: center; justify-content: center; }
+        .back::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%); z-index: 1; }
+        .glow-effect { position: absolute; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 60%); top: -50%; left: -50%; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .card:hover .glow-effect { opacity: 1; }
+        .back-content { z-index: 2; width: 100%; height: 100%; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; }
+        .front { transform: rotateY(180deg); background: #0f172a; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
+        .card-blue .back { background: linear-gradient(145deg, #1e3a8a 0%, #0f172a 100%); }
+        .card-green .back { background: linear-gradient(145deg, #064e3b 0%, #0f172a 100%); }
+        .card-yellow .back { background: linear-gradient(145deg, #713f12 0%, #0f172a 100%); }
+        .card-purple .back { background: linear-gradient(145deg, #4c1d95 0%, #0f172a 100%); }
+        .card-icon-box { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; display: inline-flex; backdrop-filter: blur(4px); }
+        .click-hint { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin-top: auto; align-self: flex-end; }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="fixed inset-0 flex flex-col items-center justify-center z-50 fade-in px-4" style="background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);">
+        <div class="glass-panel p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
+            <div class="text-center mb-8 relative z-10">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-900 to-slate-900 mb-6 border border-slate-700 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-white tracking-tight">Painel Admin</h2>
+                <p class="text-slate-400 text-sm mt-2 font-medium">Protocolo IMES | Acesso Seguro</p>
+            </div>
+            
+            <form id="login-form" class="space-y-5 relative z-10">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">E-mail Corporativo</label>
+                    <input type="email" id="email" required class="w-full modern-input rounded-xl p-3.5 text-white placeholder-slate-500 outline-none" placeholder="admin@imes.com.br">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Senha</label>
+                    <input type="password" id="password" required class="w-full modern-input rounded-xl p-3.5 text-white placeholder-slate-500 outline-none" placeholder="••••••••">
+                </div>
+                <button type="submit" id="login-btn" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg flex justify-center items-center">
+                    Acessar Dashboard
+                </button>
+            </form>
+            <p id="login-error" class="text-red-400 text-sm text-center mt-5 bg-red-900/20 py-2 rounded-lg border border-red-900/30 hidden"></p>
+        </div>
+    </div>
+
+    <!-- PAINEL ADMIN -->
+    <div id="admin-panel" class="hidden flex-col h-screen fade-in">
+        
+        <!-- Header -->
+        <header class="glass-header sticky top-0 z-40 px-6 py-4 flex flex-col md:flex-row justify-between items-center shadow-lg">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-inner">
+                    <span class="font-bold text-white">IM</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white leading-tight">Painel Administrativo</h1>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <p class="text-xs text-slate-400 font-mono" id="user-email-display">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 mt-4 md:mt-0">
+                <div id="connection-status" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-xs text-red-400 font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Desconectado
+                </div>
+
+                <div class="flex items-center bg-slate-800/50 rounded-lg p-1 border border-slate-700">
+                    <select id="date-filter" class="bg-transparent text-slate-300 text-xs font-medium px-2 py-1 outline-none cursor-pointer hover:text-white transition">
+                        <option value="all" class="bg-slate-800">Todo o Período</option>
+                        <option value="today" class="bg-slate-800" selected>Hoje</option>
+                        <option value="7days" class="bg-slate-800">Últimos 7 Dias</option>
+                        <option value="30days" class="bg-slate-800">Últimos 30 Dias</option>
+                    </select>
+                </div>
+                
+                <button id="sign-out-button" class="text-slate-400 hover:text-white transition p-2 hover:bg-white/5 rounded-lg" title="Sair (Limpar Sessão)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl mx-auto w-full">
+            
+            <!-- CARDS 3D GRID -->
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                
+                <!-- Card 1: Documentos -->
+                <div class="card card-blue" onclick="toggleCard(this)">
+                    <div class="content">
+                        <div class="back">
+                            <div class="glow-effect"></div>
+                            <div class="back-content">
+                                <div class="flex justify-between items-start">
+                                    <div class="card-icon-box text-blue-200">
+                                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    </div>
+                                    <span class="text-xs font-bold text-blue-200/50 tracking-wider">VOLUME</span>
+                                </div>
+                                <div>
+                                    <div class="text-4xl font-bold text-white tracking-tight" id="stat-docs">0</div>
+                                    <div class="text-sm text-blue-200/70 font-medium">Páginas Processadas</div>
+                                </div>
+                                <span class="click-hint text-blue-200">Clique para Detalhes</span>
+                            </div>
+                        </div>
+                        <div class="front">
+                            <div class="title text-xs font-bold uppercase text-blue-400 mb-2">Vertex AI Usage</div>
+                            <div class="text-sm text-slate-300 leading-relaxed mb-4">
+                                Total de páginas analisadas pela IA. Impacta diretamente o custo variável da API.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Envios -->
+                <div class="card card-green" onclick="toggleCard(this)">
+                    <div class="content">
+                        <div class="back">
+                            <div class="glow-effect"></div>
+                            <div class="back-content">
+                                <div class="flex justify-between items-start">
+                                    <div class="card-icon-box text-green-200">
+                                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>
+                                    </div>
+                                    <span class="text-xs font-bold text-green-200/50 tracking-wider">REQUESTS</span>
+                                </div>
+                                <div>
+                                    <div class="text-4xl font-bold text-white tracking-tight" id="stat-reqs">0</div>
+                                    <div class="text-sm text-green-200/70 font-medium" id="stat-avg-docs">Média: 0.0</div>
+                                </div>
+                                <span class="click-hint text-green-200">Clique para Detalhes</span>
+                            </div>
+                        </div>
+                        <div class="front">
+                            <div class="title text-xs font-bold uppercase text-green-400 mb-2">Cloud Run Hits</div>
+                            <div class="text-sm text-slate-300 leading-relaxed mb-4">
+                                Número de execuções do serviço backend.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Custos (Extrato Detalhado) -->
+                <div class="card card-yellow" onclick="toggleCard(this)">
+                    <div class="content">
+                        <div class="back">
+                            <div class="glow-effect"></div>
+                            <div class="back-content">
+                                <div class="flex justify-between items-start">
+                                    <div class="card-icon-box text-yellow-200">
+                                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
+                                    <button class="text-yellow-200/50 hover:text-white transition bg-black/20 hover:bg-black/40 p-1.5 rounded-lg" onclick="event.stopPropagation(); openCostSettings()">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    </button>
+                                </div>
+                                <div>
+                                    <div class="text-3xl font-bold text-white tracking-tight" id="stat-cost">R$ 0,00</div>
+                                    <div class="text-sm text-yellow-200/70 font-medium">Estimativa Total</div>
+                                </div>
+                                <span class="click-hint text-yellow-200">Clique para Detalhes</span>
+                            </div>
+                        </div>
+                        <div class="front">
+                            <div class="title text-xs font-bold uppercase text-yellow-400 mb-2 tracking-wide">Extrato de Custos</div>
+                            <div class="w-full text-xs space-y-2">
+                                <div class="flex justify-between items-center group/item hover:bg-white/5 p-1 rounded transition">
+                                    <span class="text-slate-400">Computação (Run)</span>
+                                    <span class="font-mono text-white" id="detail-run">R$ 0,0000</span>
+                                </div>
+                                <div class="flex justify-between items-center group/item hover:bg-white/5 p-1 rounded transition">
+                                    <span class="text-slate-400">Inteligência (IA)</span>
+                                    <span class="font-mono text-white" id="detail-vertex">R$ 0,0000</span>
+                                </div>
+                                <div class="flex justify-between items-center group/item hover:bg-white/5 p-1 rounded transition">
+                                    <span class="text-slate-400">Armazenamento</span>
+                                    <span class="font-mono text-white" id="detail-storage">R$ 0,0000</span>
+                                </div>
+                                <div class="flex justify-between items-center group/item hover:bg-white/5 p-1 rounded transition">
+                                    <span class="text-slate-400">Margem Seg.</span>
+                                    <span class="font-mono text-yellow-200/70" id="detail-margin">R$ 0,0000</span>
+                                </div>
+                                
+                                <div class="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-1"></div>
+                                
+                                <div class="flex justify-between items-center font-bold text-sm">
+                                    <span class="text-yellow-400">TOTAL</span>
+                                    <span class="font-mono text-yellow-400" id="detail-total">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Sucesso -->
+                <div class="card card-purple" onclick="toggleCard(this)">
+                    <div class="content">
+                        <div class="back">
+                            <div class="glow-effect"></div>
+                            <div class="back-content">
+                                <div class="flex justify-between items-start">
+                                    <div class="card-icon-box text-purple-200">
+                                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
+                                    <span class="text-xs font-bold text-purple-200/50 tracking-wider">KPI SUCESSO</span>
+                                </div>
+                                <div>
+                                    <div class="text-4xl font-bold text-white tracking-tight" id="stat-success-rate">0%</div>
+                                    <div class="text-sm text-purple-200/70 font-medium" id="stat-success-count">0 aprovados</div>
+                                </div>
+                                <span class="click-hint text-purple-200">Clique para Detalhes</span>
+                            </div>
+                        </div>
+                        <div class="front">
+                            <div class="title text-xs font-bold uppercase text-purple-400 mb-2">Taxa de Aprovação</div>
+                            <div class="text-sm text-slate-300 leading-relaxed">
+                                Indica a saúde do pipeline de processamento.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTEÚDO PRINCIPAL (Lista e Filtros) -->
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50">
+                
+                <!-- Abas Coloridas -->
+                <div class="flex border-b border-slate-700/50 bg-slate-900/40">
+                    <button id="tab-imes" class="tab-btn active flex-1 py-4 text-center text-sm font-medium">IMES <span class="ml-2 bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full text-xs" id="count-imes">0</span></button>
+                    <button id="tab-solis" class="tab-btn flex-1 py-4 text-center text-sm font-medium">Solis <span class="ml-2 bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full text-xs" id="count-solis">0</span></button>
+                    <button id="tab-saida" class="tab-btn flex-1 py-4 text-center text-sm font-medium">Concluídos <span class="ml-2 bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full text-xs" id="count-saida">0</span></button>
+                    <button id="tab-erros" class="tab-btn flex-1 py-4 text-center text-sm font-medium">Erros <span class="ml-2 bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full text-xs" id="count-erros">0</span></button>
+                </div>
+
+                <!-- Barra de Ferramentas -->
+                <div class="p-4 bg-slate-800/30 flex flex-col md:flex-row gap-4 items-center justify-between border-b border-slate-700/50">
+                    <div class="relative w-full md:w-96 group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                        <input id="global-search" type="text" placeholder="Pesquisar por aluno, ID ou data..." 
+                               class="w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+
+                    <button id="btn-delete-all" class="hidden text-xs font-bold text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/20 px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        LIMPAR LISTA
+                    </button>
+                </div>
+
+                <!-- Lista de Registros -->
+                <div id="main-list" class="p-4 space-y-3 min-h-[400px] max-h-[600px] overflow-y-auto"></div>
+                
+                <!-- Estado Vazio -->
+                <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-slate-500">
+                    <div class="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+                        <svg class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                    </div>
+                    <span class="text-sm font-medium">Nenhum registro encontrado</span>
+                </div>
+            </div>
+
+            <!-- Relatório de Erros -->
+            <div class="mt-8">
+                <details class="bg-slate-800/40 rounded-xl border border-slate-700/50 overflow-hidden group">
+                    <summary class="p-4 cursor-pointer flex justify-between items-center text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition">
+                        <span class="text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            Análise Rápida de Erros
+                        </span>
+                        <svg class="w-4 h-4 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </summary>
+                    <div class="p-4 bg-slate-900/50 border-t border-slate-700/50">
+                        <div id="error-report-list" class="space-y-2 text-sm">
+                            <p class="text-slate-500 italic">Carregando dados...</p>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modais -->
+    <div id="cost-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 fade-in">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-sm shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                </span>
+                Configuração de Tarifas
+            </h3>
+            <div class="space-y-4">
+                <div class="group">
+                    <label class="block text-xs font-semibold text-blue-300 uppercase mb-1">Custo Cloud Run (Por Request)</label>
+                    <input type="number" id="cost-run" step="0.0001" class="w-full modern-input rounded-lg p-2.5 text-white text-sm" placeholder="0.0002">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-purple-300 uppercase mb-1">Custo Vertex AI (Por Página)</label>
+                    <input type="number" id="cost-vertex" step="0.0001" class="w-full modern-input rounded-lg p-2.5 text-white text-sm" placeholder="0.0030">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-green-300 uppercase mb-1">Custo Fixo Mensal (Storage)</label>
+                    <input type="number" id="cost-storage" step="0.01" class="w-full modern-input rounded-lg p-2.5 text-white text-sm" placeholder="1.00">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-red-300 uppercase mb-1">Margem de Segurança (%)</label>
+                    <input type="number" id="cost-margin" step="1" class="w-full modern-input rounded-lg p-2.5 text-white text-sm" placeholder="10">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="document.getElementById('cost-modal').classList.add('hidden')" class="px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancelar</button>
+                <button onclick="saveCostSettings()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-2 rounded-lg shadow-lg shadow-blue-900/20 transition-all">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="details-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 fade-in">
+        <div class="glass-panel w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl shadow-2xl border border-slate-700/50">
+            <div class="p-5 border-b border-slate-700/50 flex justify-between items-center bg-slate-900/30">
+                <h3 class="font-bold text-lg text-white truncate pr-4 flex items-center gap-2" id="modal-title">Detalhes</h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto bg-slate-950/50 custom-scrollbar">
+                <pre id="modal-json" class="text-xs text-green-400 font-mono whitespace-pre-wrap leading-relaxed"></pre>
+            </div>
+            <div class="p-5 border-t border-slate-700/50 flex justify-end gap-3 bg-slate-900/30">
+                <button id="btn-delete-modal" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg text-sm font-medium transition">Excluir Registro</button>
+                <button onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, onSnapshot, doc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+             apiKey: "AIzaSyDP20JMVQKaQ-o9oMxzOACM0SKRPxa6Yag",
+             authDomain: "protocolo-imes-imm.firebaseapp.com",
+             projectId: "protocolo-imes-imm",
+             storageBucket: "protocolo-imes-imm.firebasestorage.app",
+             messagingSenderId: "284416777232",
+             appId: "1:284416777232:web:bf601ea92d8b92b4d73e95",
+             measurementId: "G-TLRDLMM6DB"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app, "default");
+
+        // CONFIGURAÇÃO DE PERSISTÊNCIA: SESSÃO
+        // Importante: Se você já estava logado antes, clique em "Sair" uma vez para aplicar.
+        setPersistence(auth, browserSessionPersistence)
+            .then(() => console.log("Persistência configurada para Sessão"))
+            .catch((error) => console.error("Erro na persistência:", error));
+
+        const loginScreen = document.getElementById('login-screen');
+        const adminPanel = document.getElementById('admin-panel');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const loginBtn = document.getElementById('login-btn');
+        const connectionStatus = document.getElementById('connection-status');
+
+        window.toggleCard = (element) => {
+            if (element.classList.contains('flipped')) {
+                element.classList.remove('flipped');
+            } else {
+                element.classList.add('flipped');
+            }
+        };
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block mr-2"></span>';
+            loginError.classList.add('hidden');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error("Erro Login:", error);
+                loginError.textContent = "Credenciais inválidas. Tente novamente.";
+                loginError.classList.remove('hidden');
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Acessar Dashboard";
+            }
+        });
+
+        document.getElementById('sign-out-button').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginScreen.classList.add('hidden');
+                adminPanel.classList.remove('hidden');
+                adminPanel.classList.add('flex'); 
+                document.getElementById('user-email-display').textContent = user.email;
+                initListeners();
+            } else {
+                adminPanel.classList.add('hidden');
+                adminPanel.classList.remove('flex');
+                loginScreen.classList.remove('hidden');
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Acessar Dashboard";
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                rawData = { imes: [], solis: [], saida: [], erros: [] };
+            }
+        });
+
+        let currentTab = 'imes'; 
+        let rawData = { imes: [], solis: [], saida: [], erros: [] };
+        const COLS = { 
+            imes: 'pendencias_imes', 
+            solis: 'pendencias_solis', 
+            saida: 'pendencias_planilha', 
+            erros: 'pendencias_tentativas' 
+        };
+
+        let costSettings = JSON.parse(localStorage.getItem('imes_detailed_costs')) || {
+            runCost: 0.0002, vertexCost: 0.003, storageCost: 1.00, margin: 10 
+        };
+
+        function initListeners() {
+            Object.keys(COLS).forEach(key => {
+                onSnapshot(query(collection(db, COLS[key])), (snap) => {
+                    connectionStatus.classList.add('hidden');
+                    rawData[key] = snap.docs.map(d => {
+                        const data = d.data();
+                        
+                        // CORREÇÃO: Adicionado 'criado_em' na lista de prioridade
+                        // Isso resolve o problema de mostrar dia 31 (que era 31/12/1969 do fallback)
+                        const ts = data.created_at || data.timestamp || data.data_hora || data.data_envio || data.date || data.criado_em;
+                        
+                        let dateObj = null;
+
+                        if (ts) {
+                            if (ts.seconds !== undefined) dateObj = new Date(ts.seconds * 1000);
+                            else if (typeof ts.toDate === 'function') dateObj = ts.toDate();
+                            else {
+                                const parsed = new Date(ts);
+                                if (!isNaN(parsed.getTime())) dateObj = parsed;
+                            }
+                        }
+
+                        if (!dateObj) dateObj = new Date(0); // 1970 fallback
+
+                        return { id: d.id, ...data, _col: COLS[key], _date: dateObj };
+                    });
+
+                    const counter = document.getElementById(`count-${key}`);
+                    if(counter) counter.innerText = rawData[key].length;
+                    
+                    updateDashboard(); 
+                    if (currentTab === key) renderList();
+                }, (error) => {
+                    console.error("Erro Firestore:", error);
+                    connectionStatus.classList.remove('hidden');
+                    connectionStatus.classList.add('flex');
+                    connectionStatus.title = "Erro de permissão: " + error.message;
+                });
+            });
+        }
+
+        function formatDate(val) {
+            if (!val) return '--/--';
+            let date;
+            if (val instanceof Date) date = val;
+            else if (val && val.seconds) date = new Date(val.seconds * 1000);
+            else date = new Date(val);
+
+            if (isNaN(date.getTime())) return '--/--';
+            if (date.getFullYear() === 1970) return '<span class="text-slate-600 text-[10px] opacity-70">Data N/D</span>';
+
+            // Força fuso horário de SP para exibição correta
+            return date.toLocaleString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                timeZone: 'America/Sao_Paulo' 
+            });
+        }
+
+        function checkDateFilter(item) {
+            const filterType = document.getElementById('date-filter').value;
+            const now = new Date();
+            const itemDate = item._date;
+            
+            if (itemDate.getFullYear() === 1970 && filterType !== 'all') return false;
+            if (filterType === 'all') return true;
+            
+            // Converte ambas as datas para string local (Brasil) para comparar apenas o dia/mês/ano
+            // Isso evita bugs de fuso horário onde "Hoje UTC" != "Hoje BR"
+            const options = { timeZone: 'America/Sao_Paulo', year: 'numeric', month: 'numeric', day: 'numeric' };
+            const todayStr = now.toLocaleDateString('pt-BR', options);
+            const itemStr = itemDate.toLocaleDateString('pt-BR', options);
+
+            const diffTime = Math.abs(now - itemDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            if (filterType === 'today') {
+                return todayStr === itemStr;
+            }
+            if (filterType === '7days') return diffDays <= 7;
+            if (filterType === '30days') return diffDays <= 30;
+            return true;
+        }
+
+        function updateDashboard() {
+            const filterType = document.getElementById('date-filter').value;
+            
+            const f = (list) => list ? list.filter(checkDateFilter) : [];
+            const [fImes, fSolis, fSaida, fErros] = [f(rawData.imes), f(rawData.solis), f(rawData.saida), f(rawData.erros)];
+
+            const countDocs = (items) => items.reduce((acc, i) => acc + (i.dados_analise ? Object.keys(i.dados_analise).length : 1), 0);
+            
+            const successDocs = countDocs(fImes) + countDocs(fSolis) + countDocs(fSaida);
+            const reqs = fImes.length + fSolis.length + fSaida.length + fErros.length;
+            const successCount = fImes.length + fSolis.length + fSaida.length;
+
+            if(document.getElementById('stat-docs')) document.getElementById('stat-docs').innerText = successDocs; 
+            if(document.getElementById('stat-reqs')) document.getElementById('stat-reqs').innerText = reqs;
+            if(document.getElementById('stat-avg-docs')) document.getElementById('stat-avg-docs').innerText = `Média: ${reqs > 0 ? (successDocs/reqs).toFixed(1) : 0}`;
+
+            const successRate = reqs > 0 ? ((successCount / reqs) * 100).toFixed(0) : 0;
+            if(document.getElementById('stat-success-rate')) document.getElementById('stat-success-rate').innerText = `${successRate}%`;
+            if(document.getElementById('stat-success-count')) document.getElementById('stat-success-count').innerText = `${successCount} aprovados`;
+
+            const rawRun = reqs * costSettings.runCost;
+            const rawVertex = successDocs * costSettings.vertexCost;
+            
+            let rawFixed = costSettings.storageCost;
+            if (filterType === 'today') rawFixed /= 30;
+            else if (filterType === '7days') rawFixed = (rawFixed/30)*7;
+            
+            const subtotalOps = rawRun + rawVertex;
+            const marginValue = subtotalOps * (costSettings.margin/100);
+            const finalTotal = subtotalOps + marginValue + rawFixed;
+
+            const formatMoney = (val, decimals = 2) => {
+                return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+            };
+
+            if(document.getElementById('stat-cost')) document.getElementById('stat-cost').innerText = formatMoney(finalTotal, 2);
+            if(document.getElementById('detail-run')) document.getElementById('detail-run').innerText = formatMoney(rawRun, 4);
+            if(document.getElementById('detail-vertex')) document.getElementById('detail-vertex').innerText = formatMoney(rawVertex, 4);
+            if(document.getElementById('detail-storage')) document.getElementById('detail-storage').innerText = formatMoney(rawFixed, 4);
+            if(document.getElementById('detail-margin')) document.getElementById('detail-margin').innerText = formatMoney(marginValue, 4);
+            if(document.getElementById('detail-total')) document.getElementById('detail-total').innerText = formatMoney(finalTotal, 2);
+
+            const errorReportEl = document.getElementById('error-report-list');
+            if(errorReportEl) {
+                if (fErros.length === 0) {
+                    errorReportEl.innerHTML = '<p class="text-slate-500 italic text-center py-2">Nenhum erro registrado neste período.</p>';
+                } else {
+                    const errMap = {};
+                    fErros.forEach(e => {
+                        let m = e.motivo_falha || e.erro || "Erro desconhecido";
+                        m = m.substring(0, 60) + (m.length > 60 ? '...' : '');
+                        errMap[m] = (errMap[m] || 0) + 1;
+                    });
+                    errorReportEl.innerHTML = Object.entries(errMap)
+                        .sort(([,a], [,b]) => b - a)
+                        .map(([k,v]) => `<div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700/50 mb-1"><span class="text-red-300 truncate pr-4 text-xs" title="${k}">${k}</span><span class="font-bold text-white bg-red-500/20 px-2 py-0.5 rounded text-xs min-w-[24px] text-center">${v}</span></div>`).join('');
+                }
+            }
+        }
+
+        function renderList() {
+            const listEl = document.getElementById('main-list');
+            const search = document.getElementById('global-search').value.toLowerCase();
+            const btnDeleteAll = document.getElementById('btn-delete-all');
+            
+            if(!rawData[currentTab]) return;
+
+            let items = rawData[currentTab].filter(item => {
+                const txt = (item.aluno_nome || '' + item.id).toLowerCase();
+                return txt.includes(search) && checkDateFilter(item);
+            });
+            items.sort((a, b) => b._date - a._date);
+
+            if (items.length > 0 && search) btnDeleteAll.classList.remove('hidden');
+            else btnDeleteAll.classList.add('hidden');
+
+            listEl.innerHTML = '';
+            if (items.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.getElementById('empty-state').classList.add('flex');
+                return;
+            }
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('flex');
+
+            const TAB_THEMES = {
+                imes:  { border: 'border-l-4 border-l-blue-500',  iconBg: 'bg-blue-500/10', iconText: 'text-blue-400', iconHover: 'group-hover:bg-blue-500/20' },
+                solis: { border: 'border-l-4 border-l-amber-500', iconBg: 'bg-amber-500/10', iconText: 'text-amber-400', iconHover: 'group-hover:bg-amber-500/20' },
+                saida: { border: 'border-l-4 border-l-green-500', iconBg: 'bg-green-500/10', iconText: 'text-green-400', iconHover: 'group-hover:bg-green-500/20' },
+                erros: { border: 'border-l-4 border-l-red-500',   iconBg: 'bg-red-500/10',   iconText: 'text-red-400',   iconHover: 'group-hover:bg-red-500/20' }
+            };
+            const theme = TAB_THEMES[currentTab];
+
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                const isError = currentTab === 'erros';
+                
+                div.className = `group bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700/50 ${theme.border} rounded-xl p-4 cursor-pointer transition-all duration-200 flex justify-between items-center shadow-sm hover:shadow-md animate-[fadeIn_0.3s_ease-out_forwards]`;
+                div.style.animationDelay = `${index * 50}ms`;
+
+                const name = item.aluno_nome || `Documento ${item.id.substr(0,8)}`;
+                const desc = isError ? (item.motivo_falha || 'Erro desconhecido') : (item.mensagem || `ID: ${item.id}`);
+                const statusColor = isError ? 'text-red-400' : 'text-slate-400';
+                
+                const icon = `<div class="p-2 rounded-full ${theme.iconBg} ${theme.iconText} ${theme.iconHover} group-hover:scale-110 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isError ? 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' : 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'}" />
+                                </svg>
+                              </div>`;
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-4 overflow-hidden">
+                        ${icon}
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-semibold text-slate-200 truncate group-hover:text-white transition">${name}</h4>
+                                <span class="text-[10px] bg-slate-900/50 text-slate-500 border border-slate-700 rounded px-1.5 py-0.5 whitespace-nowrap">${formatDate(item._date)}</span>
+                            </div>
+                            <p class="text-xs ${statusColor} truncate mt-0.5 font-mono opacity-80">${desc}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-slate-600 group-hover:text-white transform group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </div>
+                `;
+                
+                div.onclick = () => window.openModal(item);
+                listEl.appendChild(div);
+            });
+        }
+
+        document.getElementById('date-filter').addEventListener('change', () => { updateDashboard(); renderList(); });
+        document.getElementById('global-search').addEventListener('input', renderList);
+        
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            ['imes', 'solis', 'saida', 'erros'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    el.classList.add('active'); 
+                    el.classList.remove('text-slate-400');
+                } else {
+                    el.classList.remove('active');
+                    el.classList.add('text-slate-400');
+                }
+            });
+            renderList();
+        }
+        ['imes', 'solis', 'saida', 'erros'].forEach(t => document.getElementById(`tab-${t}`).onclick = () => window.switchTab(t));
+
+        window.openModal = (item) => {
+            document.getElementById('modal-title').textContent = item.aluno_nome || item.id;
+            document.getElementById('modal-json').textContent = JSON.stringify(item, null, 2);
+            document.getElementById('details-modal').classList.remove('hidden');
+            
+            const btnDel = document.getElementById('btn-delete-modal');
+            const newBtn = btnDel.cloneNode(true);
+            btnDel.parentNode.replaceChild(newBtn, btnDel);
+            newBtn.onclick = async () => {
+                if(confirm("Tem certeza que deseja excluir permanentemente este registro?")) {
+                    await deleteDoc(doc(db, item._col, item.id));
+                    window.closeModal();
+                }
+            };
+        };
+        window.closeModal = () => document.getElementById('details-modal').classList.add('hidden');
+
+        window.openCostSettings = () => {
+            document.getElementById('cost-run').value = costSettings.runCost;
+            document.getElementById('cost-vertex').value = costSettings.vertexCost;
+            document.getElementById('cost-storage').value = costSettings.storageCost;
+            document.getElementById('cost-margin').value = costSettings.margin;
+            document.getElementById('cost-modal').classList.remove('hidden');
+        };
+        window.saveCostSettings = () => {
+            costSettings = {
+                runCost: parseFloat(document.getElementById('cost-run').value),
+                vertexCost: parseFloat(document.getElementById('cost-vertex').value),
+                storageCost: parseFloat(document.getElementById('cost-storage').value),
+                margin: parseFloat(document.getElementById('cost-margin').value)
+            };
+            localStorage.setItem('imes_detailed_costs', JSON.stringify(costSettings));
+            updateDashboard();
+            document.getElementById('cost-modal').classList.add('hidden');
+        };
+
+        document.getElementById('btn-delete-all').onclick = async () => {
+            if(confirm("ATENÇÃO PERIGO: Isso excluirá TODOS os itens listados atualmente na tela. Continuar?")) {
+                const batch = writeBatch(db);
+                if(rawData[currentTab]) {
+                    rawData[currentTab].filter(item => {
+                        const search = document.getElementById('global-search').value.toLowerCase();
+                        const txt = (item.aluno_nome || '' + item.id).toLowerCase();
+                        return txt.includes(search) && checkDateFilter(item);
+                    }).forEach(i => batch.delete(doc(db, COLS[currentTab], i.id)));
+                    await batch.commit();
+                }
+            }
+        };
+    </script>
+</body>
+</html>

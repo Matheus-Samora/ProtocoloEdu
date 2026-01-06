@@ -1,0 +1,492 @@
+{
+  "comment": "Versão Limpa e Segura para o Novo Cloud Run. Removemos dependências de IDs antigos e formatamos para leitura rápida.",
+  "1ª Graduação": {
+    "RG": {
+      "display_name": "Carteira de Identidade (RG)",
+      "file_name": "RG",
+      "expected_doc_type": "RG",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um RG válido e não outro tipo.", "action": "check_doc_type" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a Filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Extrair o Número do Registro Geral (RG).", "action": "extract_field", "field": "numero_rg" },
+        { "description": "Extrair o número do CPF, se presente no RG.", "action": "extract_field", "field": "numero_cpf" },
+        { "description": "Extrair o Órgão Expedidor/UF.", "action": "extract_field", "field": "orgao_expedidor" },
+        { "description": "Extrair a Naturalidade.", "action": "extract_field", "field": "naturalidade" },
+        { "description": "Verificar a presença de uma assinatura do titular.", "action": "check_field_presence", "field": "assinatura" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CPF": {
+      "display_name": "Cadastro de Pessoa Física (CPF)",
+      "file_name": "CPF",
+      "expected_doc_type": "CPF",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de CPF.", "action": "check_doc_type" },
+        { "description": "Extrair o Nome Completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Analisar e validar o número do CPF.", "action": "validate_cpf_number", "field": "numero_cpf" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "RNE": {
+      "display_name": "Registro Nacional de Estrangeiro (RNE/CRNM)",
+      "file_name": "RNE_CRNM",
+      "expected_doc_type": "RNE_CRNM",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um RNE ou CRNM válido.", "action": "check_doc_type" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a Filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Extrair o Número do RNE/CRNM.", "action": "extract_field", "field": "numero_rne_crnm" },
+        { "description": "Extrair a Data de Validade.", "action": "extract_field", "field": "data_validade" },
+        { "description": "Extrair a Nacionalidade.", "action": "extract_field", "field": "nacionalidade" },
+        { "description": "Verificar a presença de uma assinatura do titular.", "action": "check_field_presence", "field": "assinatura" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CERTIFICADO_ENSINO_MEDIO": {
+      "display_name": "Certificado de Conclusão do Ensino Médio",
+      "file_name": "CERTIFICADO ENSINO MEDIO",
+      "expected_doc_type": "CERTIFICADO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Certificado de Conclusão.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o nome completo do aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de conclusão do curso.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+   "HISTORICO_ENSINO_MEDIO": {
+      "display_name": "Histórico do Ensino Médio",
+      "file_name": "HISTORICO ENSINO MEDIO",
+      "expected_doc_type": "HISTORICO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Histórico Escolar.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o nome completo do aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de conclusão do curso.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "Verificar a Carga Horária Total cursada.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "Extrair o CEP da instituição de ensino.", "action": "extract_field", "field": "instituicao_cep" },
+        { "description": "Extrair a cidade da instituição de ensino.", "action": "extract_field", "field": "instituicao_cidade" },
+        { "description": "Extrair o estado (UF) da instituição de ensino.", "action": "extract_field", "field": "instituicao_estado" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CERTIFICADO_E_HISTORICO_ENSINO_MEDIO": {
+      "display_name": "Certificado e Histórico do Ensino Médio (Juntos)",
+      "file_name": "CERTIFICADO_E_HISTORICO_ENSINO_MEDIO",
+      "expected_doc_type": "CERTIFICADO_E_HISTORICO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Certificado de Conclusão com Histórico.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o nome completo do aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de conclusão do curso.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "Verificar a Carga Horária Total cursada.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CERTIDAO_NASCIMENTO_CASAMENTO": {
+      "display_name": "Certidão de Nascimento ou Casamento",
+      "file_name": "CERTIDAO",
+      "expected_doc_type": "CERTIDAO_NASCIMENTO_CASAMENTO",
+      "required_fields": [
+        { "description": "Confirmar se o documento é uma Certidão de Nascimento ou Casamento.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo e verificar se corresponde ao nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Para certidão de casamento, extrair a data do casamento.", "action": "extract_field", "field": "data_casamento" },
+        { "description": "Se houver averbação de divórcio/separação, extrair a data da averbação.", "action": "extract_field", "field": "data_averbacao" },
+        { "description": "Verificar a presença de informações do cartório.", "action": "extract_field", "field": "info_cartorio" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "DOCUMENTO_MILITAR": {
+      "display_name": "Documento Militar (sexo masculino)",
+      "file_name": "DOCUMENTO MILITAR",
+      "expected_doc_type": "DOCUMENTO_MILITAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Certificado de Reservista, CDI ou de Isenção.", "action": "check_doc_type" },
+        { "description": "Verificar o nome completo e comparar com o do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a filiação.", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair o número de alistamento militar ou número do certificado.", "action": "extract_field", "field": "numero_alistamento_militar" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "QUITACAO_ELEITORAL": {
+      "display_name": "Quitação Eleitoral",
+      "file_name": "QUITACAO ELEITORAL",
+      "expected_doc_type": "QUITACAO_ELEITORAL",
+      "required_fields": [
+        { "description": "Confirmar se é um Título de Eleitor ou Certidão de Quitação.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do eleitor e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair o número de inscrição (título de eleitor).", "action": "extract_field", "field": "numero_inscricao_eleitor" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "COMPROVANTE_RESIDENCIA": {
+      "display_name": "Comprovante de Residência",
+      "file_name": "COMPROVANTE DE RESIDENCIA",
+      "expected_doc_type": "COMPROVANTE_DE_RESIDENCIA",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de residência válido.", "action": "check_doc_type" },
+        { "description": "Extrair o endereço do destinatário.", "action": "extract_field", "field": "endereco" },
+        { "description": "Extrair o CEP.", "action": "extract_field", "field": "cep" },
+        { "description": "O comprovante de residência deve ser válido e totalmente legível.", "action": "check_legibility" }
+      ]
+    }
+  },
+  "2ª Graduação": {
+    "DIPLOMA_GRADUACAO": {
+      "display_name": "Diploma da 1ª Graduação",
+      "file_name": "DIPLOMA 1A GRADUACAO",
+      "expected_doc_type": "DIPLOMA_SUPERIOR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Diploma de Graduação.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do diplomado e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de colação de grau.", "action": "extract_field", "field": "data_colacao_grau" },
+        { "description": "Localizar o número de registro oficial do diploma.", "action": "extract_field", "field": "numero_registro_diploma" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "HISTORICO_GRADUACAO": {
+      "display_name": "Histórico da 1ª Graduação",
+      "file_name": "HISTORICO 1A GRADUCAO",
+      "expected_doc_type": "HISTORICO_SUPERIOR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Histórico Escolar de nível superior.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do aluno e o nome do curso.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a Carga Horária Total do curso no documento.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "Localizar a data de conclusão do curso ou colação de grau.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "DIPLOMA_E_HISTORICO_GRADUACAO": {
+      "display_name": "Diploma e Histórico da 1ª Graduação (Juntos)",
+      "file_name": "DIPLOMA_E_HISTORICO_1A_GRADUACAO",
+      "expected_doc_type": "DIPLOMA_E_HISTORICO_SUPERIOR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Diploma de Graduação com Histórico Escolar.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do diplomado/aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de colação de grau.", "action": "extract_field", "field": "data_colacao_grau" },
+        { "description": "Localizar o número de registro oficial do diploma.", "action": "extract_field", "field": "numero_registro_diploma" },
+        { "description": "Verificar a Carga Horária Total do curso no documento.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "Localizar a data de conclusão do curso ou colação de grau.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "RG": {
+      "display_name": "Carteira de Identidade (RG)",
+      "file_name": "RG",
+      "expected_doc_type": "RG",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um RG válido e não outro tipo.", "action": "check_doc_type" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a Filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Extrair o Número do Registro Geral (RG).", "action": "extract_field", "field": "numero_rg" },
+        { "description": "Extrair o número do CPF, se presente no RG.", "action": "extract_field", "field": "numero_cpf" },
+        { "description": "Extrair o Órgão Expedidor/UF.", "action": "extract_field", "field": "orgao_expedidor" },
+        { "description": "Extrair a Naturalidade.", "action": "extract_field", "field": "naturalidade" },
+        { "description": "Verificar a presença de uma assinatura do titular.", "action": "check_field_presence", "field": "assinatura" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+      },
+    "CERTIFICADO_ENSINO_MEDIO": {
+      "display_name": "Certificado de Conclusão do Ensino Médio",
+      "file_name": "CERTIFICADO ENSINO MEDIO",
+      "expected_doc_type": "CERTIFICADO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Certificado de Conclusão.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o nome completo do aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de conclusão do curso.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+     },
+   "HISTORICO_ENSINO_MEDIO": {
+      "display_name": "Histórico do Ensino Médio",
+      "file_name": "HISTORICO ENSINO MEDIO",
+      "expected_doc_type": "HISTORICO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Histórico Escolar.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o nome completo do aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de conclusão do curso.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "Verificar a Carga Horária Total cursada.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "Extrair o CEP da instituição de ensino.", "action": "extract_field", "field": "instituicao_cep" },
+        { "description": "Extrair a cidade da instituição de ensino.", "action": "extract_field", "field": "instituicao_cidade" },
+        { "description": "Extrair o estado (UF) da instituição de ensino.", "action": "extract_field", "field": "instituicao_estado" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CPF": {
+      "display_name": "Cadastro de Pessoa Física (CPF)",
+      "file_name": "CPF",
+      "expected_doc_type": "CPF",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de CPF.", "action": "check_doc_type" },
+        { "description": "Extrair o Nome Completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Analisar e validar o número do CPF.", "action": "validate_cpf_number", "field": "numero_cpf" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "RNE": {
+      "display_name": "Registro Nacional de Estrangeiro (RNE/CRNM)",
+      "file_name": "RNE_CRNM",
+      "expected_doc_type": "RNE_CRNM",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um RNE ou CRNM válido.", "action": "check_doc_type" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a Filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Extrair o Número do RNE/CRNM.", "action": "extract_field", "field": "numero_rne_crnm" },
+        { "description": "Extrair a Data de Validade.", "action": "extract_field", "field": "data_validade" },
+        { "description": "Extrair a Nacionalidade.", "action": "extract_field", "field": "nacionalidade" },
+        { "description": "Verificar a presença de uma assinatura do titular.", "action": "check_field_presence", "field": "assinatura" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "QUITACAO_ELEITORAL": {
+      "display_name": "Quitação Eleitoral",
+      "file_name": "QUITACAO ELEITORAL",
+      "expected_doc_type": "QUITACAO_ELEITORAL",
+      "required_fields": [
+        { "description": "Confirmar se é um Título de Eleitor ou Certidão de Quitação.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do eleitor e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair o número de inscrição (título de eleitor).", "action": "extract_field", "field": "numero_inscricao_eleitor" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CERTIDAO_NASCIMENTO_CASAMENTO": {
+      "display_name": "Certidão de Nascimento ou Casamento",
+      "file_name": "CERTIDAO",
+      "expected_doc_type": "CERTIDAO_NASCIMENTO_CASAMENTO",
+      "required_fields": [
+        { "description": "Confirmar se o documento é uma Certidão de Nascimento ou Casamento.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo e verificar se corresponde ao nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Para certidão de casamento, extrair a data do casamento.", "action": "extract_field", "field": "data_casamento" },
+        { "description": "Se houver averbação de divórcio/separação, extrair a data da averbação.", "action": "extract_field", "field": "data_averbacao" },
+        { "description": "Verificar a presença de informações do cartório.", "action": "extract_field", "field": "info_cartorio" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "DOCUMENTO_MILITAR": {
+      "display_name": "Documento Militar (sexo masculino)",
+      "file_name": "DOCUMENTO MILITAR",
+      "expected_doc_type": "DOCUMENTO_MILITAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Certificado de Reservista, CDI ou de Isenção.", "action": "check_doc_type" },
+        { "description": "Verificar o nome completo e comparar com o do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a filiação.", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair o número de alistamento militar ou número do certificado.", "action": "extract_field", "field": "numero_alistamento_militar" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "COMPROVANTE_RESIDENCIA": {
+      "display_name": "Comprovante de Residência",
+      "file_name": "COMPROVANTE DE RESIDENCIA",
+      "expected_doc_type": "COMPROVANTE_DE_RESIDENCIA",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de residência válido.", "action": "check_doc_type" },
+        { "description": "Extrair o endereço do destinatário.", "action": "extract_field", "field": "endereco" },
+        { "description": "Extrair o CEP.", "action": "extract_field", "field": "cep" },
+        { "description": "O comprovante de residência deve ser válido e totalmente legível.", "action": "check_legibility" }
+      ]
+    }
+  },
+  "Pós-Graduação": {
+    "DIPLOMA_GRADUACAO": {
+      "display_name": "Diploma da Graduação",
+      "file_name": "DIPLOMA GRADUACAO",
+      "expected_doc_type": "DIPLOMA_SUPERIOR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Diploma de Graduação.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do diplomado e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de colação de grau.", "action": "extract_field", "field": "data_colacao_grau" },
+        { "description": "Localizar o número de registro oficial do diploma.", "action": "extract_field", "field": "numero_registro_diploma" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "HISTORICO_GRADUACAO": {
+      "display_name": "Histórico da Graduação",
+      "file_name": "HISTORICO GRADUACAO",
+      "expected_doc_type": "HISTORICO_SUPERIOR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Histórico Escolar de nível superior.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do aluno e o nome do curso.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a Carga Horária Total do curso no documento.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "Localizar a data de conclusão do curso ou colação de grau.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "DIPLOMA_E_HISTORICO_GRADUACAO": {
+      "display_name": "Diploma e Histórico da Graduação (Juntos)",
+      "file_name": "DIPLOMA_E_HISTORICO_GRADUACAO",
+      "expected_doc_type": "DIPLOMA_E_HISTORICO_SUPERIOR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Diploma de Graduação com Histórico Escolar.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo do diplomado/aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de colação de grau.", "action": "extract_field", "field": "data_colacao_grau" },
+        { "description": "Localizar o número de registro oficial do diploma.", "action": "extract_field", "field": "numero_registro_diploma" },
+        { "description": "Verificar a Carga Horária Total do curso no documento.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "Localizar a data de conclusão do curso ou colação de grau.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "RG": {
+      "display_name": "Carteira de Identidade (RG)",
+      "file_name": "RG",
+      "expected_doc_type": "RG",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um RG válido e não outro tipo.", "action": "check_doc_type" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a Filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Extrair o Número do Registro Geral (RG).", "action": "extract_field", "field": "numero_rg" },
+        { "description": "Extrair o número do CPF, se presente no RG.", "action": "extract_field", "field": "numero_cpf" },
+        { "description": "Extrair o Órgão Expedidor/UF.", "action": "extract_field", "field": "orgao_expedidor" },
+        { "description": "Extrair a Naturalidade.", "action": "extract_field", "field": "naturalidade" },
+        { "description": "Verificar a presença de uma assinatura do titular.", "action": "check_field_presence", "field": "assinatura" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CPF": {
+      "display_name": "Cadastro de Pessoa Física (CPF)",
+      "file_name": "CPF",
+      "expected_doc_type": "CPF",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de CPF.", "action": "check_doc_type" },
+        { "description": "Extrair o Nome Completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Analisar e validar o número do CPF.", "action": "validate_cpf_number", "field": "numero_cpf" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CNH": {
+      "display_name": "Carteira Nacional de Habilitação (CNH)",
+      "file_name": "CNH",
+      "expected_doc_type": "CNH",
+      "required_fields": [
+        { "description": "Confirmar se o documento é uma CNH válida.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Analisar se a CNH é válida e está em conformidade com as normas do DETRAN.", "action": "check_document_validity" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair e validar o número do CPF.", "action": "validate_cpf_number", "field": "numero_cpf" },
+        { "description": "Extrair a data de validade do documento.", "action": "extract_field", "field": "data_validade" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "COMPROVANTE_RESIDENCIA": {
+      "display_name": "Comprovante de Residência",
+      "file_name": "COMPROVANTE DE RESIDENCIA",
+      "expected_doc_type": "COMPROVANTE_DE_RESIDENCIA",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de residência válido.", "action": "check_doc_type" },
+        { "description": "Extrair o endereço do destinatário.", "action": "extract_field", "field": "endereco" },
+        { "description": "Extrair o CEP.", "action": "extract_field", "field": "cep" },
+        { "description": "O comprovante de residência deve ser válido e totalmente legível.", "action": "check_legibility" }
+      ]
+    }
+  },
+  "Cursos Rápidos": {
+    "CERTIFICADO_ENSINO_MEDIO": {
+      "display_name": "Certificado de Conclusão do Ensino Médio",
+      "file_name": "CERTIFICADO ENSINO MEDIO",
+      "expected_doc_type": "CERTIFICADO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar que o documento é um Certificado de Conclusão do Ensino Médio.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o Nome do Aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a Data de Conclusão.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "HISTORICO_ENSINO_MEDIO": {
+      "display_name": "Histórico do Ensino Médio",
+      "file_name": "HISTORICO ENSINO MEDIO",
+      "expected_doc_type": "HISTORICO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Histórico Escolar.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o nome completo do aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de conclusão do curso.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "Verificar a Carga Horária Total cursada.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CERTIFICADO_E_HISTORICO_ENSINO_MEDIO": {
+      "display_name": "Certificado e Histórico do Ensino Médio (Juntos)",
+      "file_name": "CERTIFICADO_E_HISTORICO_ENSINO_MEDIO",
+      "expected_doc_type": "CERTIFICADO_E_HISTORICO_ESCOLAR",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um Certificado de Conclusão com Histórico.", "action": "check_doc_type" },
+        { "description": "Verificar o nome da instituição de ensino.", "action": "extract_field", "field": "instituicao_ensino" },
+        { "description": "Extrair o nome completo do aluno e comparar.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Verificar a data de conclusão do curso.", "action": "extract_field", "field": "data_conclusao" },
+        { "description": "Verificar a Carga Horária Total cursada.", "action": "extract_field", "field": "carga_horaria_total" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "RG": {
+      "display_name": "Carteira de Identidade (RG)",
+      "file_name": "RG",
+      "expected_doc_type": "RG",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um RG válido e não outro tipo.", "action": "check_doc_type" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Extrair a Filiação (nomes dos pais).", "action": "extract_field", "field": "filiacao" },
+        { "description": "Extrair a Data de Nascimento.", "action": "extract_field", "field": "data_nascimento" },
+        { "description": "Extrair o Número do Registro Geral (RG).", "action": "extract_field", "field": "numero_rg" },
+        { "description": "Extrair o número do CPF, se presente no RG.", "action": "extract_field", "field": "numero_cpf" },
+        { "description": "Extrair o Órgão Expedidor/UF.", "action": "extract_field", "field": "orgao_expedidor" },
+        { "description": "Extrair a Naturalidade.", "action": "extract_field", "field": "naturalidade" },
+        { "description": "Verificar a presença de uma assinatura do titular.", "action": "check_field_presence", "field": "assinatura" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CPF": {
+      "display_name": "Cadastro de Pessoa Física (CPF)",
+      "file_name": "CPF",
+      "expected_doc_type": "CPF",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de CPF.", "action": "check_doc_type" },
+        { "description": "Extrair o Nome Completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Analisar e validar o número do CPF.", "action": "validate_cpf_number", "field": "numero_cpf" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "CNH": {
+      "display_name": "Carteira Nacional de Habilitação (CNH)",
+      "file_name": "CNH",
+      "expected_doc_type": "CNH",
+      "required_fields": [
+        { "description": "Confirmar se o documento é uma CNH válida.", "action": "check_doc_type" },
+        { "description": "Extrair o nome completo e comparar com o nome do aluno.", "action": "extract_and_compare", "source_field": "nome_completo", "target_field": "aluno.nome_completo", "comparison_mode": "flexible_contain" },
+        { "description": "Analisar se a CNH é válida e está em conformidade com as normas do DETRAN.", "action": "check_document_validity" },
+        { "description": "Verificar a presença de uma foto do titular.", "action": "check_field_presence", "field": "foto" },
+        { "description": "Extrair e validar o número do CPF.", "action": "validate_cpf_number", "field": "numero_cpf" },
+        { "description": "Extrair a data de validade do documento.", "action": "extract_field", "field": "data_validade" },
+        { "description": "O documento deve ser totalmente legível.", "action": "check_legibility" }
+      ]
+    },
+    "COMPROVANTE_RESIDENCIA": {
+      "display_name": "Comprovante de Residência",
+      "file_name": "COMPROVANTE DE RESIDENCIA",
+      "expected_doc_type": "COMPROVANTE_DE_RESIDENCIA",
+      "required_fields": [
+        { "description": "Confirmar se o documento é um comprovante de residência válido.", "action": "check_doc_type" },
+        { "description": "Extrair o endereço do destinatário.", "action": "extract_field", "field": "endereco" },
+        { "description": "Extrair o CEP.", "action": "extract_field", "field": "cep" },
+        { "description": "O comprovante de residência deve ser válido e totalmente legível.", "action": "check_legibility" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1 @@
+web: gunicorn --pythonpath . -b :$PORT servidor_web:app

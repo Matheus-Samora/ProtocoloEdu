@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROTOCOLO IMES - Portal</title>
+    
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='50' fill='%230a2351'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Inter, sans-serif' font-weight='bold' font-size='70' fill='%23fdb913'%3eI%3c/text%3e%3c/svg%3e">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Variáveis Base (Modo Claro) */
+            --imes-dark-blue: #0a2351;
+            --imes-gold: #fdb913;
+            --bg-color: #f0f2f5;
+            --frame-color: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #4b5563;
+            --success-color: #27ae60;
+            --pending-color: #fdb913;
+            --input-bg: #f3f4f6;
+            --input-text: #1f2937;
+        }
+
+        /* --- MODO ESCURO --- */
+        body.dark-mode {
+            --bg-color: #121212;
+            --frame-color: #1e1e1e;
+            --text-color: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --input-bg: #2d2d2d;
+            --input-text: #ffffff;
+        }
+
+        /* Overrides do Tailwind para Dark Mode */
+        body.dark-mode .bg-gray-100 { background-color: var(--bg-color) !important; }
+        body.dark-mode .bg-white { background-color: var(--frame-color) !important; }
+        body.dark-mode .text-gray-800, 
+        body.dark-mode .text-gray-700 { color: var(--text-color) !important; }
+        body.dark-mode .text-gray-500 { color: var(--text-secondary) !important; }
+        
+        /* Ajustes específicos de inputs no Dark Mode */
+        body.dark-mode input[type="tel"],
+        body.dark-mode select,
+        body.dark-mode #chat-input {
+            background-color: var(--input-bg) !important;
+            color: var(--input-text) !important;
+            border-color: #444 !important;
+        }
+
+        /* Ajuste do Chat Bubble no Dark Mode */
+        body.dark-mode #chat-bubble {
+            background-color: var(--frame-color);
+            color: var(--text-color);
+        }
+        body.dark-mode #chat-area {
+            background-color: var(--bg-color);
+        }
+        body.dark-mode .bg-gray-200 { /* Balões do bot */
+            background-color: #2d2d2d !important; 
+            color: #fff !important;
+        }
+        
+        html { scroll-behavior: smooth; height: 100%; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); height: 100%; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
+        
+        .sidebar { background-color: var(--imes-dark-blue); color: #ffffff; }
+        .btn-accent { background-color: var(--imes-gold); color: var(--imes-dark-blue); transition: background-color 0.3s; }
+        .btn-accent:hover { background-color: #e8a800; }
+        .btn-accent:disabled { background-color: #fdb813a1; cursor: not-allowed; color: #0a2351a3; }
+        
+        .card { 
+            background-color: var(--frame-color); 
+            border: 1px solid #e0e0e01a;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s, transform 0.3s, background-color 0.3s; 
+        }
+        .card:hover { 
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            transform: translateY(-3px); 
+        }
+
+        .status-pending { color: var(--pending-color); }
+        .status-success { color: var(--success-color); }
+        
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #aaa; }
+        
+        #assistant-icon { transition: transform 0.3s, background-color 0.3s; z-index: 40; }
+        #assistant-icon:hover { transform: scale(1.1); background-color: var(--imes-gold); }
+        
+        #chat-bubble { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 50; }
+        
+        /* --- CSS DO SWITCH (TEMA) --- */
+        /* From Uiverse.io by JustCode14 */ 
+        .switch {
+            font-size: 12px; /* Reduzi um pouco para caber bem na sidebar */
+            position: relative;
+            display: inline-block;
+            width: 4em;
+            height: 2.2em;
+            border-radius: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 0.5rem;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2a2a2a; /* Cor da Noite */
+            transition: 0.4s;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1.2em;
+            width: 1.2em;
+            border-radius: 20px;
+            left: 0.5em;
+            bottom: 0.5em;
+            transition: 0.4s;
+            transition-timing-function: cubic-bezier(0.81, -0.04, 0.38, 1.5);
+            box-shadow: inset 8px -4px 0px 0px #fff; /* Lua */
+        }
+
+        .switch input:checked + .slider {
+            background-color: #00a6ff; /* Cor do Dia */
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(1.8em);
+            box-shadow: inset 15px -4px 0px 15px #ffcf48; /* Sol */
+        }
+
+        .star {
+            background-color: #fff;
+            border-radius: 50%;
+            position: absolute;
+            width: 5px;
+            transition: all 0.4s;
+            height: 5px;
+        }
+
+        .star_1 { left: 2.5em; top: 0.5em; }
+        .star_2 { left: 2.2em; top: 1.2em; }
+        .star_3 { left: 3em; top: 0.9em; }
+
+        .switch input:checked ~ .slider .star {
+            opacity: 0;
+        }
+
+        .cloud {
+            width: 3.5em;
+            position: absolute;
+            bottom: -1.4em;
+            left: -1.1em;
+            opacity: 0;
+            transition: all 0.4s;
+        }
+
+        .switch input:checked ~ .slider .cloud {
+            opacity: 1;
+        }
+        /* --- FIM CSS SWITCH --- */
+
+
+        /* --- Loader Estilizado (Rings) --- */
+        .loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.98); display: flex;
+            justify-content: center; align-items: center; z-index: 100;
+            flex-direction: column;
+            backdrop-filter: blur(5px);
+        }
+        /* Ajuste do loader para Dark Mode */
+        body.dark-mode .loader-overlay {
+            background-color: rgba(18, 18, 18, 0.98);
+        }
+        body.dark-mode #loading-step-text { color: #fff; }
+        body.dark-mode .loader-title { color: #fff; }
+
+        #ring-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 190px;
+            height: 190px;
+            margin-bottom: 2rem;
+        }
+
+        #loading-step-text {
+            color: var(--imes-dark-blue);
+            z-index: 10;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            text-align: center;
+            animation: pulse-text 1.5s infinite;
+        }
+
+        .ring {
+            width: 190px;
+            height: 190px;
+            border: 1px solid transparent;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .ring:nth-child(1) { border-bottom: 8px solid var(--imes-gold); animation: rotate1 2s linear infinite; }
+        @keyframes rotate1 { from { transform: rotateX(50deg) rotateZ(110deg); } to { transform: rotateX(50deg) rotateZ(470deg); } }
+
+        .ring:nth-child(2) { border-bottom: 8px solid var(--imes-dark-blue); animation: rotate2 2s linear infinite; }
+        @keyframes rotate2 { from { transform: rotateX(20deg) rotateY(50deg) rotateZ(20deg); } to { transform: rotateX(20deg) rotateY(50deg) rotateZ(380deg); } }
+
+        .ring:nth-child(3) { border-bottom: 8px solid var(--imes-gold); animation: rotate3 2s linear infinite; }
+        @keyframes rotate3 { from { transform: rotateX(40deg) rotateY(130deg) rotateZ(450deg); } to { transform: rotateX(40deg) rotateY(130deg) rotateZ(90deg); } }
+
+        .ring:nth-child(4) { border-bottom: 8px solid var(--imes-dark-blue); animation: rotate4 2s linear infinite; }
+        @keyframes rotate4 { from { transform: rotateX(70deg) rotateZ(270deg); } to { transform: rotateX(70deg) rotateZ(630deg); } }
+
+        .analyzing-text { transition: opacity 0.3s; }
+        @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        #app-container { height: 100dvh; }
+
+        /* --- Animações do Chat (Novas) --- */
+        @keyframes slideUpFade { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-fade-in { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+    
+    <div id="chat-overlay" class="fixed inset-0 bg-black bg-opacity-25 hidden z-40 transition-opacity duration-300"></div>
+
+    <!-- OVERLAY DE ANÁLISE -->
+    <div id="loading-overlay" class="loader-overlay hidden">
+        <div id="ring-container">
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div id="loading-step-text">INICIANDO</div>
+        </div>
+        
+        <div class="text-center w-full max-w-xs px-6 z-10">
+            <h3 class="loader-title text-lg font-semibold text-blue-900 mb-1">Analisando Documentos</h3>
+            <div class="h-8 flex items-center justify-center mb-2">
+                <p id="loading-doc-name" class="text-base font-bold text-yellow-600 analyzing-text truncate w-full"></p>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
+                <div id="loading-progress-bar" class="bg-gradient-to-r from-blue-900 to-blue-700 h-2 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+            </div>
+            <p id="loading-percentage" class="text-xs text-gray-400 mt-2 text-right font-mono">0%</p>
+        </div>
+    </div>
+
+    <div id="app-container" class="flex flex-col md:flex-row bg-gray-100 overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar w-full md:w-1/3 md:max-w-sm p-6 md:p-8 shadow-lg flex flex-col flex-shrink-0 max-h-[45dvh] md:max-h-full overflow-y-auto custom-scroll relative z-20">
+            <div class="mb-4 md:mb-6 text-center flex flex-row md:flex-col items-center justify-center gap-4 md:gap-0">
+                <img src="/static/images/logo-imes.jpg" alt="Logo da Faculdade IMES" class="w-16 h-16 md:w-24 md:h-24 md:mb-4 rounded-full object-cover border-2 border-white/20" onerror="this.onerror=null;this.src='https://placehold.co/96x96/0a2351/fdb913?text=IMES';">
+                <div class="text-left md:text-center">
+                    <h1 class="text-lg md:text-xl font-bold text-white md:mt-4">Faculdade IMES</h1>
+                    <p class="text-sm md:text-md text-gray-300">Portal do Aluno</p>
+                    
+                    <!-- BOTÃO DE TEMA (SWITCH) -->
+                    <div class="mt-2 flex justify-start md:justify-center">
+                        <label class="switch" title="Alternar Tema Claro/Escuro">
+                          <input checked="true" id="theme-toggle" type="checkbox" />
+                          <span class="slider">
+                            <div class="star star_1"></div>
+                            <div class="star star_2"></div>
+                            <div class="star star_3"></div>
+                            <svg viewBox="0 0 16 16" class="cloud_1 cloud">
+                              <path
+                                transform="matrix(.77976 0 0 .78395-299.99-418.63)"
+                                fill="#fff"
+                                d="m391.84 540.91c-.421-.329-.949-.524-1.523-.524-1.351 0-2.451 1.084-2.485 2.435-1.395.526-2.388 1.88-2.388 3.466 0 1.874 1.385 3.423 3.182 3.667v.034h12.73v-.006c1.775-.104 3.182-1.584 3.182-3.395 0-1.747-1.309-3.186-2.994-3.379.007-.106.011-.214.011-.322 0-2.707-2.271-4.901-5.072-4.901-2.073 0-3.856 1.202-4.643 2.925"
+                              ></path>
+                            </svg>
+                          </span>
+                        </label>
+                    </div>
+
+                </div>
+                <div class="ml-auto md:hidden">
+                      <a href="/logout" class="bg-red-500 hover:bg-red-700 text-white text-xs font-bold py-2 px-3 rounded-md transition">Sair</a>
+                </div>
+            </div>
+            
+            <div class="relative flex-1 space-y-4">
+                <div id="student-search-container">
+                      <div id="student-cpf-container">
+                           <label for="student-cpf" class="block text-sm font-bold text-gray-200 mb-2">CPF</label>
+                           <div class="flex items-center gap-2">
+                                <input type="tel" id="student-cpf" class="w-full p-3 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Digite seu CPF" maxlength="14">
+                                <button id="search-cpf-btn" class="p-3 bg-white text-blue-900 rounded-md hover:bg-gray-200 transition flex-shrink-0" aria-label="Buscar Aluno por CPF">
+                                    <svg id="search-cpf-btn-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                                    </svg>
+                                    <div id="search-cpf-btn-loader" class="hidden w-5 h-5 border-2 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+                                </button>
+                           </div>
+                      </div>
+                      
+                      <div id="student-name-display-container" class="hidden">
+                           <label class="block text-sm font-bold text-gray-200 mb-2">Aluno</label>
+                           <div class="flex items-center gap-2">
+                                <p id="student-name-display" class="w-full p-3 rounded-md bg-gray-700 bg-opacity-50 text-white font-semibold truncate" title="Nome do Aluno"></p>
+                                <button id="change-student-btn" class="p-3 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 flex-shrink-0">Trocar</button>
+                           </div>
+                      </div>
+                </div>
+                
+                <div>
+                    <label for="course-type" class="block text-sm font-bold text-gray-200 mb-2">Tipo de Curso</label>
+                    <select id="course-type" class="w-full p-3 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400" disabled>
+                        <option value="">Aguardando aluno...</option>
+                    </select>
+                </div>
+                
+                <div class="pt-2 space-y-4">
+                    <button id="check-docs-btn" class="w-full p-3 bg-white text-blue-900 font-bold rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2 shadow-sm active:scale-95" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            <path stroke="var(--success-color)" stroke-linecap="round" stroke-linejoin="round" d="M9 14l2 2 4-4" />
+                        </svg>
+                        <span id="check-docs-btn-text">Verificar Documentos</span>
+                    </button>
+                    
+                    <button id="send-files-btn" class="w-full p-4 btn-accent font-bold rounded-md text-lg flex items-center justify-center gap-2 shadow-md active:scale-95" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" fill-opacity="0.2" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        Enviar para Análise
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 md:p-8 flex flex-col overflow-hidden bg-gray-100">
+            <div class="hidden md:flex flex-wrap justify-end items-center gap-4 mb-6 flex-shrink-0">
+                 <div class="flex items-center">
+                      <span id="user-greeting" class="text-gray-700 mr-4">Olá, <strong>Visitante</strong>!</span>
+                      <a href="/logout" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md text-sm transition">Sair</a>
+                 </div>
+            </div>
+
+            <h2 id="docs-title" class="text-2xl font-bold text-gray-700 mb-6 hidden flex-shrink-0">Seus Documentos</h2>
+            
+            <div id="docs-area" class="relative flex-1 bg-white p-4 md:p-6 rounded-lg shadow-inner overflow-y-auto docs-area custom-scroll">
+                <div id="docs-list" class="space-y-4 relative z-10 pb-20 md:pb-0">
+                    <div class="text-center text-gray-500 py-16 flex flex-col items-center justify-center h-full">
+                        <p class="text-lg">Por favor, digite seu CPF e clique no avião para buscar.</p>
+                        <p>Depois, selecione um curso para ver seus documentos.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- ASSISTENTE -->
+    <div id="assistant-icon" class="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center cursor-pointer shadow-lg active:scale-90" style="background-color: var(--imes-dark-blue);">
+        <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" fill="none">
+            <circle cx="12" cy="12" r="2" fill="var(--imes-gold)" stroke="none"></circle>
+            <ellipse cx="12" cy="12" rx="10" ry="4" stroke="var(--imes-gold)" stroke-linecap="round" stroke-linejoin="round"></ellipse>
+            <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></ellipse>
+            <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></ellipse>
+        </svg>
+    </div>
+
+    <!-- CHAT -->
+    <div id="chat-bubble" class="fixed inset-0 md:inset-auto md:bottom-28 md:right-8 md:w-96 md:h-[32rem] bg-white md:rounded-lg shadow-2xl flex flex-col hidden opacity-0 transform translate-y-full md:translate-y-4 z-50">
+        <div class="sidebar p-4 md:p-3 flex justify-between items-center md:rounded-t-lg flex-shrink-0">
+            <h3 class="font-bold text-white text-lg md:text-base">Assistente Acadêmico</h3>
+            <button id="close-chat-btn" class="text-white font-bold text-2xl md:text-xl">&times;</button>
+        </div>
+        
+        <div id="chat-area" class="flex-1 p-4 overflow-y-auto custom-scroll bg-white"></div>
+        
+        <div class="p-3 border-t border-gray-200 bg-white pb-safe">
+            <form id="chat-form" class="flex space-x-2">
+                <input type="text" id="chat-input" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800" placeholder="Digite sua mensagem..." autocomplete="off">
+                <button type="submit" id="chat-send-btn" class="px-4 py-2 btn-accent font-semibold rounded-md whitespace-nowrap">Enviar</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Genérico -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 md:p-8 max-w-md w-full mx-4 relative animate-fade-in">
+            <button id="modal-close-x" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 md:hidden">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-gray-800"></h3>
+            <div id="modal-body" class="text-gray-600 space-y-3 max-h-[60vh] overflow-y-auto custom-scroll"></div>
+            <button id="modal-close-btn" class="w-full mt-6 p-3 btn-accent font-bold rounded-md">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Portal Aluno Carregado");
+
+            // --- TEMA / MODO ESCURO ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                themeToggle.checked = false; // Desmarcado = Lua
+            } else {
+                body.classList.remove('dark-mode');
+                themeToggle.checked = true; // Marcado = Sol
+            }
+
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    body.classList.remove('dark-mode');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('dark-mode');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+
+            // --- CRITÉRIOS DE DOCUMENTOS (REESTRUTURADO PARA EVITAR CACHE DE CHAVE) ---
+            // Usamos IDs simples como chave para evitar problemas de encoding ou cache
+            const criteria = {
+                "graduacao_1": {
+                    label: "1ª Graduação",
+                    docs: {
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
+                        "RNE": {"display_name": "Registro Nacional Estrangeiro (RNE/CRNM)"},
+                        "HISTORICO_ENSINO_MEDIO": {"display_name": "Histórico Escolar do Ensino Médio"},
+                        "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio"}, 
+                        "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "Certidão de Nascimento ou Casamento"},
+                        "DOCUMENTO_MILITAR": {"display_name": "Certificado de Reservista"},
+                        "QUITACAO_ELEITORAL": {"display_name": "Comprovante de Quitação Eleitoral"},
+                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
+                    }
+                },
+                "graduacao_2": {
+                    label: "2ª Graduação",
+                    docs: {
+                        "DIPLOMA_GRADUACAO": {"display_name": "Diploma da 1ª Graduação"},
+                        "HISTORICO_GRADUACAO": {"display_name": "Histórico Escolar da 1ª Graduação"},
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
+                        "RNE": {"display_name": "Registro Nacional Estrangeiro (RNE/CRNM)"},
+                        "QUITACAO_ELEITORAL": {"display_name": "Comprovante de Quitação Eleitoral"},
+                        "DOCUMENTO_MILITAR": {"display_name": "Certificado de Reservista"},
+                        "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "Certidão de Nascimento ou Casamento"},
+                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"},
+                        "HISTORICO_ENSINO_MEDIO": {"display_name": "Histórico Escolar do Ensino Médio"},
+                        "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio"}
+                    }
+                },
+                "pos_graduacao": {
+                    label: "Pós-Graduação",
+                    docs: {
+                        "DIPLOMA_GRADUACAO": {"display_name": "Diploma da Graduação (Curso Superior)"},
+                        "HISTORICO_GRADUACAO": {"display_name": "Histórico Escolar da Graduação (Curso Superior)"},
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
+                        "CNH": { "display_name": "Carteira Nacional de Habilitação (CNH)"},
+                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"},
+                        "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "Certidão (Nascimento, Casamento ou Averbação)"}
+                    }
+                },
+                "cursos_rapidos": {
+                    label: "Cursos Rápidos",
+                    docs: {
+                        "CERTIFICADO_ENSINO_MEDIO": {"display_name": "Certificado de Conclusão do Ensino Médio"},
+                        "RG": {"display_name": "Carteira de Identidade (RG)"},
+                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
+                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
+                    }
+                }
+            };
+            
+            let selectedFiles = {};
+            let chatHistory = [];
+            let studentData = { id: null, name: null, cpf: null, existingDocs: {} };
+            
+            // --- SELETORES ---
+            const studentCpfInput = document.getElementById('student-cpf');
+            const studentCpfContainer = document.getElementById('student-cpf-container');
+            const searchCpfBtn = document.getElementById('search-cpf-btn');
+            const searchCpfBtnIcon = document.getElementById('search-cpf-btn-icon');
+            const searchCpfBtnLoader = document.getElementById('search-cpf-btn-loader');
+            const studentNameDisplay = document.getElementById('student-name-display');
+            const studentNameDisplayContainer = document.getElementById('student-name-display-container');
+            const changeStudentBtn = document.getElementById('change-student-btn');
+            const courseTypeSelect = document.getElementById('course-type');
+            const checkDocsBtn = document.getElementById('check-docs-btn');
+            const checkDocsBtnText = document.getElementById('check-docs-btn-text');
+            const sendFilesBtn = document.getElementById('send-files-btn');
+            const userGreeting = document.getElementById('user-greeting');
+            const docsList = document.getElementById('docs-list');
+            const docsTitle = document.getElementById('docs-title');
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalCloseX = document.getElementById('modal-close-x');
+            const assistantIcon = document.getElementById('assistant-icon');
+            const chatBubble = document.getElementById('chat-bubble');
+            const chatOverlay = document.getElementById('chat-overlay');
+            const closeChatBtn = document.getElementById('close-chat-btn');
+            const chatArea = document.getElementById('chat-area');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const chatForm = document.getElementById('chat-form');
+            
+            // Seletores do Loader
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingStepText = document.getElementById('loading-step-text');
+            const loadingDocName = document.getElementById('loading-doc-name');
+            const loadingProgressBar = document.getElementById('loading-progress-bar');
+            const loadingPercentage = document.getElementById('loading-percentage');
+
+            function initialize() {
+                // Limpa options anteriores
+                courseTypeSelect.innerHTML = '<option value="">Aguardando aluno...</option>';
+                
+                Object.entries(criteria).forEach(([key, config]) => {
+                    const option = document.createElement('option');
+                    option.value = key; // Agora é 'graduacao_1', 'pos_graduacao', etc.
+                    option.textContent = config.label; // O texto visível continua bonito
+                    courseTypeSelect.appendChild(option);
+                });
+                
+                addMessageToChat("Prezado(a) Aluno(a), seja bem-vindo(a). Como posso auxiliá-lo(a) hoje?", "assistant");
+            }
+
+            // --- FUNÇÕES DE BUSCA DE ALUNO ---
+            function setSearchButtonLoading(isLoading) {
+                searchCpfBtn.disabled = isLoading;
+                studentCpfInput.disabled = isLoading;
+                searchCpfBtnIcon.classList.toggle('hidden', isLoading);
+                searchCpfBtnLoader.classList.toggle('hidden', !isLoading);
+            }
+
+            async function handleStudentSearch() {
+                const cleanedCpf = studentCpfInput.value.replace(/\D/g, '');
+                if (cleanedCpf.length !== 11) {
+                    showModal("Atenção", "<p>Por favor, digite um CPF válido com 11 dígitos para buscar.</p>", true);
+                    return;
+                }
+                setSearchButtonLoading(true);
+                try {
+                    const response = await fetch(`/search-student`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cpf: cleanedCpf }),
+                    });
+
+                    if (response.status === 404) {
+                        showModal("Aluno não encontrado", "Não foi possível localizar um aluno com o CPF informado. Verifique os dados e tente novamente.");
+                        resetStudentSearch();
+                        return;
+                    }
+                    if (!response.ok) throw new Error(`Erro: ${response.status}`);
+
+                    const aluno = await response.json();
+                    studentData = { id: aluno.id, name: aluno.name, cpf: aluno.cpf, existingDocs: {} };
+
+                    const firstName = studentData.name.split(' ')[0];
+                    if(userGreeting) userGreeting.querySelector('strong').textContent = firstName;
+                    studentNameDisplay.textContent = studentData.name;
+                    
+                    studentCpfContainer.classList.add('hidden');
+                    studentNameDisplayContainer.classList.remove('hidden');
+
+                    courseTypeSelect.disabled = false;
+                    checkDocsBtn.disabled = false;
+                    courseTypeSelect.value = '';
+                    courseTypeSelect.querySelector('option').textContent = "Selecione um curso...";
+                    
+                    docsList.innerHTML = `<div class="text-center text-gray-500 py-16 animate-fade-in"><p>Aluno encontrado! Por favor, selecione um curso e clique em "Verificar Documentos".</p></div>`;
+                    docsTitle.classList.add('hidden');
+
+                } catch (error) {
+                    console.error(error);
+                    showModal("Erro de Conexão", "Não foi possível comunicar com o servidor.");
+                    resetStudentSearch();
+                } finally {
+                    setSearchButtonLoading(false);
+                }
+            }
+
+            async function displayCourseDocuments() {
+                const courseTypeId = courseTypeSelect.value; // ex: 'pos_graduacao'
+                if (!studentData.id || !courseTypeId) {
+                    showModal("Atenção", "<p>Por favor, selecione um tipo de curso para verificar os documentos.</p>", true);
+                    return;
+                }
+
+                checkDocsBtn.disabled = true;
+                checkDocsBtnText.textContent = "A verificar...";
+                studentData.existingDocs = {};
+
+                const selectedConfig = criteria[courseTypeId] || {};
+                const requiredDocsConfig = selectedConfig.docs || {};
+                const requiredKeys = Object.keys(requiredDocsConfig);
+                const displayLabel = selectedConfig.label || courseTypeId;
+
+                try {
+                    // DEBUG EXPLÍCITO para verificar o que está saindo do navegador
+                    console.log(">>> AUDITORIA FRONTEND <<<");
+                    console.log("Curso Selecionado (ID):", courseTypeId);
+                    console.log("Label Visível:", displayLabel);
+                    console.log("Chaves Enviadas:", requiredKeys);
+
+                    const response = await fetch(`/verificar-documentos`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            studentName: studentData.name, 
+                            courseType: displayLabel, // Enviamos o Label para o backend manter logs legíveis, ou se ele espera o texto antigo
+                            courseTypeId: courseTypeId, // Enviamos o ID técnico também caso o backend seja atualizado
+                            requiredKeys: requiredKeys 
+                        }),
+                    });
+
+                    if (!response.ok) throw new Error("Erro ao verificar documentos.");
+                    const data = await response.json();
+                    
+                    if (!data.success && data.status !== 'sucesso') {
+                        throw new Error(data.error || data.mensagem || "Erro desconhecido no servidor.");
+                    }
+
+                    studentData.existingDocs = data.documentos || {};
+
+                } catch (error) {
+                    console.error(error);
+                    showModal("Erro de Rede", "Não foi possível obter a lista de documentos.<br><small>Modo offline ativado ou erro de servidor.</small>", true);
+                } finally {
+                    checkDocsBtn.disabled = false;
+                    checkDocsBtnText.textContent = "Verificar Documentos";
+                }
+
+                docsTitle.classList.remove('hidden');
+                docsList.innerHTML = '';
+                selectedFiles = {};
+
+                if (requiredKeys.length === 0) {
+                    docsList.innerHTML = `<div class="text-center text-gray-500 py-16"><p>Nenhum documento necessário para este curso.</p></div>`;
+                    sendFilesBtn.disabled = true;
+                    return;
+                }
+
+                requiredKeys.forEach((key, index) => {
+                    const info = requiredDocsConfig[key];
+                    const card = document.createElement('div');
+                    card.className = 'card p-4 flex flex-col items-start gap-4 animate-fade-in';
+                    card.style.animationDelay = `${index * 0.05}s`;
+
+                    const docInfoFromServer = studentData.existingDocs[key];
+                    const isAlreadySubmitted = docInfoFromServer?.encontrado === true;
+
+                    const statusText = isAlreadySubmitted ? '✔ Documento já entregue' : '● Pendente';
+                    const statusClass = isAlreadySubmitted ? 'status-success' : 'status-pending';
+
+                    card.innerHTML = `
+                        <div class="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-700">${info.display_name}</p>
+                                <p id="status-${key}" class="text-sm font-medium ${statusClass}">${statusText}</p>
+                                ${isAlreadySubmitted && docInfoFromServer.nome_arquivo ? `<p class="text-xs text-gray-500 truncate" title="${docInfoFromServer.nome_arquivo}">Entregue: ${docInfoFromServer.nome_arquivo}</p>` : ''}
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <label class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md cursor-pointer hover:bg-gray-300 transition flex items-center gap-2 text-sm whitespace-nowrap active:scale-95 select-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
+                                    Tirar Foto
+                                    <input type="file" data-key="${key}" class="hidden" accept="image/*" capture="environment">
+                                </label>
+                                <label class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md cursor-pointer hover:bg-gray-300 transition flex items-center gap-2 text-sm whitespace-nowrap active:scale-95 select-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/></svg>
+                                    Anexar
+                                    <input type="file" data-key="${key}" class="hidden" multiple accept="image/*,application/pdf">
+                                </label>
+                            </div>
+                        </div>
+                        <div id="files-container-${key}" class="w-full mt-2 flex flex-wrap gap-2"></div>`;
+                    docsList.appendChild(card);
+                });
+
+                sendFilesBtn.disabled = false;
+                
+                if(window.innerWidth < 768) {
+                      setTimeout(() => {
+                          document.getElementById('docs-area').scrollIntoView({behavior: 'smooth'});
+                      }, 100);
+                }
+            }
+
+            function resetStudentSearch() {
+                studentCpfInput.value = '';
+                studentCpfInput.disabled = false;
+                studentData = { id: null, name: null, cpf: null, existingDocs: {} };
+                studentNameDisplayContainer.classList.add('hidden');
+                studentCpfContainer.classList.remove('hidden');
+                courseTypeSelect.disabled = true;
+                checkDocsBtn.disabled = true;
+                sendFilesBtn.disabled = true;
+                courseTypeSelect.value = '';
+                courseTypeSelect.querySelector('option').textContent = "Aguardando aluno...";
+                
+                docsList.innerHTML = `<div class="text-center text-gray-500 py-16"><p>Por favor, digite seu CPF e clique no avião para buscar.</p><p>Depois, selecione um curso para ver seus documentos.</p></div>`;
+                docsTitle.classList.add('hidden');
+                selectedFiles = {};
+                studentCpfInput.focus();
+            }
+
+            function handleFileSelect(event) {
+                const fileInput = event.target;
+                const docKey = fileInput.dataset.key;
+                const newFiles = Array.from(fileInput.files);
+
+                if (!selectedFiles[docKey]) selectedFiles[docKey] = [];
+
+                if (selectedFiles[docKey].length + newFiles.length > 3) {
+                    showModal("Limite de Arquivos Excedido", "<p>Você só pode anexar no máximo 3 arquivos por documento.</p>", true);
+                    fileInput.value = '';
+                    return;
+                }
+
+                selectedFiles[docKey].push(...newFiles);
+                renderFilePills(docKey);
+                fileInput.value = '';
+            }
+
+            function renderFilePills(docKey) {
+                const container = document.getElementById(`files-container-${docKey}`);
+                const statusLabel = document.getElementById(`status-${docKey}`);
+                if (!container || !statusLabel) return;
+
+                container.innerHTML = '';
+                const files = selectedFiles[docKey] || [];
+
+                files.forEach((file, index) => {
+                    const pill = document.createElement('div');
+                    pill.className = 'bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-2 animate-fade-in';
+                    pill.innerHTML = `<span class="truncate max-w-[150px] sm:max-w-xs" title="${file.name}">${file.name}</span><button class="remove-file-btn font-bold text-red-500 hover:text-red-700" data-key="${docKey}" data-index="${index}">&times;</button>`;
+                    container.appendChild(pill);
+                });
+
+                if (files.length > 0) {
+                    statusLabel.textContent = `✔ ${files.length} arquivo(s) anexado(s)`;
+                    statusLabel.className = 'text-sm font-medium status-success';
+                } else {
+                    const docInfoFromServer = studentData.existingDocs[docKey];
+                    const isSubmitted = docInfoFromServer?.encontrado === true;
+                    statusLabel.textContent = isSubmitted ? '✔ Documento já entregue' : '● Pendente';
+                    statusLabel.className = isSubmitted ? 'text-sm font-medium status-success' : 'text-sm font-medium status-pending';
+                }
+            }
+
+            function removeFile(docKey, index) {
+                if (selectedFiles[docKey]) {
+                    selectedFiles[docKey].splice(index, 1);
+                    renderFilePills(docKey);
+                }
+            }
+
+            function exibirFeedbackAnalise(serverResponse, currentStudentName, submittedKeys) {
+                 if (!serverResponse || !serverResponse.results) {
+                      showModal('Erro na Análise', '<p>Ocorreu um erro inesperado na resposta do servidor. Por favor, tente novamente.</p>', true);
+                      return;
+                 }
+                 const results = serverResponse.results;
+                 const rejectedDocs = [];
+                 
+                 const courseTypeId = courseTypeSelect.value;
+                 const selectedConfig = criteria[courseTypeId] || {};
+                 const requiredDocsConfig = selectedConfig.docs || {};
+
+                 submittedKeys.forEach(submittedKey => {
+                      if (results[submittedKey] && results[submittedKey].status !== 'approved') {
+                           rejectedDocs.push({
+                                name: requiredDocsConfig[submittedKey]?.display_name || submittedKey.replace(/_/g, ' '),
+                                reason: results[submittedKey].reason || 'Motivo não especificado.'
+                           });
+                      } else if (results[submittedKey]?.status === 'error') {
+                           rejectedDocs.push({
+                                name: requiredDocsConfig[submittedKey]?.display_name || submittedKey.replace(/_/g, ' '),
+                                reason: `Erro durante a análise: ${results[submittedKey].reason}`
+                           });
+                      } else if (!results[submittedKey]) {
+                            rejectedDocs.push({
+                                name: requiredDocsConfig[submittedKey]?.display_name || submittedKey.replace(/_/g, ' '),
+                                reason: 'O servidor não retornou um resultado para este documento.'
+                            });
+                      }
+                 });
+
+                 const firstName = currentStudentName ? currentStudentName.split(' ')[0] : 'Aluno(a)';
+                 
+                 if (rejectedDocs.length > 0) {
+                      let bodyHtml = `<div class="text-left"><p class="font-semibold text-lg">Olá ${firstName}! Tudo bem?!</p><p class="mt-2">Analisamos os documentos enviados! No entanto, ficaram alguns com pendências.</p><div class="mt-4 p-3 bg-red-50 rounded-md"><h4 class="font-bold text-red-800">Pendências encontradas nos documentos enviados:</h4><ul class="list-disc list-inside text-red-700 mt-2 space-y-1">`;
+                      rejectedDocs.forEach(doc => { bodyHtml += `<li><strong>${doc.name}:</strong> ${doc.reason}</li>`; });
+                      bodyHtml += `</ul></div><p class="mt-4 text-xs text-gray-500 text-center italic">*OS DOCUMENTOS DEVEM SER ENVIADOS ESCANEADOS EM PDF PARA NÃO PERDER A RESOLUÇÃO*</p><p class="mt-3 text-sm text-center">*** Em caso de dúvida, entre em contato com nossa Central de Atendimento. ***</p><p class="mt-2 font-semibold text-center">Cordialmente,<br>Equipe IMES.</p></div>`;
+                      showModal('Análise Concluída - Com Pendências', bodyHtml, true);
+                 } else {
+                      const successMessage = `<div class="text-center"><p class="text-xl font-semibold">Olá ${firstName}! Tudo bem?!</p><p class="mt-2">Recebemos e analisamos com sucesso os documentos que você enviou!</p><p class="mt-4 text-sm text-gray-500">*** Em caso de dúvida, entre em contato com nossa Central de Atendimento. ***</p><p class="mt-4 font-semibold">Cordialmente,<br>Equipe IMES.</p></div>`;
+                      showModal('Análise Concluída', successMessage, false);
+                 }
+                 selectedFiles = {};
+                 displayCourseDocuments();
+            }
+
+            function showModal(title, message, isWarning = false) {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = message;
+                modalTitle.className = `text-2xl font-bold mb-4 text-center ${isWarning ? 'text-red-600' : 'text-green-600'}`;
+                modal.classList.remove('hidden');
+            }
+            
+            function closeModal() {
+                modal.classList.add('hidden');
+            }
+
+            function updateLoaderUI(step, docName, progress) {
+                loadingStepText.textContent = step;
+                loadingDocName.textContent = docName;
+                loadingProgressBar.style.width = `${progress}%`;
+                loadingPercentage.textContent = `${progress}%`;
+            }
+
+            async function sendFiles() {
+                 const hasFiles = Object.values(selectedFiles).some(arr => arr && arr.length > 0);
+                 if (!studentData.name) return showModal("Atenção", "<p>Você precisa buscar um aluno antes de enviar.</p>", true);
+                 if (!hasFiles) return showModal("Atenção", "<p>Você precisa anexar pelo menos um novo documento antes de enviar para análise.</p>", true);
+
+                 loadingOverlay.classList.remove('hidden');
+                 updateLoaderUI("Iniciando", "Preparando arquivos...", 5);
+                 
+                 const courseTypeId = courseTypeSelect.value;
+                 const selectedConfig = criteria[courseTypeId] || {};
+                 const requiredDocsConfig = selectedConfig.docs || {};
+                 
+                 const formData = new FormData();
+                 formData.append('studentName', studentData.name);
+                 formData.append('courseType', selectedConfig.label || courseTypeId); 
+                 formData.append('courseTypeId', courseTypeId); // Importante para o backend novo
+
+                 const submittedKeys = [];
+                 const submittedFilesList = []; 
+
+                 for (const [docKey, fileArray] of Object.entries(selectedFiles)) {
+                      if(fileArray && fileArray.length > 0) {
+                           submittedKeys.push(docKey);
+                           const friendlyName = requiredDocsConfig[docKey]?.display_name || docKey;
+                           submittedFilesList.push(friendlyName);
+                           
+                           fileArray.forEach(file => formData.append(docKey, file, file.name));
+                      }
+                 }
+
+                 let serverResponse = null;
+                 let fetchError = null;
+                 
+                 const fetchPromise = fetch(`/analisar`, { method: 'POST', body: formData })
+                    .then(async res => {
+                        const txt = await res.text();
+                        if (!res.ok) throw new Error(res.status);
+                        try { return JSON.parse(txt); } catch(e) { return { error: "JSON Inválido" }; }
+                    })
+                    .then(data => { serverResponse = data; })
+                    .catch(err => { fetchError = err; });
+
+                 const totalSteps = submittedFilesList.length;
+                 const stepSize = 80 / totalSteps; 
+                 let currentProgress = 10;
+
+                 for (let i = 0; i < totalSteps; i++) {
+                      const docName = submittedFilesList[i];
+                      updateLoaderUI("Lendo", docName, Math.round(currentProgress));
+                      await new Promise(r => setTimeout(r, 600)); 
+                      updateLoaderUI("Validando", docName, Math.round(currentProgress + (stepSize/2)));
+                      await new Promise(r => setTimeout(r, 600)); 
+                      currentProgress += stepSize;
+                 }
+
+                 updateLoaderUI("Processando", "Gerando Relatório...", 90);
+                 
+                 if (!serverResponse && !fetchError) {
+                      await fetchPromise;
+                 }
+
+                 updateLoaderUI("Concluído", "Finalizando...", 100);
+                 await new Promise(r => setTimeout(r, 500)); 
+
+                 loadingOverlay.classList.add('hidden');
+
+                 if (fetchError) {
+                      console.error(fetchError);
+                      showModal("Erro de Conexão", `<p>Não foi possível conectar ao servidor de análise.</p>`, true);
+                 } else {
+                      exibirFeedbackAnalise(serverResponse, studentData.name, submittedKeys);
+                 }
+            }
+            
+            // --- CHATBOT FUNCTIONS ---
+            function toggleChat() {
+                const isHidden = chatBubble.classList.contains('hidden');
+                
+                if (isHidden) {
+                    chatOverlay.classList.remove('hidden');
+                    chatBubble.classList.remove('hidden');
+                    setTimeout(() => {
+                        chatOverlay.classList.remove('opacity-0');
+                        chatBubble.classList.remove('opacity-0', 'translate-y-full');
+                        chatBubble.classList.remove('md:translate-y-4');
+                    }, 10);
+                    setTimeout(() => chatArea.scrollTop = chatArea.scrollHeight, 100);
+                    if(window.innerWidth >= 768) chatInput.focus();
+                } else {
+                    chatOverlay.classList.add('opacity-0');
+                    chatBubble.classList.add('opacity-0');
+                    chatBubble.classList.add('translate-y-full');
+                    chatBubble.classList.add('md:translate-y-4');
+                    setTimeout(() => {
+                        chatOverlay.classList.add('hidden');
+                        chatBubble.classList.add('hidden');
+                    }, 300);
+                }
+            }
+
+            function addMessageToChat(message, sender) {
+                chatHistory.push({ role: sender === 'assistant' ? 'model' : 'user' , parts: [{text: message}] });
+                
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = `flex flex-col mb-4 animate-fade-in ${sender === 'user' ? 'items-end' : 'items-start'}`;
+                
+                const msgBubble = document.createElement('div');
+                msgBubble.className = `p-3 rounded-lg max-w-[85%] sm:max-w-xs whitespace-pre-wrap shadow-sm ${sender === 'user' ? 'bg-blue-800 text-white' : 'bg-gray-200 text-gray-800'}`;
+                
+                msgBubble.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+                
+                msgWrapper.appendChild(msgBubble);
+                chatArea.appendChild(msgWrapper);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function showTypingIndicator() {
+                 if (document.getElementById('typing-indicator')) return;
+                 const indicator = document.createElement('div');
+                 indicator.id = 'typing-indicator';
+                 indicator.className = 'flex flex-col mb-4 items-start animate-fade-in';
+                 indicator.innerHTML = `<div class="p-3 rounded-lg bg-gray-200 shadow-sm"><div class="flex items-center space-x-1.5"><div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay:-0.15s;"></div><div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay:-0.3s;"></div></div></div>`;
+                 chatArea.appendChild(indicator);
+                 chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function hideTypingIndicator() {
+                document.getElementById('typing-indicator')?.remove();
+            }
+
+            async function simulateHumanTyping(fullText) {
+                let chunks = fullText.split('<SPLIT>');
+                chunks = chunks.filter(c => c.trim().length > 0);
+
+                for (let i = 0; i < chunks.length; i++) {
+                    const chunk = chunks[i].trim();
+                    
+                    showTypingIndicator(); 
+
+                    let delay = Math.min(Math.max(chunk.length * 30, 1000), 3000);
+                    
+                    await new Promise(r => setTimeout(r, delay));
+
+                    hideTypingIndicator();
+                    addMessageToChat(chunk, 'assistant');
+                }
+            }
+
+            async function sendChatMessage(e) {
+                 if(e) e.preventDefault();
+                 const userMessage = chatInput.value.trim();
+                 if (!userMessage) return;
+                 
+                 addMessageToChat(userMessage, "user");
+                 chatInput.value = '';
+                 chatSendBtn.disabled = true;
+                 showTypingIndicator();
+
+                 try {
+                      const courseTypeId = courseTypeSelect.value;
+                      const selectedConfig = criteria[courseTypeId] || {};
+                      
+                      const response = await fetch(`/ask-assistant`, {
+                           method: 'POST',
+                           headers: { 'Content-Type': 'application/json' },
+                           body: JSON.stringify({
+                                question: userMessage, 
+                                chat_history: chatHistory.slice(-11, -1),
+                                studentName: studentData.name || '',
+                                courseType: selectedConfig.label || courseTypeId || ''
+                           }),
+                      });
+                      
+                      if (!response.ok) throw new Error("Erro");
+                      const data = await response.json();
+                      hideTypingIndicator();
+                      
+                      if (data.answer) {
+                          await simulateHumanTyping(data.answer);
+                      } else {
+                          addMessageToChat("Desculpe, não consegui conectar ao meu cérebro. Tente novamente mais tarde.", "assistant");
+                      }
+
+                 } catch (error) {
+                      hideTypingIndicator();
+                      addMessageToChat("Desculpe, erro de conexão. Tente novamente mais tarde.", "assistant");
+                 } finally {
+                      chatSendBtn.disabled = false;
+                      if(window.innerWidth >= 768) chatInput.focus();
+                 }
+            }
+            
+            // Listeners
+            studentCpfInput.addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g, '');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = v;
+            });
+            searchCpfBtn.addEventListener('click', handleStudentSearch);
+            studentCpfInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleStudentSearch(); });
+
+            courseTypeSelect.addEventListener('change', () => {
+                if (studentData.id && courseTypeSelect.value) {
+                    docsList.innerHTML = `<div class="text-center text-gray-500 py-16"><p>Curso selecionado. Clique em "Verificar Documentos" para continuar.</p></div>`;
+                    docsTitle.classList.add('hidden');
+                    sendFilesBtn.disabled = true;
+                    selectedFiles = {};
+                } else if (studentData.id) {
+                    docsList.innerHTML = `<div class="text-center text-gray-500 py-16"><p>Por favor, selecione um curso para ver os documentos necessários.</p></div>`;
+                    docsTitle.classList.add('hidden');
+                    sendFilesBtn.disabled = true;
+                }
+            });
+
+            checkDocsBtn.addEventListener('click', displayCourseDocuments);
+            sendFilesBtn.addEventListener('click', sendFiles);
+            changeStudentBtn.addEventListener('click', resetStudentSearch);
+            
+            docsList.addEventListener('change', (e) => { if (e.target.type === 'file') handleFileSelect(e); });
+            docsList.addEventListener('click', (e) => {
+                const btn = e.target.closest('.remove-file-btn');
+                if (btn) removeFile(btn.dataset.key, parseInt(btn.dataset.index, 10));
+            });
+
+            assistantIcon.addEventListener('click', (e) => { e.stopPropagation(); toggleChat(); });
+            closeChatBtn.addEventListener('click', toggleChat);
+            chatOverlay.addEventListener('click', toggleChat);
+            chatForm.addEventListener('submit', sendChatMessage);
+            modalCloseBtn.addEventListener('click', closeModal);
+            if(modalCloseX) modalCloseX.addEventListener('click', closeModal);
+
+            initialize();
+        });
+    </script>
+</body>
+</html>

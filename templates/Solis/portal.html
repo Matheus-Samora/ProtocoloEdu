@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Análise - Ambiente de Teste</title>
+    
+    <!-- Ícone personalizado (Favicon) com o novo tema -->
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='50' fill='%2318181B'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Inter, sans-serif' font-weight='bold' font-size='70' fill='%23F97316'%3eS%3c/text%3e%3c/svg%3e">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Paleta de Cores Laranja e Preto */
+        :root {
+            --theme-primary: #F97316; /* Laranja Vibrante */
+            --theme-primary-hover: #EA580C; /* Laranja mais escuro para hover */
+            --theme-background: #18181B; /* Fundo Preto/Zinco Escuro */
+            --theme-surface: #27272A; /* Cor de superfície (cards, sidebar) */
+            --theme-surface-light: #3f3f46; /* Superfície mais clara */
+            --theme-text-primary: #F4F4F5; /* Texto principal (claro) */
+            --theme-text-secondary: #A1A1AA; /* Texto secundário (cinza claro) */
+            --success-color: #16A34A; /* Verde para sucesso */
+            --pending-color: #FBBF24; /* Amarelo para pendente */
+            --warning-color: #DC2626; /* Vermelho para avisos */
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--theme-background); 
+            color: var(--theme-text-primary);
+        }
+        .sidebar { 
+            background-color: var(--theme-surface); 
+        }
+        .btn-accent { 
+            background-color: var(--theme-primary); 
+            color: var(--theme-text-primary); 
+            font-weight: 700;
+            transition: background-color 0.3s; 
+        }
+        .btn-accent:hover { 
+            background-color: var(--theme-primary-hover); 
+        }
+        .btn-accent:disabled { 
+            background-color: #f974168a; 
+            cursor: not-allowed; 
+        }
+        
+        .card { 
+            background-color: var(--theme-surface-light); 
+            border: 1px solid #ffffff1a;
+            border-radius: 0.75rem;
+            transition: box-shadow 0.3s, transform 0.3s, border-color 0.3s; 
+        }
+        .card:hover { 
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            transform: translateY(-3px); 
+            border-color: var(--theme-primary);
+        }
+
+        .status-pending { color: var(--pending-color); }
+        .status-success { color: var(--success-color); }
+        .docs-area::-webkit-scrollbar { width: 8px; }
+        .docs-area::-webkit-scrollbar-track { background: var(--theme-surface); }
+        .docs-area::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        .docs-area::-webkit-scrollbar-thumb:hover { background: #777; }
+        
+        #assistant-icon { 
+            background-color: var(--theme-primary);
+            transition: transform 0.3s, background-color 0.3s; 
+        }
+        #assistant-icon:hover { 
+            transform: scale(1.1); 
+            background-color: var(--theme-primary-hover); 
+        }
+        #chat-bubble { 
+            transition: opacity 0.3s, transform 0.3s;
+            border: 1px solid var(--theme-primary);
+            background-color: var(--theme-surface);
+        }
+        .loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); display: flex;
+            justify-content: center; align-items: center; z-index: 100;
+            flex-direction: column; gap: 1rem;
+        }
+        .spinner {
+            border: 8px solid #333; 
+            border-top: 8px solid var(--theme-primary);
+            border-radius: 50%; width: 60px; height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- BARRA DE NAVEGAÇÃO DO USUÁRIO -->
+    <nav class="sticky top-0 z-40" style="background-color: var(--theme-surface);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <h1 class="text-xl font-bold" style="color: var(--theme-primary);">Plataforma Solis</h1>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-300 mr-4">Olá, <strong>{{ user_name }}</strong>!</span>
+                    <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md text-sm transition">
+                        Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="loading-overlay" class="loader-overlay hidden">
+        <div class="spinner"></div>
+        <p class="text-lg font-semibold text-gray-300">A IA está a analisar os seus documentos. Por favor, aguarde...</p>
+    </div>
+
+    <div id="app-container" class="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
+        <!-- SIDEBAR (MENU LATERAL) -->
+        <aside class="sidebar w-full md:w-1/3 md:max-w-sm p-8 flex flex-col">
+            <div class="mb-8 text-center">
+                <!-- LOGO E NOME REMOVIDOS -->
+                <div class="w-24 h-24 mb-6 mx-auto rounded-full flex items-center justify-center" style="background-color: var(--theme-primary);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-white mt-2">Portal de Análise</h1>
+                <p class="text-lg text-gray-400">Envio de Documentos</p>
+            </div>
+            <div class="flex-grow">
+                <label for="student-name" class="block text-sm font-bold text-gray-300 mb-2">Nome Completo</label>
+                <input type="text" id="student-name" class="w-full p-3 rounded-md bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Digite seu nome completo">
+                
+                <label for="course-type" class="block text-sm font-bold text-gray-300 mt-6 mb-2">Tipo de Curso</label>
+                <select id="course-type" class="w-full p-3 rounded-md bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <option value="">Selecione um curso...</option>
+                </select>
+                
+                <button id="check-docs-btn" class="w-full mt-8 p-3 bg-gray-600 text-white font-bold rounded-md hover:bg-gray-500 transition">
+                    🔎 Verificar Documentos
+                </button>
+            </div>
+            <div class="mt-auto">
+                <button id="send-files-btn" class="w-full p-4 btn-accent rounded-md text-lg">
+                    📤 Enviar para Análise
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="flex-1 p-8 flex flex-col">
+            <h2 class="text-3xl font-bold text-gray-300 mb-6">Seus Documentos</h2>
+            <div id="docs-area" class="flex-1 bg-gray-900 p-6 rounded-lg shadow-inner overflow-y-auto docs-area">
+                <div id="docs-list" class="space-y-4">
+                    <div class="text-center text-gray-500 py-16">
+                        <p class="text-lg">Por favor, preencha seu nome e selecione um curso para começar.</p>
+                        <p>Seus documentos pendentes aparecerão aqui.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- ASSISTENTE VIRTUAL (CHAT) -->
+    <div id="assistant-icon" class="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-3xl cursor-pointer shadow-lg">
+        <span>🤖</span>
+    </div>
+    <div id="chat-bubble" class="fixed inset-0 sm:inset-auto sm:bottom-28 sm:right-8 sm:w-96 sm:h-[32rem] rounded-lg shadow-2xl flex flex-col hidden opacity-0 transform sm:translate-y-4">
+        <div class="p-3 flex justify-between items-center rounded-t-lg" style="background-color: var(--theme-primary);">
+            <h3 class="font-bold text-white">Assistente Virtual</h3>
+            <button id="close-chat-btn" class="text-white font-bold text-xl">&times;</button>
+        </div>
+        <div id="chat-area" class="flex-1 p-4 overflow-y-auto min-h-0">
+        </div>
+        <div class="p-3 border-t border-gray-600">
+            <div class="flex space-x-2">
+                <input type="text" id="chat-input" class="flex-1 p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-700 text-white" placeholder="Digite sua mensagem...">
+                <button id="chat-send-btn" class="px-4 py-2 btn-accent rounded-md">Enviar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL DE NOTIFICAÇÕES -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+        <div class="rounded-lg shadow-xl p-8 max-w-md w-full mx-4" style="background-color: var(--theme-surface);">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4"></h3>
+            <div id="modal-body" class="text-gray-300 space-y-3"></div>
+            <button id="modal-close-btn" class="w-full mt-6 p-3 btn-accent font-bold rounded-md">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const criteria = {
+                "1ª Graduação": { 
+                    "RG": {"display_name": "Carteira de Identidade (RG)"}, 
+                    "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"}, 
+                    "HISTORICO_ENSINO_MEDIO": {"display_name": "Histórico do Ensino Médio"}, 
+                    "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio"},
+                    "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "Certidão de Nascimento ou Casamento"}, 
+                    "DOCUMENTO_MILITAR": {"display_name": "Documento Militar (sexo masculino)"}, 
+                    "QUITACAO_ELEITORAL": {"display_name": "Quitação Eleitoral"}, 
+                    "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}, 
+                    "ARQUIVO_UNICO": {"display_name": "OPCIONAL: Enviar todos em um único PDF"} 
+                },
+                "2ª Graduação": { 
+                    "DIPLOMA_GRADUACAO": {"display_name": "Diploma da 1ª Graduação"}, 
+                    "HISTORICO_GRADUACAO": {"display_name": "Histórico da 1ª Graduação"}, 
+                    "RG": {"display_name": "Carteira de Identidade (RG)"}, 
+                    "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"}, 
+                    "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "Certidão de Nascimento ou Casamento"}, 
+                    "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}, 
+                    "HISTORICO_ENSINO_MEDIO": {"display_name": "Histórico do Ensino Médio"},
+                    "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio"},
+                    "ARQUIVO_UNICO": {"display_name": "OPCIONAL: Enviar todos em um único PDF"} 
+                },
+                "Pós-Graduação": { 
+                    "DIPLOMA_GRADUACAO": {"display_name": "Diploma da Graduação"}, 
+                    "HISTORICO_GRADUACAO": {"display_name": "Histórico da Graduação"}, 
+                    "RG": {"display_name": "Carteira de Identidade (RG)"}, 
+                    "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"}, 
+                    "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}, 
+                    "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "CASO OUVER TROCA DE NOME: Certidão de Nascimento, Casamento ou Averbação"}, 
+                    "ARQUIVO_UNICO": {"display_name": "OPCIONAL: Enviar todos em um único PDF"} 
+                },
+                "Cursos Rápidos": { 
+                    "CERTIFICADO_ENSINO_MEDIO": {"display_name": "Certificado de Conclusão do Ensino Médio"}, 
+                    "RG": {"display_name": "Carteira de Identidade (RG)"}, 
+                    "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"}, 
+                    "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}, 
+                    "ARQUIVO_UNICO": {"display_name": "OPCIONAL: Enviar todos em um único PDF"} 
+                }
+            };
+            let selectedFiles = {};
+            let chatHistory = [];
+            const studentNameInput = document.getElementById('student-name');
+            const courseTypeSelect = document.getElementById('course-type');
+            const checkDocsBtn = document.getElementById('check-docs-btn');
+            const sendFilesBtn = document.getElementById('send-files-btn');
+            const docsList = document.getElementById('docs-list');
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            const assistantIcon = document.getElementById('assistant-icon');
+            const chatBubble = document.getElementById('chat-bubble');
+            const closeChatBtn = document.getElementById('close-chat-btn');
+            const chatArea = document.getElementById('chat-area');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+
+            function initialize() {
+                const courseNames = Object.keys(criteria);
+                courseNames.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    courseTypeSelect.appendChild(option);
+                });
+                addMessageToChat("Prezado(a) Aluno(a), seja bem-vindo(a). Como posso auxiliá-lo(a) hoje?", "assistant");
+            }
+
+            function showModal(title, message, isWarning = false) {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = message;
+                modalTitle.className = `text-2xl font-bold mb-4 ${isWarning ? 'text-red-500' : 'text-green-500'}`;
+                modal.classList.remove('hidden');
+            }
+            
+            async function updateDocsList() {
+                const studentName = studentNameInput.value.trim();
+                const courseType = courseTypeSelect.value;
+                if (!studentName || !courseType) {
+                    showModal("Atenção", "<p>Por favor, preencha seu nome e selecione um curso para verificar os documentos necessários.</p>", true);
+                    return;
+                }
+
+                checkDocsBtn.disabled = true;
+                checkDocsBtn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" role="status" aria-label="loading"></span> A verificar...';
+                docsList.innerHTML = `<div class="text-center text-gray-500 py-16"><p>A verificar documentos existentes no servidor...</p></div>`;
+                
+                let existingDocs = [];
+                try {
+                    const response = await fetch('/verificar-documentos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            studentName: studentName,
+                            courseType: courseType 
+                        }),
+                    });
+
+                    if (!response.ok) { 
+                        throw new Error(`Erro do servidor: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    if (data.existing_docs) {
+                        existingDocs = data.existing_docs;
+                    }
+                } catch (error) { 
+                    console.error("Erro ao verificar documentos existentes:", error); 
+                    showModal("Erro de Conexão", "<p>Não foi possível conectar ao servidor. Por favor, tente novamente mais tarde.</p>", true);
+                }
+
+                const requiredDocs = criteria[courseType] || {};
+                docsList.innerHTML = '';
+                selectedFiles = {};
+
+                if (Object.keys(requiredDocs).length === 0) {
+                    docsList.innerHTML = `<div class="text-center text-gray-500 py-16"><p>Nenhum documento necessário para este curso.</p></div>`;
+                }
+                
+                Object.entries(requiredDocs).forEach(([key, info]) => {
+                    const card = document.createElement('div');
+                    card.className = 'card p-4 flex items-center justify-between gap-4';
+                    const isAlreadySubmitted = existingDocs.includes(key);
+                    const statusText = isAlreadySubmitted ? '✔ Documento já entregue' : '● Pendente';
+                    const statusClass = isAlreadySubmitted ? 'status-success' : 'status-pending';
+                    
+                    card.innerHTML = `
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-200">${info.display_name}</p>
+                            <p id="status-${key}" class="text-sm font-medium ${statusClass}">${statusText}</p>
+                        </div>
+                        <label class="bg-gray-600 text-gray-200 font-bold py-2 px-4 rounded-md cursor-pointer hover:bg-gray-500 transition">
+                            📎 Anexar
+                            <input type="file" id="file-${key}" data-key="${key}" class="hidden">
+                        </label>`;
+                    docsList.appendChild(card);
+                });
+                
+                checkDocsBtn.disabled = false;
+                checkDocsBtn.innerHTML = '🔎 Verificar Documentos';
+            }
+
+            function handleFileSelect(event) {
+                const fileInput = event.target;
+                const docKey = fileInput.dataset.key;
+                const statusLabel = document.getElementById(`status-${docKey}`);
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    selectedFiles[docKey] = file;
+                    statusLabel.textContent = `✔ ${file.name}`;
+                    statusLabel.classList.remove('status-pending', 'status-success');
+                    statusLabel.classList.add('status-success');
+                }
+            }
+            
+            function setLoadingState(isLoading) {
+                loadingOverlay.classList.toggle('hidden', !isLoading);
+            }
+
+            async function sendFiles() {
+                const studentName = studentNameInput.value.trim();
+                const courseType = courseTypeSelect.value;
+                if (!studentName || Object.keys(selectedFiles).length === 0) {
+                    showModal("Atenção", "<p>Preencha seu nome e anexe pelo menos um documento antes de enviar.</p>", true);
+                    return;
+                }
+                setLoadingState(true);
+                const formData = new FormData();
+                formData.append('studentName', studentName);
+                formData.append('courseType', courseType);
+                for (const [docKey, file] of Object.entries(selectedFiles)) {
+                    formData.append('files', file, `file-${docKey}-${file.name}`);
+                }
+                try {
+                    const response = await fetch('/analisar', { method: 'POST', body: formData });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erro do servidor: ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    setLoadingState(false); 
+
+                    if (result.success) {
+                        showModal("Análise Concluída", `<p>Olá ${studentName.split(' ')[0]}! Tudo bem?!</p><p class="mt-2">Recebemos seus documentos com sucesso!</p><p class="mt-4 text-sm text-gray-500">*** Em caso de dúvida, entre em contato com nossa Central de Atendimento. ***</p><p class="mt-2 font-semibold">Cordialmente,<br>Equipe de Suporte.</p>`, false);
+                    } else {
+                        const pendenciasList = result.rejected.map(item => `<li><strong>${item.display_name}:</strong> ${item.reason}</li>`).join('');
+                        showModal("Análise Concluída - Com Pendências", `<p>Olá ${studentName.split(' ')[0]}! Tudo bem?!</p><p class="mt-2">Recebemos seus documentos, mas alguns ficaram pendentes.</p><div class="mt-4 p-3 bg-red-900 bg-opacity-40 rounded-md"><h4 class="font-bold text-red-400">Pendências:</h4><ul class="list-disc list-inside text-red-400">${pendenciasList}</ul></div><p class="mt-4 text-sm text-gray-500">*** Em caso de dúvida, entre em contato. ***</p><p class="mt-2 font-semibold">Cordialmente,<br>Equipe de Suporte.</p>`, true);
+                    }
+                } catch (error) {
+                    setLoadingState(false); 
+                    console.error("Erro ao conectar com o servidor:", error);
+                    showModal("Erro de Conexão", "<p>Não foi possível conectar ao servidor de análise. Por favor, tente novamente mais tarde.</p>", true);
+                }
+            }
+            
+            function toggleChat() {
+                if (chatBubble.classList.contains('hidden')) {
+                    chatBubble.classList.remove('hidden');
+                    setTimeout(() => chatBubble.classList.remove('opacity-0', 'sm:translate-y-4'), 10);
+                } else {
+                    chatBubble.classList.add('opacity-0', 'sm:translate-y-4');
+                    setTimeout(() => chatBubble.classList.add('hidden'), 300);
+                }
+            }
+
+            function addMessageToChat(message, sender) {
+                chatHistory.push({ role: sender, parts: [{text: message}] });
+                const messageWrapper = document.createElement('div');
+                messageWrapper.className = `flex flex-col mb-4 ${sender === 'user' ? 'items-end' : 'items-start'}`;
+                const messageBubble = document.createElement('div');
+                messageBubble.className = `p-3 rounded-lg max-w-xs whitespace-pre-wrap ${sender === 'user' ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-200'}`;
+                const senderName = document.createElement('p');
+                senderName.className = 'font-bold text-sm mb-1';
+                senderName.textContent = sender === 'user' ? 'Você' : 'Assistente Virtual';
+                const messageText = document.createElement('p');
+                messageText.textContent = message;
+                messageBubble.appendChild(senderName);
+                messageBubble.appendChild(messageText);
+                messageWrapper.appendChild(messageBubble); 
+                chatArea.appendChild(messageWrapper);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function showTypingIndicator() {
+                if (document.getElementById('typing-indicator')) return;
+                const indicatorWrapper = document.createElement('div');
+                indicatorWrapper.id = 'typing-indicator';
+                indicatorWrapper.className = 'flex flex-col mb-4 items-start';
+                indicatorWrapper.innerHTML = `
+                    <div class="p-3 rounded-lg bg-gray-700">
+                        <div class="flex items-center space-x-1.5">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.3s;"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.15s;"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        </div>
+                    </div>
+                `;
+                chatArea.appendChild(indicatorWrapper);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function hideTypingIndicator() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+
+            async function sendChatMessage() {
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+                addMessageToChat(userMessage, "user");
+                chatInput.value = '';
+                chatSendBtn.disabled = true;
+
+                showTypingIndicator();
+
+                try {
+                    const response = await fetch('/ask-assistant', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            question: userMessage,
+                            chat_history: chatHistory,
+                            studentName: studentNameInput.value.trim(),
+                            courseType: courseTypeSelect.value
+                        }),
+                    });
+                    const data = await response.json();
+                    hideTypingIndicator();
+                    addMessageToChat(data.answer, "assistant");
+                } catch (error) {
+                    console.error("Erro ao comunicar com o assistente:", error);
+                    hideTypingIndicator();
+                    addMessageToChat("Desculpe, não consegui conectar ao meu cérebro. Tente novamente mais tarde.", "assistant");
+                } finally {
+                    chatSendBtn.disabled = false;
+                }
+            }
+
+            checkDocsBtn.addEventListener('click', updateDocsList);
+            sendFilesBtn.addEventListener('click', sendFiles);
+            docsList.addEventListener('change', (event) => { if (event.target.type === 'file') handleFileSelect(event); });
+            
+            assistantIcon.addEventListener('click', toggleChat);
+            closeChatBtn.addEventListener('click', toggleChat);
+            chatSendBtn.addEventListener('click', sendChatMessage);
+            chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+
+            modalCloseBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                if (modalTitle.textContent.includes('Análise Concluída')) {
+                    updateDocsList(); 
+                }
+            });
+
+            initialize();
+        });
+    </script>
+</body>
+</html>
