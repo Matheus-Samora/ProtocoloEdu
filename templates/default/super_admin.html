@@ -1878,7 +1878,9 @@
                 const limit = sub.monthly_limit || 0;
                 const usage = sub.current_month_usage || 0;
                 const percent = limit > 0 ? Math.min(Math.round((usage / limit) * 100), 100) : 0;
-                const portalUrl = `https://protocoloedu.netlify.app/portal/${inst.id}`;
+                const isLocalFile = window.location.protocol === 'file:';
+                const localHref = isLocalFile ? `index.html?inst=${inst.id}` : `/portal/${inst.id}`;
+                const portalUrl = isLocalFile ? `index.html?inst=${inst.id}` : `https://protocoloedu.netlify.app/portal/${inst.id}`;
 
                 return `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
@@ -1890,8 +1892,8 @@
                         <!-- Link Único do Portal do Aluno -->
                         <td class="p-3.5">
                             <div class="flex items-center gap-1.5">
-                                <a href="/portal/${inst.id}" target="_blank" class="text-blue-500 dark:text-blue-400 font-mono text-xs font-bold hover:underline flex items-center gap-1">
-                                    /portal/${escapeHtml(inst.id)} <i class="ph-bold ph-arrow-square-out text-xs"></i>
+                                <a href="${localHref}" target="_blank" class="text-blue-500 dark:text-blue-400 font-mono text-xs font-bold hover:underline flex items-center gap-1">
+                                    ${isLocalFile ? 'index.html?inst=' + escapeHtml(inst.id) : '/portal/' + escapeHtml(inst.id)} <i class="ph-bold ph-arrow-square-out text-xs"></i>
                                 </a>
                                 <button onclick="copyTextToClipboard('${portalUrl}', 'Link do Portal do Aluno copiado!')" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-500 dark:text-slate-300 transition cursor-pointer" title="Copiar link do portal">
                                     <i class="ph-bold ph-copy text-xs"></i>

@@ -194,6 +194,7 @@ def student_portal_route(institution_id: str):
 
 
 @app.route('/')
+@app.route('/index.html')
 def root_index():
     """Redireciona para o portal padrão da instituição ativa."""
     return redirect(f"/portal/{g.tenant_id}")
@@ -615,6 +616,8 @@ def sync_erp_endpoint():
 # ==============================================================================
 
 @app.route('/super-admin')
+@app.route('/superadmin')
+@app.route('/superadmin.html')
 @app.route('/master-admin')
 def super_admin_page():
     """Painel Master do Dono do Aplicativo para controle de planos e clientes."""

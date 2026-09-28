@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROTOCOLO IMES - Portal do Aluno</title>
+    <title>Portal de Envio e Protocolo de Documentos - ProtocoloEdu</title>
     
-    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='50' fill='%230a2351'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='70' fill='%23fdb913'%3eI%3c/text%3e%3c/svg%3e">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS Oficial via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Plus Jakarta Sans (Mais moderna que Inter para dashboards) -->
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Phosphor Icons (Ícones mais limpos e modernos) -->
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <script>
@@ -25,6 +25,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     colors: {
                         imes: {
@@ -40,8 +41,8 @@
                         }
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
                         'float': 'float 3s ease-in-out infinite',
                     },
                     keyframes: {
@@ -50,12 +51,12 @@
                             '100%': { opacity: '1' },
                         },
                         slideUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '0%': { opacity: '0', transform: 'translateY(16px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
+                            '50%': { transform: 'translateY(-8px)' },
                         }
                     }
                 }
@@ -64,27 +65,27 @@
     </script>
 
     <style>
-        /* --- ESTILOS GERAIS E MODERNOS --- */
         :root {
             --glass-border: rgba(255, 255, 255, 0.2);
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
-            --shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.15);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.06);
+            --shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.12);
         }
 
         body {
             background-color: #f8fafc;
             transition: background-color 0.4s ease, color 0.4s ease;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* Dark Mode Variables */
+        /* Dark Mode */
         body.dark-mode {
-            background-color: #0f172a; /* Slate 900 */
+            background-color: #0f172a;
             --glass-border: rgba(255, 255, 255, 0.05);
-            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-bg: rgba(15, 23, 42, 0.7);
         }
 
-        /* Glassmorphism Classes */
         .glass-panel {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -96,7 +97,6 @@
             background: linear-gradient(145deg, #0a2351 0%, #051433 100%);
         }
 
-        /* Scrollbar Personalizada */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -105,7 +105,6 @@
         body.dark-mode .custom-scroll::-webkit-scrollbar-thumb { background: #334155; }
         body.dark-mode .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Card Moderno */
         .modern-card {
             background: white;
             border-radius: 1rem;
@@ -121,22 +120,21 @@
         }
 
         .modern-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-hover);
             border-color: #fdb913;
         }
 
-        /* Inputs Modernos */
         .input-group { position: relative; }
         
         .modern-input {
             width: 100%;
-            padding: 1rem 1rem 1rem 3rem; /* Espaço para ícone */
+            padding: 0.9rem 1rem 0.9rem 2.8rem;
             border-radius: 0.75rem;
             background-color: #f1f5f9;
             border: 2px solid transparent;
             transition: all 0.3s ease;
-            font-weight: 500;
+            font-weight: 600;
         }
         
         body.dark-mode .modern-input {
@@ -149,13 +147,13 @@
             outline: none;
             background-color: white;
             border-color: #0a2351;
-            box-shadow: 0 0 0 4px rgba(10, 35, 81, 0.1);
+            box-shadow: 0 0 0 4px rgba(10, 35, 81, 0.12);
         }
         
         body.dark-mode .modern-input:focus {
             background-color: #0f172a;
             border-color: #fdb913;
-            box-shadow: 0 0 0 4px rgba(253, 185, 19, 0.1);
+            box-shadow: 0 0 0 4px rgba(253, 185, 19, 0.15);
         }
 
         .input-icon {
@@ -172,7 +170,6 @@
         .modern-input:focus + .input-icon { color: #0a2351; }
         body.dark-mode .modern-input:focus + .input-icon { color: #fdb913; }
 
-        /* Buttons */
         .btn-primary {
             background: linear-gradient(135deg, #0a2351 0%, #153a7a 100%);
             color: white;
@@ -194,12 +191,12 @@
         }
         .btn-gold:hover:not(:disabled) {
             transform: translateY(-2px);
-            filter: brightness(1.1);
+            filter: brightness(1.08);
             box-shadow: 0 8px 16px rgba(253, 185, 19, 0.4);
         }
         .btn-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; filter: grayscale(0.5); }
 
-        /* Status Badges */
+        /* Badges */
         .badge {
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
@@ -207,39 +204,42 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
         }
         .badge-pending { background-color: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
         .badge-success { background-color: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+        .badge-review  { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
         
         body.dark-mode .badge-pending { background-color: #451a03; color: #fbbf24; border-color: #92400e; }
         body.dark-mode .badge-success { background-color: #064e3b; color: #4ade80; border-color: #065f46; }
+        body.dark-mode .badge-review  { background-color: #172554; color: #60a5fa; border-color: #1e3a8a; }
 
-        /* Loader Overlay */
         .loader-overlay {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
         }
-        body.dark-mode .loader-overlay { background: rgba(15, 23, 42, 0.9); }
+        body.dark-mode .loader-overlay { background: rgba(15, 23, 42, 0.96); }
 
-        /* 3D Ring Loader Animation Styles */
+        /* Loader 3D Rings Orbitais */
         #ring-container {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 150px;
-            height: 150px;
+            width: 170px;
+            height: 170px;
             margin-bottom: 2rem;
             transform-style: preserve-3d;
             perspective: 1000px;
         }
         .ring {
-            width: 150px;
-            height: 150px;
+            width: 170px;
+            height: 170px;
             border: 4px solid transparent;
             border-radius: 50%;
             position: absolute;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
         }
         .ring:nth-child(1) { border-bottom: 8px solid #fdb913; animation: rotate1 2s linear infinite; }
         .ring:nth-child(2) { border-bottom: 8px solid #0a2351; animation: rotate2 2s linear infinite; }
@@ -247,198 +247,360 @@
         .ring:nth-child(4) { border-bottom: 8px solid #0a2351; animation: rotate4 2s linear infinite; }
         
         body.dark-mode .ring:nth-child(2),
-        body.dark-mode .ring:nth-child(4) { border-bottom-color: #3b82f6; box-shadow: 0 0 15px #3b82f6; }
+        body.dark-mode .ring:nth-child(4) { border-bottom-color: #3b82f6; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         body.dark-mode .ring:nth-child(1),
-        body.dark-mode .ring:nth-child(3) { box-shadow: 0 0 15px #fdb913; }
+        body.dark-mode .ring:nth-child(3) { box-shadow: 0 0 15px rgba(253,185,19,0.3); }
 
         @keyframes rotate1 { from { transform: rotateX(50deg) rotateZ(110deg); } to { transform: rotateX(50deg) rotateZ(470deg); } }
         @keyframes rotate2 { from { transform: rotateX(20deg) rotateY(50deg) rotateZ(20deg); } to { transform: rotateX(20deg) rotateY(50deg) rotateZ(380deg); } }
         @keyframes rotate3 { from { transform: rotateX(40deg) rotateY(130deg) rotateZ(450deg); } to { transform: rotateX(40deg) rotateY(130deg) rotateZ(90deg); } }
         @keyframes rotate4 { from { transform: rotateX(70deg) rotateZ(270deg); } to { transform: rotateX(70deg) rotateZ(630deg); } }
 
-        /* Switch CSS (Lua/Sol) - Mantido e ajustado */
-        .switch { font-size: 10px; position: relative; display: inline-block; width: 4em; height: 2.2em; border-radius: 30px; margin-top: 0.5rem; }
+        /* Switch Theme */
+        .switch { font-size: 10px; position: relative; display: inline-block; width: 4.4em; height: 2.3em; border-radius: 30px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1e293b; transition: 0.4s; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-        .slider:before { position: absolute; content: ""; height: 1.4em; width: 1.4em; border-radius: 50%; left: 0.4em; bottom: 0.35em; transition: 0.4s; background: white; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1e293b; transition: 0.4s; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); overflow: hidden; }
+        .slider:before { position: absolute; content: ""; height: 1.4em; width: 1.4em; border-radius: 50%; left: 0.45em; bottom: 0.4em; transition: 0.4s; background: white; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
         input:checked + .slider { background-color: #3b82f6; }
-        input:checked + .slider:before { transform: translateX(1.8em); background: #fdb913; box-shadow: 0 0 10px #fdb913; }
+        input:checked + .slider:before { transform: translateX(2.1em); background: #fdb913; box-shadow: 0 0 8px #fdb913; }
+        
+        /* Moldura do Scanner de Câmera */
+        .camera-scanner-frame {
+            position: relative;
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.78);
+            border-radius: 16px;
+        }
+        .scan-corner {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-color: #fdb913;
+        }
+        .scan-corner-tl { top: -2px; left: -2px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 12px; }
+        .scan-corner-tr { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 12px; }
+        .scan-corner-bl { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 12px; }
+        .scan-corner-br { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 12px; }
+
+        @keyframes scanLaser {
+            0% { top: 4%; opacity: 0.8; }
+            50% { top: 96%; opacity: 1; }
+            100% { top: 4%; opacity: 0.8; }
+        }
+        .scan-laser-line {
+            position: absolute;
+            left: 5%;
+            right: 5%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #fdb913, #f59e0b, transparent);
+            box-shadow: 0 0 10px #fdb913;
+            animation: scanLaser 3s infinite ease-in-out;
+        }
+
+        #assistant-icon.hidden { display: none !important; }
+
+        @media (max-width: 767px) {
+            #screen-2 { overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+            #screen-2-grid { overflow: visible !important; }
+            aside { overflow: visible !important; border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important; }
+            .dark aside { border-bottom: 1px solid rgba(51, 65, 85, 0.8) !important; }
+            #docs-area { overflow: visible !important; }
+            #send-files-container {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                background: rgba(255, 255, 255, 0.96) !important;
+                backdrop-filter: blur(12px) !important;
+                -webkit-backdrop-filter: blur(12px) !important;
+                border-top: 1px solid rgba(226, 232, 240, 0.9) !important;
+                padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+                margin-top: 0 !important;
+                z-index: 40 !important;
+                box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.08) !important;
+            }
+            .dark #send-files-container {
+                background: rgba(15, 23, 42, 0.96) !important;
+                border-top: 1px solid rgba(51, 65, 85, 0.8) !important;
+                box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.25) !important;
+            }
+            #assistant-icon {
+                bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important;
+                right: 1.25rem !important;
+            }
+        }
     </style>
+    <!-- FontAwesome para ícones complementares -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client v2 Oficial -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://phipudvmceitxcajggus.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_D7czHMQRr9f2u1YfPi-_lA_HZOVzqAw";
+        let supabaseClient = null;
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log("[Supabase] Cliente conectado em:", SUPABASE_URL);
+        } catch(e) {
+            console.warn("[Supabase] Modo offline:", e);
+        }
+    </script>
+
 </head>
-<body class="antialiased text-slate-600 dark:text-slate-300">
-
-    <!-- OVERLAY DE ANÁLISE (LOADER) -->
-    <div id="loading-overlay" class="loader-overlay fixed inset-0 hidden z-[100] flex flex-col justify-center items-center transition-opacity duration-300">
-        <div id="ring-container">
-            <div class="ring"></div>
-            <div class="ring"></div>
-            <div class="ring"></div>
-            <div class="ring"></div>
-            <div id="loading-step-text" class="absolute text-imes-blue dark:text-white font-black text-sm uppercase tracking-widest animate-pulse">Iniciando</div>
-        </div>
-        
-        <div class="text-center w-full max-w-sm px-6 z-10">
-            <h3 class="text-xl font-bold text-imes-blue dark:text-white mb-2">Analisando Documentos</h3>
-            <p id="loading-doc-name" class="text-sm font-semibold text-imes-gold mb-4 truncate w-full h-6">Preparando...</p>
-            
-            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden shadow-inner">
-                <div id="loading-progress-bar" class="bg-gradient-to-r from-imes-blue to-blue-500 h-3 rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]" style="width: 0%"></div>
-            </div>
-            <p id="loading-percentage" class="text-xs text-slate-500 dark:text-slate-400 mt-2 text-right font-mono">0%</p>
-        </div>
-    </div>
-
+<body class="antialiased text-slate-700 dark:text-slate-300">
     <!-- MAIN APP CONTAINER -->
-    <div id="app-container" class="flex flex-col md:flex-row h-[100dvh] overflow-hidden">
+    <div id="app-container" class="min-h-[100dvh] w-full overflow-hidden flex flex-col">
         
-        <!-- SIDEBAR -->
-        <aside class="sidebar-gradient w-full md:w-[400px] p-6 md:p-8 flex flex-col flex-shrink-0 md:h-full relative z-20 shadow-2xl overflow-y-auto custom-scroll text-white">
+        <!-- TELA 1: IDENTIFICAÇÃO E SELEÇÃO -->
+        <div id="screen-1" class="flex flex-col items-center justify-start sm:justify-center min-h-[100dvh] w-full px-4 py-6 sm:py-10 relative overflow-y-auto custom-scroll bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 transition-colors duration-300">
+            <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-72 h-72 bg-amber-400/5 rounded-full blur-3xl pointer-events-none"></div>
             
-            <!-- Logo Area -->
-            <div class="flex flex-row md:flex-col items-center gap-4 md:gap-6 mb-8 md:mb-10">
-                <div class="relative group">
-                    <div class="absolute -inset-1 bg-gradient-to-r from-imes-gold to-orange-400 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                    <img src="/static/images/logo-imes.jpg" alt="Logo IMES" class="relative w-16 h-16 md:w-28 md:h-28 rounded-full object-cover border-4 border-white/10 shadow-2xl" onerror="this.onerror=null;this.src='https://placehold.co/96x96/0a2351/fdb913?text=IMES';">
-                </div>
-                
-                <div class="flex-1 md:text-center">
-                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">Faculdade IMES</h1>
-                    <p class="text-blue-200 text-sm font-medium">Portal Acadêmico Inteligente</p>
-                </div>
-
-                <!-- Theme Switch (Mobile: Right aligned / Desktop: Center below text) -->
-                <div class="ml-auto md:ml-0 md:mt-2">
-                    <label class="switch" title="Alternar Tema">
-                        <input checked="true" id="theme-toggle" type="checkbox" />
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            
-            <!-- Sidebar Content -->
-            <div class="flex-1 space-y-6">
-                
-                <!-- Buscador de Aluno -->
-                <div id="student-search-container" class="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-lg">
-                    <div id="student-cpf-container">
-                        <label for="student-cpf" class="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-2">Identificação do Aluno</label>
-                        <div class="input-group">
-                            <input type="tel" id="student-cpf" class="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-300/50 focus:outline-none focus:bg-white/20 focus:border-imes-gold transition-all" placeholder="CPF do Aluno" maxlength="14">
-                            <i class="ph ph-identification-card absolute left-3 top-1/2 -translate-y-1/2 text-blue-300 text-lg"></i>
-                            
-                            <button id="search-cpf-btn" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-imes-gold text-imes-blue rounded-lg hover:bg-white hover:scale-105 transition-all shadow-lg">
-                                <i id="search-cpf-btn-icon" class="ph-bold ph-magnifying-glass"></i>
-                                <div id="search-cpf-btn-loader" class="hidden w-4 h-4 border-2 border-imes-blue border-t-transparent rounded-full animate-spin"></div>
-                            </button>
+            <!-- Stepper Institucional de 3 Etapas -->
+            <div class="w-full max-w-[460px] mb-3 sm:mb-4 relative z-10 animate-fade-in">
+                <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400 px-1">
+                        <div class="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-extrabold">
+                            <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] shadow-sm">1</span>
+                            <span>Identificação</span>
                         </div>
-                    </div>
-                    
-                    <div id="student-name-display-container" class="hidden animate-fade-in">
-                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-2">Aluno Identificado</label>
-                        <div class="flex items-center gap-2 bg-white/20 p-2 rounded-xl border border-white/10">
-                            <div class="w-10 h-10 rounded-lg bg-imes-gold flex items-center justify-center text-imes-blue font-bold text-lg shadow-inner flex-shrink-0">
-                                <i class="ph-fill ph-student"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p id="student-name-display" class="text-white font-semibold text-sm truncate leading-tight"></p>
-                                <p class="text-blue-200 text-xs">Acesso validado</p>
-                            </div>
-                            <button id="change-student-btn" class="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition" title="Trocar Aluno">
-                                <i class="ph-bold ph-arrows-left-right"></i>
-                            </button>
+                        <div class="h-0.5 w-6 sm:w-10 bg-slate-200 dark:bg-slate-700"></div>
+                        <div class="flex items-center gap-1.5 text-slate-400">
+                            <span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] border border-slate-300 dark:border-slate-700">2</span>
+                            <span>Documentos</span>
+                        </div>
+                        <div class="h-0.5 w-6 sm:w-10 bg-slate-200 dark:bg-slate-700"></div>
+                        <div class="flex items-center gap-1.5 text-slate-400">
+                            <span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] border border-slate-300 dark:border-slate-700">3</span>
+                            <span>Protocolo</span>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Seletor de Curso -->
-                <div>
-                    <label for="course-type" class="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-2">Selecione o Serviço</label>
-                    <div class="relative">
-                        <select id="course-type" class="w-full pl-10 pr-10 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:bg-white/20 focus:border-imes-gold appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all" disabled>
-                            <option class="text-gray-800" value="">Aguardando identificação...</option>
-                        </select>
-                        <i class="ph ph-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-blue-300 text-lg"></i>
-                        <i class="ph-bold ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-blue-300 pointer-events-none"></i>
+            </div>
+
+            <div class="w-full max-w-[460px] my-auto bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 sm:p-8 relative z-10 animate-fade-in transition-all">
+                <!-- Logo da Instituição Dinâmica -->
+                <div class="flex flex-col items-center mb-6 sm:mb-8">
+                    <!-- Brasão / Logotipo Institucional Dinâmico (Sem logo IMES estático) -->
+                    <div id="portal-inst-logo-container" class="w-20 h-20 sm:w-24 sm:h-24 mb-3 sm:mb-4 rounded-full flex items-center justify-center border-4 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl overflow-hidden relative">
+                        <img id="portal-inst-logo" 
+                             src="" 
+                             alt="Logomarca Institucional" 
+                             class="w-full h-full object-contain p-2 hidden">
+                        <div id="portal-inst-logo-fallback" class="w-full h-full flex flex-col items-center justify-center text-slate-700 dark:text-slate-200 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+                            <i class="ph-bold ph-graduation-cap text-3xl sm:text-4xl text-blue-600 dark:text-amber-400"></i>
+                        </div>
+                    </div>
+
+                    <h1 id="portal-inst-title" class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight text-center">Portal do Aluno</h1>
+                    <p id="portal-inst-subtitle" class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium text-center">Secretaria Acadêmica Digital • Envio e Validação</p>
+
+                    <!-- Theme Switcher Apenas (SEM NENHUM SELETOR DE INSTITUIÇÃO) -->
+                    <div class="mt-3 sm:mt-4 flex items-center justify-center">
+                        <label class="switch" title="Alternar Tema Claro/Escuro">
+                            <input checked="true" id="theme-toggle" type="checkbox" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-4 sm:space-y-5">
+                    <!-- CPF do Aluno -->
+                    <div id="student-search-container" class="space-y-3 sm:space-y-4">
+                        <div id="student-cpf-container">
+                            <label for="student-cpf"  class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">CPF do Aluno</label>
+                            <div class="input-group">
+                                <input type="tel" id="student-cpf" class="w-full pl-10 pr-12 py-3 sm:py-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:bg-white focus:border-imes-blue dark:focus:border-imes-gold transition-all text-base sm:text-sm font-semibold min-h-[48px]" placeholder="000.000.000-00" maxlength="14">
+                                <i class="ph ph-identification-card absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"></i>
+                                
+                                <button id="search-cpf-btn" class="w-9 h-9 sm:w-10 sm:h-10 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 flex items-center justify-center bg-imes-gold text-imes-blue rounded-lg hover:bg-imes-goldHover active:scale-95 transition-all shadow-md" aria-label="Buscar Aluno">
+                                    <i id="search-cpf-btn-icon" class="ph-bold ph-magnifying-glass text-base pointer-events-none"></i>
+                                    <div id="search-cpf-btn-loader" class="hidden w-4 h-4 border-2 border-imes-blue border-t-transparent rounded-full animate-spin pointer-events-none"></div>
+                                </button>
+                            </div>
+                            <p id="cpf-error-message" class="hidden text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1.5"><i class="ph-bold ph-warning-circle text-sm"></i> <span>Aluno não encontrado na base de dados.</span></p>
+                        </div>
+
+                        <div id="student-name-display-container" class="hidden animate-fade-in">
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Aluno Identificado</label>
+                            <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div class="w-10 h-10 rounded-lg bg-imes-gold flex items-center justify-center text-imes-blue font-bold text-lg shadow-inner flex-shrink-0">
+                                    <i class="ph-fill ph-student"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p id="student-name-display" class="text-slate-800 dark:text-white font-bold text-sm truncate leading-tight"></p>
+                                    <p class="text-slate-400 dark:text-slate-500 text-xs">Identificado no Sistema Institucional</p>
+                                </div>
+                                <button id="change-student-btn" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition active:scale-95 flex-shrink-0" title="Mudar Aluno">
+                                    <i class="ph-bold ph-arrows-left-right text-base pointer-events-none"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Curso -->
+                    <div>
+                        <label for="course-type" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">Tipo de Curso</label>
+                        <div class="relative">
+                            <select id="course-type" class="w-full pl-10 pr-10 py-3 sm:py-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white focus:outline-none focus:bg-white focus:border-imes-blue dark:focus:border-imes-gold appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all text-base sm:text-sm font-semibold truncate min-h-[48px]" disabled>
+                                <option value="">Aguardando identificação...</option>
+                            </select>
+                            <i class="ph ph-graduation-cap absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"></i>
+                            <i class="ph-bold ph-caret-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- Botão Verificar Documentos -->
+                    <div class="pt-2 sm:pt-4">
+                        <button id="check-docs-btn" class="w-full min-h-[50px] py-3.5 sm:py-4 px-4 bg-imes-blue hover:bg-imes-blueLight text-white dark:bg-imes-gold dark:text-imes-blue dark:hover:bg-imes-goldHover font-bold rounded-xl transition-all flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg text-base" disabled>
+                            <i class="ph-bold ph-list-checks text-xl group-hover:scale-110 transition-transform"></i>
+                            <span id="check-docs-btn-text">Verificar Documentos</span>
+                        </button>
                     </div>
                 </div>
                 
-                <!-- Actions -->
-                <div class="pt-4 space-y-3">
-                    <button id="check-docs-btn" class="w-full py-3.5 px-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/20 hover:border-white/40 transition-all flex items-center justify-center gap-2 group active:scale-95 disabled:opacity-50 disabled:pointer-events-none" disabled>
-                        <i class="ph-bold ph-list-checks text-xl text-imes-gold group-hover:scale-110 transition-transform"></i>
-                        <span id="check-docs-btn-text">Verificar Pendências</span>
-                    </button>
-                    
-                    <button id="send-files-btn" class="w-full py-4 px-4 btn-gold rounded-xl flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none" disabled>
-                        <i class="ph-bold ph-paper-plane-right text-xl"></i>
-                        <span>Enviar para Análise</span>
-                    </button>
+                <div class="mt-6 sm:mt-8 text-center text-xs text-slate-400 dark:text-slate-500">
+                    <span id="portal-footer-copy">&copy; 2026 ProtocoloEdu. Todos os direitos reservados.</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Footer Sidebar -->
-            <div class="mt-8 text-center md:text-left text-xs text-blue-300/60 border-t border-white/10 pt-4">
-                &copy; 2024 Faculdade IMES. Todos os direitos reservados.
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT -->
-        <main class="flex-1 flex flex-col relative bg-slate-50 dark:bg-[#0f172a] overflow-hidden transition-colors duration-300">
-            <!-- Header Mobile/Desktop -->
-            <header class="w-full p-6 flex justify-between items-center z-10">
-                <div class="flex flex-col">
-                    <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Painel de Documentos</h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie seus envios e status de análise</p>
+        <!-- TELA 2: LISTAGEM E CONTROLES DO PAINEL -->
+        <div id="screen-2" class="hidden flex flex-col h-[100dvh] w-full overflow-hidden bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300">
+            <!-- Header -->
+            <header class="w-full p-3.5 sm:p-4 md:p-6 bg-white dark:bg-[#1e293b] border-b border-slate-200 dark:border-slate-700 flex justify-between items-center z-10 shadow-sm flex-shrink-0 gap-3">
+                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <button id="back-to-setup-btn" class="flex items-center justify-center w-10 h-10 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl transition shadow-inner active:scale-95 flex-shrink-0" title="Voltar para a tela inicial">
+                        <i class="ph-bold ph-arrow-left text-lg"></i>
+                    </button>
+                    <div class="flex flex-col min-w-0">
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight leading-tight truncate">Painel de Documentos</h2>
+                        <p class="hidden xs:block text-xs md:text-sm text-slate-500 dark:text-slate-400 truncate">Verifique os documentos entregues e envie novas pendências</p>
+                    </div>
                 </div>
 
-                <div class="hidden md:flex items-center gap-4 bg-white dark:bg-slate-800 p-2 pl-4 pr-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-700">
-                    <span id="user-greeting" class="text-sm font-medium text-slate-600 dark:text-slate-300">Olá, <strong>Visitante</strong></span>
-                    <a href="/logout" class="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white p-2 rounded-full transition-all duration-300" title="Sair do Sistema">
-                        <i class="ph-bold ph-sign-out text-lg"></i>
-                    </a>
+                <div class="hidden lg:flex items-center gap-2 text-xs font-bold bg-slate-100 dark:bg-slate-900 py-1.5 px-3.5 rounded-full border border-slate-200 dark:border-slate-800">
+                    <span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><i class="ph-bold ph-check"></i> 1. Identificação</span>
+                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                    <span class="text-blue-600 dark:text-blue-400 font-extrabold flex items-center gap-1.5"><span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">2</span> 2. Anexo de Documentos</span>
+                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                    <span class="text-slate-400 flex items-center gap-1.5"><span class="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center text-[10px]">3</span> 3. Protocolo</span>
                 </div>
-                
-                <!-- Mobile Logout -->
-                <a href="/logout" class="md:hidden text-red-500 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    <i class="ph-bold ph-sign-out text-xl"></i>
-                </a>
+
+                <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 py-1.5 px-3 sm:py-2 sm:px-4 rounded-full border border-slate-200 dark:border-slate-800 flex-shrink-0">
+                    <span id="user-greeting" class="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">Olá, <strong>Estudante</strong>!</span>
+                </div>
             </header>
 
-            <!-- Content Area -->
-            <div id="docs-area" class="flex-1 px-4 md:px-8 pb-8 overflow-y-auto custom-scroll relative">
+            <!-- Grid Content Panel -->
+            <div id="screen-2-grid" class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+                <div class="absolute inset-0 opacity-[0.015] pointer-events-none" style="background-image: radial-gradient(#0a2351 1px, transparent 1px); background-size: 24px 24px;"></div>
                 
-                <!-- Background Pattern -->
-                <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#0a2351 1px, transparent 1px); background-size: 24px 24px;"></div>
-
-                <div id="docs-list" class="max-w-5xl mx-auto space-y-4 pb-24 md:pb-0 relative z-10">
-                    <!-- Empty State -->
-                    <div class="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in opacity-50">
-                        <div class="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                            <i class="ph-duotone ph-files text-4xl text-slate-400"></i>
+                <!-- Summary Sidebar (Left Column) -->
+                <aside class="w-full md:w-[320px] p-6 bg-white dark:bg-[#1e293b] border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 flex flex-col flex-shrink-0 overflow-y-auto custom-scroll z-10">
+                    <div class="space-y-6 flex-grow">
+                        <!-- Info Card -->
+                        <div class="bg-slate-50 dark:bg-[#0f172a] p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Aluno</h3>
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 rounded-xl bg-imes-blue text-white dark:bg-imes-gold dark:text-imes-blue flex items-center justify-center font-bold text-lg shadow-inner">
+                                    <i class="ph-fill ph-student"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p id="dashboard-student-name" class="text-slate-800 dark:text-white font-bold text-sm truncate leading-tight"></p>
+                                    <p id="dashboard-student-cpf" class="text-slate-400 dark:text-slate-500 text-xs font-mono font-bold"></p>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+                                <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Curso Selecionado</h3>
+                                <p id="dashboard-course-name" class="text-slate-700 dark:text-slate-300 font-semibold text-sm truncate"></p>
+                            </div>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">Nenhum documento selecionado</h3>
-                        <p class="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Identifique-se na barra lateral e selecione o curso para visualizar suas pendências.</p>
+
+                        <!-- Progress Analytics -->
+                        <div class="bg-slate-50 dark:bg-[#0f172a] p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Resumo de Envio</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs font-semibold">
+                                    <span class="text-slate-500 dark:text-slate-400">Progresso</span>
+                                    <span id="summary-percentage-text" class="text-slate-800 dark:text-white font-mono font-bold">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                    <div id="summary-progress-bar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-2 font-semibold">
+                                    <span id="summary-delivered-count">0 entregues</span>
+                                    <span id="summary-pending-count">0 pendentes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botão de Upload Principal -->
+                    <div id="send-files-container" class="pt-6 border-t border-slate-200 dark:border-slate-700 mt-6 flex-shrink-0">
+                        <button id="send-files-btn" class="w-full py-4 px-4 btn-gold rounded-xl flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none text-base cursor-pointer" disabled>
+                            <i class="ph-bold ph-paper-plane-right text-xl"></i>
+                            <span>Enviar para Análise</span>
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Checklist Area (Right Column) -->
+                <div id="docs-area" class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto custom-scroll relative">
+                    <div class="max-w-4xl mx-auto space-y-4 pb-36 md:pb-8">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 id="docs-title" class="text-lg font-bold text-slate-800 dark:text-white">Seus Documentos Exigidos</h3>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Fotos nítidas ou arquivos PDF</span>
+                        </div>
+
+                        <!-- Feedback de Sucesso no Envio -->
+                        <div id="submission-result" class="hidden p-5 rounded-2xl animate-fade-in"></div>
+
+                        <div id="docs-list" class="space-y-4"></div>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
     
-    <!-- ASSISTENTE FLUTUANTE (Floating Action Button) -->
-    <div id="assistant-icon" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-16 h-16 rounded-full bg-imes-blue text-white shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-all duration-300 z-50 group hover:bg-imes-gold hover:text-imes-blue animate-float">
-        <div class="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-20"></div>
-        <i class="ph-fill ph-chat-teardrop-text text-3xl"></i>
-        <!-- Tooltip -->
-        <span class="absolute right-full mr-4 bg-slate-800 text-white text-xs font-bold py-1 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">Precisa de ajuda?</span>
+    <!-- OVERLAY DE CARREGAMENTO & AUDITORIA DE DOCUMENTOS -->
+    <div id="loading-overlay" class="fixed inset-0 hidden z-[100] flex flex-col justify-center items-center bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 p-4">
+        <div class="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center animate-fade-in">
+            <!-- Spinner institucional com ícone de certificado -->
+            <div class="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center mb-4 relative">
+                <i class="ph-bold ph-shield-check text-3xl text-blue-600 dark:text-blue-400"></i>
+                <div class="absolute -inset-1 rounded-2xl border-2 border-blue-500/30 border-t-blue-600 animate-spin"></div>
+            </div>
+            
+            <h3 class="text-lg font-extrabold text-slate-800 dark:text-white mb-1">Processando Protocolo</h3>
+            <p id="loading-doc-name" class="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-4 truncate w-full">Preparando envio criptografado...</p>
+            
+            <!-- Barra de Progresso -->
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden mb-2">
+                <div id="loading-progress-bar" class="bg-gradient-to-r from-blue-600 to-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-out" style="width: 15%"></div>
+            </div>
+            
+            <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400">
+                <span id="loading-step-text" class="font-bold text-slate-600 dark:text-slate-300 uppercase">Iniciando</span>
+                <span id="loading-percentage" class="font-bold text-blue-600 dark:text-blue-400">15%</span>
+            </div>
+        </div>
     </div>
 
-    <!-- CHAT INTERFACE -->
-    <div id="chat-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-40 transition-opacity duration-300 opacity-0 md:hidden"></div>
+    <!-- ASSISTENTE FLUTUANTE (Floating Action Button) -->
+    <div id="assistant-icon" class="fixed hidden bottom-6 right-4 sm:right-6 md:bottom-8 md:right-8 w-14 h-14 md:w-16 md:h-16 rounded-full bg-imes-blue text-white shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300 z-50 group hover:bg-imes-gold hover:text-imes-blue animate-float" title="Secretaria Virtual">
+        <div class="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-15 pointer-events-none"></div>
+        <i class="ph-fill ph-chat-teardrop-text text-2xl md:text-3xl pointer-events-none"></i>
+        <span class="absolute right-full mr-3 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg pointer-events-none">Dúvidas Acadêmicas</span>
+    </div>
 
-    <div id="chat-bubble" class="fixed inset-x-0 bottom-0 md:inset-auto md:bottom-28 md:right-10 w-full md:w-[400px] h-[85vh] md:h-[600px] bg-white dark:bg-[#1e293b] md:rounded-2xl shadow-2xl flex flex-col hidden opacity-0 translate-y-20 md:translate-y-10 z-50 overflow-hidden border border-slate-200 dark:border-slate-700 transition-all duration-300 ease-out">
+    <!-- CHAT OVERLAY (Backdrop para mobile) -->
+    <div id="chat-overlay" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+
+    <!-- CHAT INTERFACE -->
+    <div id="chat-bubble" class="fixed inset-x-0 bottom-0 md:inset-auto md:bottom-28 md:right-8 w-full md:w-[400px] h-[80dvh] bg-white dark:bg-[#1e293b] md:rounded-2xl shadow-2xl flex flex-col hidden opacity-0 translate-y-20 md:translate-y-10 z-50 overflow-hidden border border-slate-200 dark:border-slate-700 transition-all duration-300 ease-out">
         
-        <!-- Chat Header -->
-        <div class="bg-imes-blue p-4 flex justify-between items-center text-white shadow-md z-10">
+        <div class="sidebar-gradient p-4 flex justify-between items-center text-white shadow-md z-10">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
                     <i class="ph-fill ph-robot text-2xl text-imes-gold"></i>
@@ -447,24 +609,20 @@
                     <h3 class="font-bold text-sm">Assistente Acadêmico</h3>
                     <div class="flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                        <span class="text-xs text-blue-200">Online agora</span>
+                        <span class="text-xs text-blue-200">Online</span>
                     </div>
                 </div>
             </div>
-            <button id="close-chat-btn" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition">
+            <button id="close-chat-btn" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition" aria-label="Fechar Chat">
                 <i class="ph-bold ph-x text-lg"></i>
             </button>
         </div>
         
-        <!-- Chat Messages -->
-        <div id="chat-area" class="flex-1 p-4 overflow-y-auto custom-scroll bg-slate-50 dark:bg-[#0f172a] space-y-4">
-            <!-- Mensagens serão inseridas aqui via JS -->
-        </div>
+        <div id="chat-area" class="flex-1 p-4 overflow-y-auto custom-scroll bg-slate-50 dark:bg-[#0f172a] space-y-4"></div>
         
-        <!-- Chat Input -->
-        <div class="p-4 bg-white dark:bg-[#1e293b] border-t border-slate-200 dark:border-slate-700">
+        <div class="p-4 bg-white dark:bg-[#1e293b] border-t border-slate-200 dark:border-slate-700 pb-safe">
             <form id="chat-form" class="relative flex items-center gap-2">
-                <input type="text" id="chat-input" class="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-imes-blue dark:focus:ring-imes-gold text-slate-800 dark:text-white placeholder-slate-400 transition-all" placeholder="Digite sua dúvida..." autocomplete="off">
+                <input type="text" id="chat-input" class="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-imes-blue dark:focus:ring-imes-gold text-slate-800 dark:text-white placeholder-slate-400 transition-all text-sm" placeholder="Digite sua dúvida sobre documentos..." autocomplete="off">
                 <button type="submit" id="chat-send-btn" class="absolute right-2 p-2 bg-imes-blue text-white rounded-lg hover:bg-imes-gold hover:text-imes-blue transition-colors shadow-sm disabled:opacity-50">
                     <i class="ph-bold ph-paper-plane-right"></i>
                 </button>
@@ -472,548 +630,1251 @@
         </div>
     </div>
     
-    <!-- MODAL GENÉRICO -->
+    <!-- MODAL DE CÂMERA INTELIGENTE COM GUIA DE ENQUADRAMENTO -->
+    <div id="camera-modal" class="fixed inset-0 z-[70] hidden flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 animate-fade-in">
+        <div class="relative w-full max-w-xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex flex-col">
+            <!-- Header do Scanner -->
+            <div class="p-4 flex items-center justify-between border-b border-slate-800 bg-slate-950 text-white">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-imes-gold animate-pulse"></span>
+                    <h3 class="text-sm font-bold truncate">Captura do Documento</h3>
+                    <span id="camera-doc-name-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-imes-gold/20 text-imes-gold border border-imes-gold/30 truncate max-w-[160px]"></span>
+                </div>
+                <button onclick="closeCameraModal()" class="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Viewport da Câmera com Moldura de Enquadramento -->
+            <div class="relative w-full aspect-[4/3] bg-black overflow-hidden flex items-center justify-center">
+                <video id="camera-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <canvas id="camera-canvas" class="hidden"></canvas>
+
+                <!-- Moldura de Enquadramento Visual Inteligente -->
+                <div class="camera-scanner-frame absolute inset-6 sm:inset-10 border-2 border-dashed border-imes-gold/70 rounded-2xl pointer-events-none flex flex-col justify-between p-3">
+                    <div class="scan-corner scan-corner-tl"></div>
+                    <div class="scan-corner scan-corner-tr"></div>
+                    <div class="scan-corner scan-corner-bl"></div>
+                    <div class="scan-corner scan-corner-br"></div>
+                    <div class="scan-laser-line"></div>
+                    <div class="self-center bg-slate-900/80 text-white text-[11px] font-bold px-3 py-1 rounded-full backdrop-blur-xs border border-white/20 shadow">
+                        Posicione o documento no quadro
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles do Scanner -->
+            <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-3">
+                <button onclick="toggleCameraFacing()" class="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm transition" title="Alternar Câmera">
+                    <i class="ph-bold ph-arrows-clockwise text-lg"></i>
+                </button>
+
+                <button onclick="capturePhoto()" class="py-3 px-6 btn-gold rounded-full flex items-center gap-2 shadow-lg active:scale-95 text-sm font-extrabold cursor-pointer">
+                    <i class="ph-bold ph-camera text-xl"></i>
+                    <span>Capturar Foto</span>
+                </button>
+
+                <button onclick="triggerFileInputFromModal()" class="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm transition" title="Escolher Arquivo da Galeria">
+                    <i class="ph-bold ph-folder-open text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PRÉ-VISUALIZAÇÃO AMPLIADA E ROTAÇÃO (90°) -->
+    <div id="preview-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 animate-fade-in">
+        <div class="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[92vh]">
+            <!-- Header -->
+            <div class="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+                <div class="min-w-0">
+                    <h3 id="preview-modal-title" class="text-sm sm:text-base font-bold text-slate-800 dark:text-white truncate">Conferência do Arquivo</h3>
+                    <p id="preview-modal-file-info" class="text-xs text-slate-400 font-mono"></p>
+                </div>
+                <button onclick="closePreviewModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-800 dark:hover:text-white transition">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Visualizador Central -->
+            <div class="flex-1 min-h-[300px] sm:min-h-[420px] bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 overflow-hidden relative">
+                <img id="preview-img-element" class="max-h-[60vh] max-w-full object-contain transition-transform duration-200 shadow-md rounded-lg" src="" alt="Pré-visualização">
+                <div id="preview-pdf-element" class="hidden text-center p-8">
+                    <i class="ph ph-file-pdf text-6xl text-red-500 mb-2"></i>
+                    <p class="font-bold text-slate-800 dark:text-white text-sm">Arquivo em formato PDF pronto para envio.</p>
+                </div>
+            </div>
+
+            <!-- Toolbar de Ajuste de Imagem -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                    <button onclick="adjustPreviewZoom(-0.2)" class="p-2 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition" title="Reduzir Zoom">
+                        <i class="ph-bold ph-magnifying-glass-minus text-base"></i>
+                    </button>
+                    <button onclick="resetPreviewTransform()" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 transition">
+                        100%
+                    </button>
+                    <button onclick="adjustPreviewZoom(0.2)" class="p-2 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition" title="Aumentar Zoom">
+                        <i class="ph-bold ph-magnifying-glass-plus text-base"></i>
+                    </button>
+                    <button onclick="rotatePreviewCurrent(90)" class="p-2 rounded-lg bg-imes-gold text-imes-blue font-bold hover:bg-imes-goldHover transition flex items-center gap-1 text-xs" title="Girar 90 graus">
+                        <i class="ph-bold ph-arrow-clockwise text-base"></i>
+                        <span>Girar 90°</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="replaceCurrentFileTrigger()" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                        Substituir
+                    </button>
+                    <button onclick="closePreviewModal()" class="px-4 py-2 bg-imes-blue text-white rounded-lg font-bold text-xs hover:bg-imes-blueLight transition">
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GENÉRICO DE AVISOS -->
     <div id="modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-4">
-        <!-- Backdrop -->
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         
-        <!-- Content -->
-        <div class="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full relative z-10 animate-fade-in transform transition-all scale-100 border border-slate-100 dark:border-slate-700">
-            <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+        <div class="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full relative z-10 animate-fade-in transform border border-slate-100 dark:border-slate-700 text-center">
+            <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition" onclick="closeModal()">
                 <i class="ph-bold ph-x text-xl"></i>
             </button>
             
-            <div id="modal-content-wrapper" class="text-center">
-                <h3 id="modal-title" class="text-2xl font-bold mb-4">Título</h3>
-                <div id="modal-body" class="text-slate-600 dark:text-slate-300 space-y-4 text-left max-h-[60vh] overflow-y-auto custom-scroll"></div>
+            <div id="modal-content-wrapper" class="flex flex-col items-center">
+                <h3 id="modal-title" class="text-2xl font-bold mb-4 text-slate-900 dark:text-white"></h3>
+                <div id="modal-body" class="text-slate-600 dark:text-slate-300 space-y-4 text-left max-h-[50vh] overflow-y-auto custom-scroll w-full text-sm"></div>
                 
-                <button id="modal-close-btn" class="w-full mt-8 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                <button id="modal-close-btn" class="w-full mt-8 py-3 bg-imes-blue hover:bg-imes-blueLight text-white dark:bg-imes-gold dark:text-imes-blue dark:hover:bg-imes-goldHover font-bold rounded-xl transition shadow-lg" onclick="closeModal()">
                     Entendido
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- ========================================================================= -->
+    <!-- JAVASCRIPT DE GERENCIAMENTO DO PORTAL                                     -->
+    <!-- ========================================================================= -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("Portal Aluno - UI Modernizada Carregada");
+        // SEGURANÇA E PRIVACIDADE: Previne vazamento no Console DevTools (F12)
+        if (window.console) {
+            ['log', 'info', 'warn', 'error', 'debug'].forEach(m => { try { window.console[m] = function(){}; } catch(e){} });
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 
-            /* --- MANIPULAÇÃO DE TEMA --- */
-            const themeToggle = document.getElementById('theme-toggle');
-            const body = document.body;
+        
+        // =========================================================================
+        // MOTOR MULTI-TENANT: RESOLUÇÃO DE INSTITUIÇÃO E BRANDING DINÂMICO
+        // =========================================================================
+        let CURRENT_INSTITUTION_ID = "imes";
+        let CURRENT_INSTITUTION_DATA = {
+            id: "imes",
+            name: "Faculdade IMES - Instituto Mineiro de Educação Superior",
+            institution_type: "FACULDADE",
+            branding: {
+                portal_title: "Portal de Matrícula e Documentos - Faculdade IMES",
+                primary_color: "#0a2351",
+                secondary_color: "#fdb913",
+                logo_url: ""
+            },
+            allowed_courses: ["graduacao_1", "graduacao_2", "pos_graduacao"]
+        };
 
+        const INSTITUTIONS_CATALOG = {
+            "imes": {
+                id: "imes",
+                name: "Faculdade IMES - Instituto Mineiro de Educação Superior",
+                institution_type: "FACULDADE",
+                branding: {
+                    portal_title: "Portal de Matrícula e Documentos - Faculdade IMES",
+                    primary_color: "#0a2351",
+                    secondary_color: "#fdb913",
+                    logo_url: ""
+                },
+                allowed_courses: ["graduacao_1", "graduacao_2", "pos_graduacao"]
+            },
+            "colegio_modelo": {
+                id: "colegio_modelo",
+                name: "Colégio Santa Maria Digital",
+                institution_type: "COLEGIO",
+                branding: {
+                    portal_title: "Matrícula Online 2026 - Colégio Santa Maria",
+                    primary_color: "#064e3b",
+                    secondary_color: "#10b981",
+                    logo_url: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=160&h=160&fit=crop&crop=faces"
+                },
+                allowed_courses: ["ensino_medio"]
+            },
+            "unimetro": {
+                id: "unimetro",
+                name: "Universidade Metropolitana Integrada",
+                institution_type: "UNIVERSIDADE",
+                branding: {
+                    portal_title: "Recepção de Prontuários Acadêmicos - UniMetro",
+                    primary_color: "#1e3a8a",
+                    secondary_color: "#3b82f6",
+                    logo_url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=160&h=160&fit=crop&crop=faces"
+                },
+                allowed_courses: ["graduacao_1", "graduacao_2", "pos_graduacao"]
+            }
+        };
+
+        function resolveInstitutionSlug() {
+            // 1. Tenta query param: ?inst=colegio_modelo ou ?institution=...
+            const params = new URLSearchParams(window.location.search);
+            const qInst = params.get('inst') || params.get('institution') || params.get('faculdade');
+            if (qInst) return qInst.toLowerCase().trim();
+
+            // 2. Tenta pathname apenas quando servido via HTTP/HTTPS
+            if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+                const pathParts = window.location.pathname.split('/').filter(Boolean);
+                if (pathParts.length > 0) {
+                    if (pathParts[0] === 'portal' && pathParts.length > 1) {
+                        return pathParts[1].toLowerCase().trim();
+                    }
+                    const reserved = ['admin', 'superadmin', 'secretaria', 'index.html', 'static', 'api', 'showcase'];
+                    if (!reserved.includes(pathParts[0])) {
+                        return pathParts[0].toLowerCase().trim();
+                    }
+                }
+            }
+
+            // 3. Fallback localStorage ou padrão imes
+            return localStorage.getItem('last_active_institution') || 'imes';
+        }
+
+        async function loadInstitutionBranding() {
+            const slug = resolveInstitutionSlug();
+            CURRENT_INSTITUTION_ID = slug;
+            localStorage.setItem('last_active_institution', slug);
+
+            let inst = INSTITUTIONS_CATALOG[slug];
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient.from('institutions').select('*').eq('id', slug).single();
+                    if (!error && data) {
+                        inst = {
+                            id: data.id,
+                            name: data.name,
+                            institution_type: data.institution_type,
+                            branding: data.branding || {},
+                            allowed_courses: data.enabled_courses || (data.institution_type === 'COLEGIO' ? ['ensino_medio'] : ['graduacao_1', 'graduacao_2', 'pos_graduacao'])
+                        };
+                    }
+                } catch(e) {}
+            }
+
+            if (!inst) {
+                inst = INSTITUTIONS_CATALOG['imes'];
+                CURRENT_INSTITUTION_ID = 'imes';
+            }
+
+            CURRENT_INSTITUTION_DATA = inst;
+            applyBrandingToDOM(inst);
+            initCourseSelect(inst.allowed_courses);
+        }
+
+        function applyBrandingToDOM(inst) {
+            const b = inst.branding || {};
+            const logoEl = document.getElementById('portal-inst-logo');
+            const logoFallback = document.getElementById('portal-inst-logo-fallback');
+            const titleEl = document.getElementById('portal-inst-title');
+            const subtitleEl = document.getElementById('portal-inst-subtitle');
+
+            // NUNCA exibe a logo do IMES. Se houver logo válida cadastrada (e não for a do IMES), exibe-a; senão, exibe o brasão acadêmico neutro
+            if (logoEl && logoFallback) {
+                if (b.logo_url && b.logo_url.trim() !== '' && !b.logo_url.includes('logo-imes.jpg')) {
+                    logoEl.src = b.logo_url;
+                    logoEl.classList.remove('hidden');
+                    logoFallback.classList.add('hidden');
+                } else {
+                    logoEl.src = '';
+                    logoEl.classList.add('hidden');
+                    logoFallback.classList.remove('hidden');
+                }
+            }
+
+            if (titleEl) titleEl.textContent = "Portal do Aluno";
+            if (subtitleEl) subtitleEl.textContent = `${inst.name} • Envio e Validação`;
+            if (b.portal_title) document.title = b.portal_title;
+
+            // Cores dinâmicas
+            const primary = b.primary_color || '#0a2351';
+            const secondary = b.secondary_color || '#fdb913';
+
+            const searchBtn = document.getElementById('search-cpf-btn');
+            if (searchBtn) {
+                searchBtn.style.backgroundColor = secondary;
+                searchBtn.style.color = primary;
+            }
+
+            const sendBtn = document.getElementById('send-files-btn');
+            if (sendBtn) {
+                sendBtn.style.background = `linear-gradient(135deg, ${primary} 0%, #153a7a 100%)`;
+            }
+        }
+
+        
+        // --- CRITÉRIOS DE DOCUMENTOS POR CURSO ---
+        const criteria = {
+            "graduacao_1": {
+                label: "1ª Graduação (Ensino Superior)",
+                docs: {
+                    "RG": { "display_name": "Carteira de Identidade (RG ou CNH)" },
+                    "CPF": { "display_name": "Cadastro de Pessoa Física (CPF)" },
+                    "RNE": { "display_name": "Registro Nacional Estrangeiro (RNE/CRNM)" },
+                    "HISTORICO_ENSINO_MEDIO": { "display_name": "Histórico Escolar do Ensino Médio" },
+                    "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio" }, 
+                    "CERTIDAO_NASCIMENTO_CASAMENTO": { "display_name": "Certidão de Nascimento ou Casamento" },
+                    "DOCUMENTO_MILITAR": { "display_name": "Certificado de Reservista" },
+                    "QUITACAO_ELEITORAL": { "display_name": "Comprovante de Quitação Eleitoral" },
+                    "COMPROVANTE_RESIDENCIA": { "display_name": "Comprovante de Residência Atualizado" }
+                }
+            },
+            "graduacao_2": {
+                label: "2ª Graduação (Portadores de Diploma)",
+                docs: {
+                    "DIPLOMA_GRADUACAO": { "display_name": "Diploma da 1ª Graduação" },
+                    "HISTORICO_GRADUACAO": { "display_name": "Histórico Escolar da 1ª Graduação" },
+                    "RG": { "display_name": "Carteira de Identidade (RG ou CNH)" },
+                    "CPF": { "display_name": "Cadastro de Pessoa Física (CPF)" },
+                    "RNE": { "display_name": "Registro Nacional Estrangeiro (RNE/CRNM)" },
+                    "QUITACAO_ELEITORAL": { "display_name": "Comprovante de Quitação Eleitoral" },
+                    "DOCUMENTO_MILITAR": { "display_name": "Certificado de Reservista" },
+                    "CERTIDAO_NASCIMENTO_CASAMENTO": { "display_name": "Certidão de Nascimento ou Casamento" },
+                    "COMPROVANTE_RESIDENCIA": { "display_name": "Comprovante de Residência" }
+                }
+            },
+            "pos_graduacao": {
+                label: "Pós-Graduação (Especialização / MBA)",
+                docs: {
+                    "DIPLOMA_GRADUACAO": { "display_name": "Diploma de Graduação (Curso Superior)" },
+                    "HISTORICO_GRADUACAO": { "display_name": "Histórico Escolar da Graduação" },
+                    "RG": { "display_name": "Carteira de Identidade (RG ou CNH)" },
+                    "CPF": { "display_name": "Cadastro de Pessoa Física (CPF)" },
+                    "COMPROVANTE_RESIDENCIA": { "display_name": "Comprovante de Residência" },
+                    "CERTIDAO_NASCIMENTO_CASAMENTO": { "display_name": "Certidão de Nascimento ou Casamento" }
+                }
+            },
+            "ensino_medio": {
+                label: "Ensino Médio",
+                docs: {
+                    "RG": { "display_name": "Carteira de Identidade do Aluno (RG)" },
+                    "CPF": { "display_name": "Cadastro de Pessoa Física (CPF)" },
+                    "HISTORICO_ENSINO_MEDIO": { "display_name": "Histórico Escolar / Transferência" },
+                    "CERTIDAO_NASCIMENTO_CASAMENTO": { "display_name": "Certidão de Nascimento" },
+                    "COMPROVANTE_RESIDENCIA": { "display_name": "Comprovante de Residência do Responsável" }
+                }
+            }
+        };
+
+        let selectedFiles = {}; // { 'RG': [ { file, name, size, type, url, rotation } ] }
+        let studentData = { id: null, name: null, cpf: null, existingDocs: {}, originalDocs: {} };
+        let naoEstrangeiro = false;
+
+        // Seletores do DOM
+        const themeToggle = document.getElementById('theme-toggle');
+        const studentCpfInput = document.getElementById('student-cpf');
+        const studentCpfContainer = document.getElementById('student-cpf-container');
+        const searchCpfBtn = document.getElementById('search-cpf-btn');
+        const searchCpfBtnIcon = document.getElementById('search-cpf-btn-icon');
+        const searchCpfBtnLoader = document.getElementById('search-cpf-btn-loader');
+        const studentNameDisplay = document.getElementById('student-name-display');
+        const studentNameDisplayContainer = document.getElementById('student-name-display-container');
+        const changeStudentBtn = document.getElementById('change-student-btn');
+        const courseTypeSelect = document.getElementById('course-type');
+        const checkDocsBtn = document.getElementById('check-docs-btn');
+        const checkDocsBtnText = document.getElementById('check-docs-btn-text');
+        const sendFilesBtn = document.getElementById('send-files-btn');
+        const userGreeting = document.getElementById('user-greeting');
+        const docsList = document.getElementById('docs-list');
+        const docsTitle = document.getElementById('docs-title');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const assistantIcon = document.getElementById('assistant-icon');
+        const chatBubble = document.getElementById('chat-bubble');
+        const chatOverlay = document.getElementById('chat-overlay');
+        const closeChatBtn = document.getElementById('close-chat-btn');
+        const chatArea = document.getElementById('chat-area');
+        const chatInput = document.getElementById('chat-input');
+        const chatForm = document.getElementById('chat-form');
+
+        // Seletores do Loader 3D
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingStepText = document.getElementById('loading-step-text');
+        const loadingDocName = document.getElementById('loading-doc-name');
+        const loadingProgressBar = document.getElementById('loading-progress-bar');
+        const loadingPercentage = document.getElementById('loading-percentage');
+
+        // Preview & Camera State
+        let activeCameraStream = null;
+        let activeCameraDocId = null;
+        let cameraFacingMode = 'environment';
+        let previewState = { docId: null, fileIndex: null, zoom: 1.0, rotation: 0 };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            initTheme();
+            await loadInstitutionBranding();
+            initMasks();
+            initEvents();
+            showScreen1();
+        });
+
+        // --- TEMA (DARK / LIGHT) ---
+        function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
-                body.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
                 document.documentElement.classList.add('dark');
-                themeToggle.checked = false; 
+                if (themeToggle) themeToggle.checked = false;
             } else {
-                body.classList.remove('dark-mode');
+                document.body.classList.remove('dark-mode');
                 document.documentElement.classList.remove('dark');
-                themeToggle.checked = true;
+                if (themeToggle) themeToggle.checked = true;
             }
 
-            themeToggle.addEventListener('change', () => {
-                if (themeToggle.checked) {
-                    body.classList.remove('dark-mode');
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    body.classList.add('dark-mode');
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
+            if (themeToggle) {
+                themeToggle.addEventListener('change', () => {
+                    if (themeToggle.checked) {
+                        document.body.classList.remove('dark-mode');
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('theme', 'light');
+                    } else {
+                        document.body.classList.add('dark-mode');
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('theme', 'dark');
+                    }
+                });
+            }
+        }
+
+        // --- INICIALIZAÇÃO DE SELECTS E MÁSCARAS ---
+        function initCourseSelect(allowedCourses) {
+            courseTypeSelect.innerHTML = '<option value="">Aguardando identificação...</option>';
+            Object.entries(criteria).forEach(([key, config]) => {
+                if (allowedCourses && allowedCourses.length > 0 && !allowedCourses.includes(key)) {
+                    return;
                 }
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = config.label;
+                opt.className = 'text-slate-800 dark:text-white';
+                courseTypeSelect.appendChild(opt);
             });
+        }
 
-            /* --- LÓGICA DE DADOS (Mantida do Original) --- */
-            const criteria = {
-                "graduacao_1": {
-                    label: "1ª Graduação",
-                    docs: {
-                        "RG": {"display_name": "Carteira de Identidade (RG)"},
-                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
-                        "RNE": {"display_name": "Registro Nacional Estrangeiro (RNE/CRNM)"},
-                        "HISTORICO_ENSINO_MEDIO": {"display_name": "Histórico Escolar do Ensino Médio"},
-                        "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio"}, 
-                        "CERTIDAO_NASCIMENTO_CASAMENTO": {"display_name": "Certidão de Nascimento ou Casamento"},
-                        "DOCUMENTO_MILITAR": {"display_name": "Certificado de Reservista"},
-                        "QUITACAO_ELEITORAL": {"display_name": "Comprovante de Quitação Eleitoral"},
-                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
-                    }
-                },
-                "graduacao_2": {
-                    label: "2ª Graduação",
-                    docs: {
-                        "DIPLOMA_GRADUACAO": {"display_name": "Diploma da 1ª Graduação"},
-                        "HISTORICO_GRADUACAO": {"display_name": "Histórico Escolar da 1ª Graduação"},
-                        "RG": {"display_name": "Carteira de Identidade (RG)"},
-                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
-                        "QUITACAO_ELEITORAL": {"display_name": "Comprovante de Quitação Eleitoral"},
-                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
-                    }
-                },
-                "pos_graduacao": {
-                    label: "Pós-Graduação",
-                    docs: {
-                        "DIPLOMA_GRADUACAO": {"display_name": "Diploma da Graduação"},
-                        "HISTORICO_GRADUACAO": {"display_name": "Histórico Escolar da Graduação"},
-                        "RG": {"display_name": "Carteira de Identidade (RG)"},
-                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"},
-                        "CNH": { "display_name": "Carteira Nacional de Habilitação (CNH)"},
-                        "COMPROVANTE_RESIDENCIA": {"display_name": "Comprovante de Residência"}
-                    }
-                },
-                "cursos_rapidos": {
-                    label: "Cursos Rápidos",
-                    docs: {
-                        "RG": {"display_name": "Carteira de Identidade (RG)"},
-                        "CPF": {"display_name": "Cadastro de Pessoa Física (CPF)"}
-                    }
-                }
-            };
-            
-            let selectedFiles = {};
-            let chatHistory = [];
-            let studentData = { id: null, name: null, cpf: null, existingDocs: {} };
-            
-            // --- SELETORES ---
-            const studentCpfInput = document.getElementById('student-cpf');
-            const studentCpfContainer = document.getElementById('student-cpf-container');
-            const searchCpfBtn = document.getElementById('search-cpf-btn');
-            const searchCpfBtnIcon = document.getElementById('search-cpf-btn-icon');
-            const searchCpfBtnLoader = document.getElementById('search-cpf-btn-loader');
-            const studentNameDisplay = document.getElementById('student-name-display');
-            const studentNameDisplayContainer = document.getElementById('student-name-display-container');
-            const changeStudentBtn = document.getElementById('change-student-btn');
-            const courseTypeSelect = document.getElementById('course-type');
-            const checkDocsBtn = document.getElementById('check-docs-btn');
-            const checkDocsBtnText = document.getElementById('check-docs-btn-text');
-            const sendFilesBtn = document.getElementById('send-files-btn');
-            const userGreeting = document.getElementById('user-greeting');
-            const docsList = document.getElementById('docs-list');
-            const modal = document.getElementById('modal');
-            const modalTitle = document.getElementById('modal-title');
-            const modalBody = document.getElementById('modal-body');
-            const modalCloseBtn = document.getElementById('modal-close-btn');
-            const modalCloseX = document.getElementById('modal-close-x');
-            const assistantIcon = document.getElementById('assistant-icon');
-            const chatBubble = document.getElementById('chat-bubble');
-            const chatOverlay = document.getElementById('chat-overlay');
-            const closeChatBtn = document.getElementById('close-chat-btn');
-            const chatArea = document.getElementById('chat-area');
-            const chatInput = document.getElementById('chat-input');
-            const chatSendBtn = document.getElementById('chat-send-btn');
-            const chatForm = document.getElementById('chat-form');
-            
-            // Seletores do Loader
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const loadingStepText = document.getElementById('loading-step-text');
-            const loadingDocName = document.getElementById('loading-doc-name');
-            const loadingProgressBar = document.getElementById('loading-progress-bar');
-            const loadingPercentage = document.getElementById('loading-percentage');
-
-            function initialize() {
-                courseTypeSelect.innerHTML = '<option value="">Aguardando identificação...</option>';
-                
-                Object.entries(criteria).forEach(([key, config]) => {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = config.label;
-                    courseTypeSelect.appendChild(option);
-                });
-                
-                addMessageToChat("Olá! Sou o assistente virtual do IMES. Estou aqui para ajudar com sua documentação. Como posso ser útil?", "assistant");
-            }
-
-            // --- FUNÇÕES DE BUSCA ---
-            function setSearchButtonLoading(isLoading) {
-                searchCpfBtn.disabled = isLoading;
-                studentCpfInput.disabled = isLoading;
-                searchCpfBtnIcon.classList.toggle('hidden', isLoading);
-                searchCpfBtnLoader.classList.toggle('hidden', !isLoading);
-            }
-
-            async function handleStudentSearch() {
-                const cleanedCpf = studentCpfInput.value.replace(/\D/g, '');
-                if (cleanedCpf.length !== 11) {
-                    showModal("Atenção", "<p>Por favor, digite um CPF válido com 11 dígitos.</p>", true);
-                    return;
-                }
-                setSearchButtonLoading(true);
-                
-                // SIMULAÇÃO DE FETCH (Para funcionar sem backend real neste exemplo)
-                // Remova este bloco setTimeout e descomente o fetch real em produção
-                setTimeout(() => {
-                    const mockAluno = { id: 123, name: "Maria Silva Santos", cpf: cleanedCpf };
-                    
-                    // --- MOCK RESPONSE ---
-                    studentData = { id: mockAluno.id, name: mockAluno.name, cpf: mockAluno.cpf, existingDocs: {} };
-                    const firstName = studentData.name.split(' ')[0];
-                    if(userGreeting) userGreeting.querySelector('strong').textContent = firstName;
-                    studentNameDisplay.textContent = studentData.name;
-                    
-                    studentCpfContainer.classList.add('hidden');
-                    studentNameDisplayContainer.classList.remove('hidden');
-
-                    courseTypeSelect.disabled = false;
-                    checkDocsBtn.disabled = false;
-                    courseTypeSelect.value = '';
-                    courseTypeSelect.querySelector('option').textContent = "Selecione o curso...";
-                    
-                    docsList.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in">
-                            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
-                                <i class="ph-bold ph-check text-4xl"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">Aluno Identificado!</h3>
-                            <p class="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Agora selecione o tipo de curso na barra lateral e clique em "Verificar Pendências".</p>
-                        </div>`;
-                    
-                    setSearchButtonLoading(false);
-                }, 1000);
-
-                /* CÓDIGO REAL DE FETCH (MANTIDO DO ORIGINAL, COMENTADO PARA DEMO)
-                try {
-                    const response = await fetch(`/search-student`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cpf: cleanedCpf }),
-                    });
-
-                    if (response.status === 404) {
-                        showModal("Aluno não encontrado", "Não foi possível localizar um aluno com o CPF informado.");
-                        resetStudentSearch();
-                        return;
-                    }
-                    if (!response.ok) throw new Error(`Erro: ${response.status}`);
-
-                    const aluno = await response.json();
-                    // ... (logica de sucesso igual ao mock acima) ...
-                } catch (error) {
-                    console.error(error);
-                    showModal("Erro de Conexão", "Não foi possível comunicar com o servidor.");
-                    resetStudentSearch();
-                } finally {
-                    setSearchButtonLoading(false);
-                }
-                */
-            }
-
-            async function displayCourseDocuments() {
-                const courseTypeId = courseTypeSelect.value;
-                if (!studentData.id || !courseTypeId) {
-                    showModal("Atenção", "<p>Por favor, selecione um tipo de curso na barra lateral.</p>", true);
-                    return;
-                }
-
-                checkDocsBtn.disabled = true;
-                checkDocsBtnText.textContent = "Verificando...";
-                studentData.existingDocs = {};
-
-                const selectedConfig = criteria[courseTypeId] || {};
-                const requiredDocsConfig = selectedConfig.docs || {};
-                const requiredKeys = Object.keys(requiredDocsConfig);
-
-                // SIMULAÇÃO DE VERIFICAÇÃO (MOCK)
-                setTimeout(() => {
-                    studentData.existingDocs = { "RG": { encontrado: true, nome_arquivo: "rg_scan.pdf" } }; // Exemplo
-                    renderDocuments(requiredKeys, requiredDocsConfig);
-                    checkDocsBtn.disabled = false;
-                    checkDocsBtnText.textContent = "Verificar Pendências";
-                }, 800);
-            }
-
-            function renderDocuments(requiredKeys, requiredDocsConfig) {
-                docsList.innerHTML = '';
-                selectedFiles = {};
-
-                if (requiredKeys.length === 0) {
-                    docsList.innerHTML = `<div class="text-center py-12 text-slate-500">Nenhum documento necessário.</div>`;
-                    sendFilesBtn.disabled = true;
-                    return;
-                }
-
-                requiredKeys.forEach((key, index) => {
-                    const info = requiredDocsConfig[key];
-                    const docInfoFromServer = studentData.existingDocs[key];
-                    const isAlreadySubmitted = docInfoFromServer?.encontrado === true;
-
-                    // CARD MODERNO
-                    const card = document.createElement('div');
-                    card.className = 'modern-card p-5 animate-slide-up flex flex-col md:flex-row gap-5 items-start md:items-center justify-between';
-                    card.style.animationDelay = `${index * 0.1}s`;
-
-                    // Status UI
-                    const statusBadge = isAlreadySubmitted 
-                        ? `<span class="badge badge-success flex items-center gap-1"><i class="ph-bold ph-check"></i> Entregue</span>` 
-                        : `<span class="badge badge-pending flex items-center gap-1"><i class="ph-bold ph-warning-circle"></i> Pendente</span>`;
-                    
-                    const iconColor = isAlreadySubmitted ? 'text-green-500' : 'text-slate-300 dark:text-slate-600';
-
-                    card.innerHTML = `
-                        <div class="flex items-start gap-4 flex-1">
-                            <div class="hidden sm:flex w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 items-center justify-center border border-slate-100 dark:border-slate-700 flex-shrink-0">
-                                <i class="ph-duotone ph-file-text text-2xl ${iconColor}"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white text-lg">${info.display_name}</h4>
-                                <div class="flex items-center gap-3 mt-1.5">
-                                    ${statusBadge}
-                                    ${isAlreadySubmitted && docInfoFromServer.nome_arquivo ? `<span class="text-xs text-slate-400 flex items-center gap-1"><i class="ph-bold ph-paperclip"></i> ${docInfoFromServer.nome_arquivo}</span>` : ''}
-                                </div>
-                                <div id="files-container-${key}" class="w-full mt-3 flex flex-wrap gap-2"></div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-                            <!-- Botão Câmera -->
-                            <label class="flex-1 md:flex-none py-2.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-semibold rounded-lg cursor-pointer transition flex items-center justify-center gap-2 text-sm active:scale-95 border border-slate-200 dark:border-slate-600">
-                                <i class="ph-bold ph-camera"></i>
-                                <span class="hidden md:inline">Foto</span>
-                                <input type="file" data-key="${key}" class="hidden" accept="image/*" capture="environment">
-                            </label>
-                            
-                            <!-- Botão Anexar -->
-                            <label class="flex-1 md:flex-none py-2.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-semibold rounded-lg cursor-pointer transition flex items-center justify-center gap-2 text-sm active:scale-95 border border-slate-200 dark:border-slate-600">
-                                <i class="ph-bold ph-upload-simple"></i>
-                                <span>Anexar</span>
-                                <input type="file" data-key="${key}" class="hidden" multiple accept="image/*,application/pdf">
-                            </label>
-                        </div>
-                    `;
-                    docsList.appendChild(card);
-                });
-
-                sendFilesBtn.disabled = false;
-                
-                // Scroll suave para área de docs no mobile
-                if(window.innerWidth < 768) {
-                    setTimeout(() => {
-                        document.getElementById('docs-area').scrollIntoView({behavior: 'smooth'});
-                    }, 100);
-                }
-            }
-
-            function resetStudentSearch() {
-                studentCpfInput.value = '';
-                studentCpfInput.disabled = false;
-                studentData = { id: null, name: null, cpf: null, existingDocs: {} };
-                studentNameDisplayContainer.classList.add('hidden');
-                studentCpfContainer.classList.remove('hidden');
-                courseTypeSelect.disabled = true;
-                checkDocsBtn.disabled = true;
-                sendFilesBtn.disabled = true;
-                courseTypeSelect.value = '';
-                courseTypeSelect.querySelector('option').textContent = "Aguardando identificação...";
-                
-                docsList.innerHTML = `<div class="flex flex-col items-center justify-center h-[50vh] text-center animate-fade-in opacity-50">
-                        <div class="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                            <i class="ph-duotone ph-user-focus text-4xl text-slate-400"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200">Aguardando Aluno</h3>
-                        <p class="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Identifique-se na barra lateral para começar.</p>
-                    </div>`;
-                selectedFiles = {};
-                studentCpfInput.focus();
-            }
-
-            function handleFileSelect(event) {
-                const fileInput = event.target;
-                const docKey = fileInput.dataset.key;
-                const newFiles = Array.from(fileInput.files);
-
-                if (!selectedFiles[docKey]) selectedFiles[docKey] = [];
-
-                if (selectedFiles[docKey].length + newFiles.length > 3) {
-                    showModal("Limite Atingido", "<p>Máximo de 3 arquivos por documento.</p>", true);
-                    fileInput.value = '';
-                    return;
-                }
-
-                selectedFiles[docKey].push(...newFiles);
-                renderFilePills(docKey);
-                fileInput.value = '';
-            }
-
-            function renderFilePills(docKey) {
-                const container = document.getElementById(`files-container-${docKey}`);
-                if (!container) return;
-
-                container.innerHTML = '';
-                const files = selectedFiles[docKey] || [];
-
-                files.forEach((file, index) => {
-                    const pill = document.createElement('div');
-                    pill.className = 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-2 animate-fade-in border border-blue-100 dark:border-blue-800';
-                    pill.innerHTML = `
-                        <i class="ph-bold ph-file"></i>
-                        <span class="truncate max-w-[150px] sm:max-w-xs" title="${file.name}">${file.name}</span>
-                        <button class="remove-file-btn hover:text-red-500 transition ml-1" data-key="${docKey}" data-index="${index}">
-                            <i class="ph-bold ph-x"></i>
-                        </button>`;
-                    container.appendChild(pill);
-                });
-            }
-
-            function removeFile(docKey, index) {
-                if (selectedFiles[docKey]) {
-                    selectedFiles[docKey].splice(index, 1);
-                    renderFilePills(docKey);
-                }
-            }
-
-            function showModal(title, message, isWarning = false) {
-                modalTitle.textContent = title;
-                modalBody.innerHTML = message;
-                modalTitle.className = `text-2xl font-bold mb-4 ${isWarning ? 'text-orange-500' : 'text-green-600'}`;
-                
-                // Icon Header
-                const icon = isWarning ? '<i class="ph-duotone ph-warning-circle text-5xl text-orange-400 mb-4 inline-block"></i>' : '<i class="ph-duotone ph-check-circle text-5xl text-green-500 mb-4 inline-block"></i>';
-                
-                const wrapper = document.getElementById('modal-content-wrapper');
-                if(!wrapper.querySelector('i')) {
-                    wrapper.insertAdjacentHTML('afterbegin', icon);
-                } else {
-                     wrapper.querySelector('i').className = isWarning ? 'ph-duotone ph-warning-circle text-5xl text-orange-400 mb-4 inline-block' : 'ph-duotone ph-check-circle text-5xl text-green-500 mb-4 inline-block';
-                }
-
-                modal.classList.remove('hidden');
-            }
-            
-            window.closeModal = function() { // Global para o onclick do backdrop
-                modal.classList.add('hidden');
-            }
-
-            /* --- UI LOADER --- */
-            function updateLoaderUI(step, docName, progress) {
-                loadingStepText.textContent = step;
-                loadingDocName.textContent = docName;
-                loadingProgressBar.style.width = `${progress}%`;
-                loadingPercentage.textContent = `${progress}%`;
-            }
-
-            async function sendFiles() {
-                 const hasFiles = Object.values(selectedFiles).some(arr => arr && arr.length > 0);
-                 if (!studentData.name) return showModal("Atenção", "<p>Identifique o aluno primeiro.</p>", true);
-                 if (!hasFiles) return showModal("Vazio", "<p>Anexe pelo menos um documento.</p>", true);
-
-                 loadingOverlay.classList.remove('hidden');
-                 
-                 // Simulação de Progresso
-                 let p = 0;
-                 const interval = setInterval(() => {
-                     p += 5;
-                     updateLoaderUI("Processando", "Validando arquivos...", p);
-                     if (p >= 100) {
-                         clearInterval(interval);
-                         loadingOverlay.classList.add('hidden');
-                         showModal("Sucesso", `<p>Documentos enviados para análise da secretaria.</p>`);
-                         selectedFiles = {};
-                         displayCourseDocuments();
-                     }
-                 }, 200);
-            }
-            
-            /* --- CHAT FUNCTIONS --- */
-            function toggleChat() {
-                const isHidden = chatBubble.classList.contains('hidden');
-                
-                if (isHidden) {
-                    chatOverlay.classList.remove('hidden');
-                    chatBubble.classList.remove('hidden');
-                    // Pequeno delay para permitir a transição CSS
-                    setTimeout(() => {
-                        chatOverlay.classList.remove('opacity-0');
-                        chatBubble.classList.remove('opacity-0', 'translate-y-20', 'md:translate-y-10');
-                    }, 10);
-                    if(window.innerWidth >= 768) chatInput.focus();
-                } else {
-                    chatOverlay.classList.add('opacity-0');
-                    chatBubble.classList.add('opacity-0', 'translate-y-20', 'md:translate-y-10');
-                    setTimeout(() => {
-                        chatOverlay.classList.add('hidden');
-                        chatBubble.classList.add('hidden');
-                    }, 300);
-                }
-            }
-
-            function addMessageToChat(message, sender) {
-                const msgWrapper = document.createElement('div');
-                msgWrapper.className = `flex flex-col mb-4 animate-fade-in ${sender === 'user' ? 'items-end' : 'items-start'}`;
-                
-                const msgBubble = document.createElement('div');
-                // Estilo "WhatsApp" moderno
-                if (sender === 'user') {
-                    msgBubble.className = `py-2 px-4 rounded-2xl rounded-tr-none bg-imes-blue text-white shadow-md max-w-[85%] text-sm`;
-                } else {
-                    msgBubble.className = `py-2 px-4 rounded-2xl rounded-tl-none bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-600 shadow-sm max-w-[85%] text-sm`;
-                }
-                
-                msgBubble.innerHTML = message.replace(/\n/g, '<br>');
-                msgWrapper.appendChild(msgBubble);
-                
-                // Timestamp miniatura
-                const time = document.createElement('span');
-                time.className = `text-[10px] text-slate-400 mt-1 px-1`;
-                time.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                msgWrapper.appendChild(time);
-
-                chatArea.appendChild(msgWrapper);
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }
-
-            async function sendChatMessage(e) {
-                 if(e) e.preventDefault();
-                 const userMessage = chatInput.value.trim();
-                 if (!userMessage) return;
-                 
-                 addMessageToChat(userMessage, "user");
-                 chatInput.value = '';
-                 
-                 // Simula resposta "Digitando..."
-                 const typingInd = document.createElement('div');
-                 typingInd.id = 'typing';
-                 typingInd.className = 'flex items-center gap-1 ml-2 mb-4 text-slate-400 text-xs animate-pulse';
-                 typingInd.innerHTML = '<i class="ph-fill ph-circles-three-plus"></i> Digitando...';
-                 chatArea.appendChild(typingInd);
-                 chatArea.scrollTop = chatArea.scrollHeight;
-
-                 setTimeout(() => {
-                     typingInd.remove();
-                     addMessageToChat("Entendi. Como esta é uma demonstração visual, não posso processar essa solicitação real, mas o layout está bonito, não?", "assistant");
-                 }, 1500);
-            }
-            
-            // Listeners
+        function initMasks() {
             studentCpfInput.addEventListener('input', (e) => {
                 let v = e.target.value.replace(/\D/g, '');
-                v = v.replace(/(\d{3})(\d)/, '$1.$2');
-                v = v.replace(/(\d{3})(\d)/, '$1.$2');
-                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                if (v.length <= 11) {
+                    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                }
                 e.target.value = v;
             });
+        }
+
+        function initEvents() {
             searchCpfBtn.addEventListener('click', handleStudentSearch);
-            studentCpfInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleStudentSearch(); });
-            courseTypeSelect.addEventListener('change', () => { /* Lógica de reset visual se necessário */ });
-            checkDocsBtn.addEventListener('click', displayCourseDocuments);
-            sendFilesBtn.addEventListener('click', sendFiles);
+            studentCpfInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleStudentSearch();
+            });
             changeStudentBtn.addEventListener('click', resetStudentSearch);
+            checkDocsBtn.addEventListener('click', displayCourseDocuments);
+            document.getElementById('back-to-setup-btn').addEventListener('click', showScreen1);
+            sendFilesBtn.addEventListener('click', submitAllDocuments);
+
+            // Chat Assistant
+            if (assistantIcon) assistantIcon.addEventListener('click', toggleChat);
+            if (closeChatBtn) closeChatBtn.addEventListener('click', closeChat);
+            if (chatOverlay) chatOverlay.addEventListener('click', closeChat);
+            if (chatForm) chatForm.addEventListener('submit', handleChatSubmit);
+        }
+
+        // --- TELAS ---
+        function showScreen1() {
+            document.getElementById('screen-1').classList.remove('hidden');
+            document.getElementById('screen-2').classList.add('hidden');
+            if (assistantIcon) assistantIcon.classList.add('hidden');
+            closeChat();
+        }
+
+        function showScreen2() {
+            document.getElementById('screen-1').classList.add('hidden');
+            document.getElementById('screen-2').classList.remove('hidden');
+            if (assistantIcon) assistantIcon.classList.remove('hidden');
+        }
+
+        function resetStudentSearch() {
+            studentData = { id: null, name: null, cpf: null, existingDocs: {}, originalDocs: {} };
+            selectedFiles = {};
+            studentCpfInput.value = '';
+            studentCpfContainer.classList.remove('hidden');
+            studentNameDisplayContainer.classList.add('hidden');
+            courseTypeSelect.disabled = true;
+            checkDocsBtn.disabled = true;
+            courseTypeSelect.value = '';
+            showScreen1();
+        }
+
+        // --- BUSCA DO ESTUDANTE ---
+        async function handleStudentSearch() {
+            const raw = studentCpfInput.value.replace(/\D/g, '');
+            if (raw.length < 11) {
+                showModal("Atenção", "Por favor, digite um CPF válido com 11 dígitos para buscar.");
+                return;
+            }
+
+            searchCpfBtn.disabled = true;
+            studentCpfInput.disabled = true;
+            searchCpfBtnIcon.classList.add('hidden');
+            searchCpfBtnLoader.classList.remove('hidden');
+
+            try {
+                let studentFound = null;
+
+                // 1. Busca no Supabase filtrando pela instituição ativa
+                if (supabaseClient) {
+                    try {
+                        const { data, error } = await supabaseClient
+                            .from('student_dossiers')
+                            .select('*')
+                            .eq('institution_id', CURRENT_INSTITUTION_ID)
+                            .eq('cpf', raw)
+                            .limit(1);
+
+                        if (!error && data && data.length > 0) {
+                            const s = data[0];
+                            studentFound = {
+                                id: s.student_id || raw,
+                                name: s.student_name,
+                                cpf: s.cpf || studentCpfInput.value,
+                                course: s.course_name || (CURRENT_INSTITUTION_DATA.institution_type === 'COLEGIO' ? 'ensino_medio' : 'graduacao_1')
+                            };
+                        }
+                    } catch(e) {}
+                }
+
+                // 2. Tenta a API do backend
+                if (!studentFound) {
+                    try {
+                        const res = await fetch('/api/student/search', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ identifier: raw, institution_id: CURRENT_INSTITUTION_ID })
+                        });
+                        if (res.ok) {
+                            studentFound = await res.json();
+                        }
+                    } catch(err) {}
+                }
+
+                // 3. Resultado da identificação estrita no banco de dados da instituição
+                const errorMsgEl = document.getElementById('cpf-error-message');
+
+                if (studentFound) {
+                    if (errorMsgEl) errorMsgEl.classList.add('hidden');
+                    setupIdentifiedStudent(studentFound);
+                } else {
+                    // ALUNO NÃO ENCONTRADO NO BANCO DE DADOS: BLOQUEIA E RETORNA MENSAGEM
+                    if (errorMsgEl) {
+                        errorMsgEl.classList.remove('hidden');
+                    }
+                    showModal(
+                        "Aluno não encontrado na base de dados.",
+                        `O CPF informado (<strong>${escapeHtml(studentCpfInput.value)}</strong>) não possui cadastro ativo no banco de dados de <strong>${escapeHtml(CURRENT_INSTITUTION_DATA.name)}</strong>.<br><br><span class="text-xs text-slate-500 dark:text-slate-400">Verifique o CPF digitado ou solicite à secretaria acadêmica a inclusão da sua matrícula.</span>`
+                    );
+                    // Bloqueia qualquer avanço
+                    resetStudentSearch();
+                    studentCpfInput.focus();
+                }
+            } finally {
+                searchCpfBtn.disabled = false;
+                studentCpfInput.disabled = false;
+                searchCpfBtnIcon.classList.remove('hidden');
+                searchCpfBtnLoader.classList.add('hidden');
+            }
+        }
+
+        function setupIdentifiedStudent(aluno) {
+            studentData = {
+                id: aluno.id || aluno.cpf,
+                name: aluno.name || 'Estudante',
+                cpf: aluno.cpf || studentCpfInput.value,
+                existingDocs: {},
+                originalDocs: {}
+            };
+
+            const firstName = studentData.name.split(' ')[0];
+            if (userGreeting) userGreeting.querySelector('strong').textContent = firstName;
+            studentNameDisplay.textContent = studentData.name;
             
-            docsList.addEventListener('change', (e) => { if (e.target.type === 'file') handleFileSelect(e); });
-            docsList.addEventListener('click', (e) => {
-                const btn = e.target.closest('.remove-file-btn');
-                if (btn) removeFile(btn.dataset.key, parseInt(btn.dataset.index, 10));
+            studentCpfContainer.classList.add('hidden');
+            studentNameDisplayContainer.classList.remove('hidden');
+
+            courseTypeSelect.disabled = false;
+            checkDocsBtn.disabled = false;
+            const targetCourse = aluno.course || (CURRENT_INSTITUTION_DATA.institution_type === 'COLEGIO' ? 'ensino_medio' : 'graduacao_1');
+            if (courseTypeSelect.querySelector(`option[value="${targetCourse}"]`)) {
+                courseTypeSelect.value = targetCourse;
+            } else if (courseTypeSelect.options.length > 0) {
+                courseTypeSelect.selectedIndex = 0;
+            }
+        }
+
+        // --- VERIFICAÇÃO DE DOCUMENTOS DO CURSO ---
+        async function displayCourseDocuments() {
+            const courseTypeId = courseTypeSelect.value;
+            if (!studentData.id || !courseTypeId) {
+                showModal("Atenção", "Por favor, selecione um tipo de curso para verificar os documentos.");
+                return;
+            }
+
+            checkDocsBtn.disabled = true;
+            checkDocsBtnText.textContent = "Verificando...";
+
+            const selectedConfig = criteria[courseTypeId] || criteria["graduacao_1"];
+            const displayLabel = selectedConfig.label;
+
+            document.getElementById('dashboard-student-name').textContent = studentData.name;
+            document.getElementById('dashboard-student-cpf').textContent = `CPF: ${studentData.cpf}`;
+            document.getElementById('dashboard-course-name').textContent = displayLabel;
+
+            try {
+                const res = await fetch('/api/documents/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentName: studentData.name,
+                        studentId: studentData.id,
+                        courseType: displayLabel,
+                        institution_id: CURRENT_INSTITUTION_ID
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    studentData.existingDocs = data.documentos || {};
+                    studentData.originalDocs = JSON.parse(JSON.stringify(data.documentos || {}));
+                }
+            } catch (e) {
+                studentData.existingDocs = {};
+            } finally {
+                checkDocsBtn.disabled = false;
+                checkDocsBtnText.textContent = "Verificar Documentos";
+                renderizarDocumentosDoCurso();
+                showScreen2();
+            }
+        }
+
+        // --- RENDERIZAÇÃO DA GRADE DE DOCUMENTOS ---
+        function renderizarDocumentosDoCurso() {
+            const courseTypeId = courseTypeSelect.value;
+            const config = criteria[courseTypeId] || criteria["graduacao_1"];
+            const requiredDocs = config.docs;
+            const keys = Object.keys(requiredDocs);
+
+            docsList.innerHTML = '';
+            let deliveredCount = 0;
+
+            keys.forEach((key, index) => {
+                const doc = requiredDocs[key];
+                const existing = studentData.existingDocs[key];
+                const isApproved = existing && (existing.encontrado === true || existing.status === 'approved');
+                
+                if (isApproved) deliveredCount++;
+
+                let badgeClass = isApproved ? 'badge-success' : 'badge-pending';
+                let badgeText = isApproved ? 'Entregue' : 'Pendente';
+                let badgeIcon = isApproved ? 'ph-check-bold' : 'ph-clock-bold';
+
+                if (key === 'RNE' && naoEstrangeiro) {
+                    badgeClass = 'badge-success';
+                    badgeText = 'Não Estrangeiro';
+                    badgeIcon = 'ph-check-bold';
+                }
+
+                let rneOptionHtml = '';
+                if (key === 'RNE') {
+                    rneOptionHtml = `
+                        <label class="flex items-center gap-2 py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-xl cursor-pointer transition text-xs border border-slate-200 dark:border-slate-700 select-none">
+                            <input type="checkbox" id="checkbox-rne-nao-estrangeiro" ${naoEstrangeiro ? 'checked' : ''} onchange="toggleNaoEstrangeiro(this.checked)" class="w-4 h-4 rounded text-imes-blue focus:ring-imes-gold">
+                            <span>Não sou estrangeiro</span>
+                        </label>
+                    `;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'modern-card p-4 sm:p-5 animate-slide-up flex flex-col md:flex-row gap-4 items-start md:items-center justify-between';
+                card.style.animationDelay = `${index * 0.04}s`;
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 w-full">
+                        <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700 flex-shrink-0">
+                            <i class="ph-duotone ph-file-text text-2xl ${isApproved ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-snug">${doc.display_name}</h4>
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5">
+                                <span id="badge-${key}" class="badge ${badgeClass} gap-1">
+                                    <i class="ph-bold ${badgeIcon}"></i> ${badgeText}
+                                </span>
+                                ${isApproved && existing && existing.nome_arquivo ? `<span class="text-xs text-slate-400 truncate max-w-[220px]" title="${existing.nome_arquivo}"><i class="ph-bold ph-paperclip"></i> ${existing.nome_arquivo}</span>` : ''}
+                            </div>
+                            <div id="files-container-${key}" class="w-full mt-3 flex flex-wrap gap-2"></div>
+                            <div id="feedback-${key}" class="hidden mt-2 p-2.5 rounded-lg text-xs font-semibold"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0 flex-wrap sm:flex-nowrap">
+                        ${rneOptionHtml}
+                        <!-- Botão Câmera Inteligente -->
+                        <button onclick="openCameraModal('${key}', '${doc.display_name}')" class="flex-1 md:flex-none min-h-[42px] py-2.5 px-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-xl cursor-pointer active:scale-95 transition flex items-center justify-center gap-2 text-xs border border-slate-200 dark:border-slate-700 select-none">
+                            <i class="ph-bold ph-camera text-base text-imes-blue dark:text-imes-gold"></i>
+                            <span>Foto</span>
+                        </button>
+                        
+                        <!-- Botão Anexar Arquivo -->
+                        <label class="flex-1 md:flex-none min-h-[42px] py-2.5 px-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-xl cursor-pointer active:scale-95 transition flex items-center justify-center gap-2 text-xs border border-slate-200 dark:border-slate-700 select-none text-center">
+                            <i class="ph-bold ph-upload-simple text-base text-imes-blue dark:text-imes-gold"></i>
+                            <span>Anexar</span>
+                            <input type="file" id="input-${key}" class="hidden" multiple accept="image/*,application/pdf" onchange="handleFileSelect('${key}', this.files)">
+                        </label>
+                    </div>
+                `;
+
+                docsList.appendChild(card);
             });
 
-            assistantIcon.addEventListener('click', toggleChat);
-            closeChatBtn.addEventListener('click', toggleChat);
-            chatOverlay.addEventListener('click', toggleChat);
-            chatForm.addEventListener('submit', sendChatMessage);
-            modalCloseBtn.addEventListener('click', closeModal);
-            if(modalCloseX) modalCloseX.addEventListener('click', closeModal);
+            updateProgressAnalytics();
+        }
 
-            initialize();
+        window.toggleNaoEstrangeiro = function(checked) {
+            naoEstrangeiro = checked;
+            renderizarDocumentosDoCurso();
+        };
+
+        // --- MANIPULAÇÃO DE ARQUIVOS E PRÉ-VISUALIZAÇÃO ---
+        window.handleFileSelect = function(docKey, files) {
+            if (!selectedFiles[docKey]) selectedFiles[docKey] = [];
+
+            for (let f of files) {
+                const objectUrl = URL.createObjectURL(f);
+                selectedFiles[docKey].push({
+                    file: f,
+                    name: f.name,
+                    size: f.size,
+                    type: f.type,
+                    url: objectUrl,
+                    rotation: 0
+                });
+            }
+
+            renderFileList(docKey);
+            updateProgressAnalytics();
+        };
+
+        window.removeFile = function(docKey, index) {
+            if (selectedFiles[docKey] && selectedFiles[docKey][index]) {
+                const item = selectedFiles[docKey][index];
+                if (item.url) URL.revokeObjectURL(item.url);
+                selectedFiles[docKey].splice(index, 1);
+                renderFileList(docKey);
+                updateProgressAnalytics();
+            }
+        };
+
+        function renderFileList(docKey) {
+            const container = document.getElementById(`files-container-${docKey}`);
+            const badge = document.getElementById(`badge-${docKey}`);
+            const files = selectedFiles[docKey] || [];
+
+            if (files.length === 0) {
+                container.innerHTML = '';
+                const existing = studentData.existingDocs[docKey];
+                if (existing && existing.encontrado) {
+                    badge.className = "badge badge-success gap-1";
+                    badge.innerHTML = '<i class="ph-bold ph-check-bold"></i> Entregue';
+                } else {
+                    badge.className = "badge badge-pending gap-1";
+                    badge.innerHTML = '<i class="ph-bold ph-clock-bold"></i> Pendente';
+                }
+                return;
+            }
+
+            badge.className = "badge badge-review gap-1";
+            badge.innerHTML = `<i class="ph-bold ph-paperclip"></i> ${files.length} anexo(s)`;
+
+            container.innerHTML = files.map((item, i) => {
+                const isImage = item.type.startsWith('image/');
+                const mb = (item.size / (1024 * 1024)).toFixed(2);
+
+                return `
+                    <div class="flex items-center gap-2 p-1.5 pr-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs">
+                        ${isImage ? `
+                            <img src="${item.url}" class="w-8 h-8 rounded-lg object-cover cursor-pointer" style="transform: rotate(${item.rotation}deg);" onclick="openPreviewModal('${docKey}', ${i})" alt="Miniatura">
+                        ` : `
+                            <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 flex items-center justify-center font-bold">
+                                <i class="ph-bold ph-file-pdf"></i>
+                            </div>
+                        `}
+                        <div class="truncate max-w-[120px] sm:max-w-[160px] cursor-pointer" onclick="openPreviewModal('${docKey}', ${i})">
+                            <span class="font-bold text-slate-800 dark:text-white block truncate leading-tight">${item.name}</span>
+                            <span class="text-[10px] text-slate-400">${mb} MB</span>
+                        </div>
+                        <button onclick="quickRotateFile('${docKey}', ${i})" class="w-6 h-6 rounded hover:bg-slate-200 dark:hover:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300" title="Girar 90°">
+                            <i class="ph-bold ph-arrow-clockwise"></i>
+                        </button>
+                        <button onclick="removeFile('${docKey}', ${i})" class="w-6 h-6 rounded hover:bg-red-100 dark:hover:bg-red-950 text-red-500 flex items-center justify-center" title="Remover">
+                            <i class="ph-bold ph-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.quickRotateFile = function(docKey, index) {
+            const item = selectedFiles[docKey][index];
+            if (!item) return;
+            item.rotation = (item.rotation + 90) % 360;
+            renderFileList(docKey);
+        };
+
+        // --- ATUALIZAÇÃO DA BARRA DE PROGRESSO DO ALUNO ---
+        function updateProgressAnalytics() {
+            const courseTypeId = courseTypeSelect.value;
+            const config = criteria[courseTypeId] || criteria["graduacao_1"];
+            const total = Object.keys(config.docs).length;
+
+            let readyOrDelivered = 0;
+            Object.keys(config.docs).forEach(k => {
+                const hasUploaded = selectedFiles[k] && selectedFiles[k].length > 0;
+                const wasDelivered = studentData.existingDocs[k] && studentData.existingDocs[k].encontrado;
+                const isRneDispensed = (k === 'RNE' && naoEstrangeiro);
+                if (hasUploaded || wasDelivered || isRneDispensed) readyOrDelivered++;
+            });
+
+            const pct = Math.round((readyOrDelivered / total) * 100);
+            document.getElementById('summary-percentage-text').textContent = `${pct}%`;
+            document.getElementById('summary-progress-bar').style.width = `${pct}%`;
+            document.getElementById('summary-delivered-count').textContent = `${readyOrDelivered} concluídos`;
+            document.getElementById('summary-pending-count').textContent = `${Math.max(0, total - readyOrDelivered)} pendentes`;
+
+            const hasAnyUpload = Object.keys(selectedFiles).some(k => selectedFiles[k] && selectedFiles[k].length > 0);
+            sendFilesBtn.disabled = !hasAnyUpload;
+        }
+
+        // --- MODAL DE PRÉ-VISUALIZAÇÃO AMPLIADA ---
+        window.openPreviewModal = function(docKey, index) {
+            const item = selectedFiles[docKey][index];
+            if (!item) return;
+
+            previewState.docId = docKey;
+            previewState.fileIndex = index;
+            previewState.zoom = 1.0;
+            previewState.rotation = item.rotation || 0;
+
+            document.getElementById('preview-modal-title').textContent = item.name;
+            document.getElementById('preview-modal-file-info').textContent = `${(item.size / (1024 * 1024)).toFixed(2)} MB • ${item.type}`;
+
+            const imgEl = document.getElementById('preview-img-element');
+            const pdfEl = document.getElementById('preview-pdf-element');
+
+            if (item.type.startsWith('image/')) {
+                imgEl.src = item.url;
+                imgEl.classList.remove('hidden');
+                pdfEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                pdfEl.classList.remove('hidden');
+            }
+
+            applyPreviewTransform();
+            document.getElementById('preview-modal').classList.remove('hidden');
+        };
+
+        window.closePreviewModal = function() {
+            document.getElementById('preview-modal').classList.add('hidden');
+        };
+
+        window.adjustPreviewZoom = function(delta) {
+            previewState.zoom = Math.max(0.5, Math.min(3.0, previewState.zoom + delta));
+            applyPreviewTransform();
+        };
+
+        window.resetPreviewTransform = function() {
+            previewState.zoom = 1.0;
+            applyPreviewTransform();
+        };
+
+        window.rotatePreviewCurrent = function(deg) {
+            previewState.rotation = (previewState.rotation + deg) % 360;
+            if (previewState.docId && previewState.fileIndex !== null) {
+                const item = selectedFiles[previewState.docId][previewState.fileIndex];
+                if (item) {
+                    item.rotation = previewState.rotation;
+                    renderFileList(previewState.docId);
+                }
+            }
+            applyPreviewTransform();
+        };
+
+        function applyPreviewTransform() {
+            const imgEl = document.getElementById('preview-img-element');
+            imgEl.style.transform = `scale(${previewState.zoom}) rotate(${previewState.rotation}deg)`;
+        }
+
+        window.replaceCurrentFileTrigger = function() {
+            const docKey = previewState.docId;
+            closePreviewModal();
+            if (docKey) {
+                document.getElementById(`input-${docKey}`).click();
+            }
+        };
+
+        // --- CÂMERA INTELIGENTE COM GUIA DE ENQUADRAMENTO ---
+        window.openCameraModal = async function(docKey, docName) {
+            activeCameraDocId = docKey;
+            document.getElementById('camera-doc-name-badge').textContent = docName;
+            document.getElementById('camera-modal').classList.remove('hidden');
+            await startCameraStream();
+        };
+
+        async function startCameraStream() {
+            const videoEl = document.getElementById('camera-video');
+            try {
+                if (activeCameraStream) {
+                    activeCameraStream.getTracks().forEach(t => t.stop());
+                }
+                const constraints = {
+                    video: { facingMode: cameraFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    audio: false
+                };
+                activeCameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoEl.srcObject = activeCameraStream;
+            } catch (err) {
+                alert("Não foi possível acessar a câmera do dispositivo. Utilize a opção 'Anexar' para escolher da galeria.");
+                closeCameraModal();
+            }
+        }
+
+        window.toggleCameraFacing = async function() {
+            cameraFacingMode = (cameraFacingMode === 'environment') ? 'user' : 'environment';
+            await startCameraStream();
+        };
+
+        window.closeCameraModal = function() {
+            if (activeCameraStream) {
+                activeCameraStream.getTracks().forEach(t => t.stop());
+                activeCameraStream = null;
+            }
+            document.getElementById('camera-modal').classList.add('hidden');
+        };
+
+        window.triggerFileInputFromModal = function() {
+            const docKey = activeCameraDocId;
+            closeCameraModal();
+            if (docKey) {
+                document.getElementById(`input-${docKey}`).click();
+            }
+        };
+
+        window.capturePhoto = function() {
+            const videoEl = document.getElementById('camera-video');
+            const canvas = document.getElementById('camera-canvas');
+            if (!videoEl || !videoEl.videoWidth) return;
+
+            canvas.width = videoEl.videoWidth;
+            canvas.height = videoEl.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                if (!blob) return;
+                const timestamp = Date.now();
+                const capturedFile = new File([blob], `Documento_Foto_${timestamp}.jpg`, { type: 'image/jpeg' });
+                handleFileSelect(activeCameraDocId, [capturedFile]);
+                closeCameraModal();
+
+                const files = selectedFiles[activeCameraDocId] || [];
+                if (files.length > 0) {
+                    openPreviewModal(activeCameraDocId, files.length - 1);
+                }
+            }, 'image/jpeg', 0.92);
+        };
+
+        // --- ENVIO FINAL DE TODOS OS DOCUMENTOS ---
+        async function submitAllDocuments() {
+            const keysWithFiles = Object.keys(selectedFiles).filter(k => selectedFiles[k] && selectedFiles[k].length > 0);
+            if (keysWithFiles.length === 0) {
+                showModal("Atenção", "Por favor, anexe ao menos um documento antes de enviar.");
+                return;
+            }
+
+            // Exibe Loader 3D
+            loadingOverlay.classList.remove('hidden');
+            loadingStepText.textContent = "Iniciando";
+            loadingProgressBar.style.width = "15%";
+            loadingPercentage.textContent = "15%";
+
+            const formData = new FormData();
+            formData.append('institution_id', CURRENT_INSTITUTION_ID);
+            formData.append('studentName', studentData.name);
+            formData.append('studentId', studentData.id);
+            formData.append('courseType', document.getElementById('dashboard-course-name').textContent);
+
+            keysWithFiles.forEach((docKey, i) => {
+                loadingDocName.textContent = `Preparando anexo: ${docKey}`;
+                selectedFiles[docKey].forEach((item, fIndex) => {
+                    formData.append(`file-${docKey}-${fIndex}`, item.file);
+                });
+            });
+
+            // Simulação fluida de progresso visual
+            loadingProgressBar.style.width = "45%";
+            loadingPercentage.textContent = "45%";
+            loadingStepText.textContent = "Custódia Local";
+
+            try {
+                const res = await fetch('/api/documents/audit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                loadingProgressBar.style.width = "85%";
+                loadingPercentage.textContent = "85%";
+                loadingStepText.textContent = "Homologando";
+
+                const data = await res.json();
+                
+                loadingProgressBar.style.width = "100%";
+                loadingPercentage.textContent = "100%";
+
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                    handleSubmissionResponse(res.ok, data);
+                }, 600);
+
+            } catch (err) {
+                loadingOverlay.classList.add('hidden');
+                handleSubmissionResponse(false, null);
+            }
+        }
+
+        function handleSubmissionResponse(isSuccess, data) {
+            const resultBox = document.getElementById('submission-result');
+            resultBox.classList.remove('hidden');
+
+            if (isSuccess && data && data.results) {
+                resultBox.className = "p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 text-xs font-semibold space-y-2 shadow-sm animate-fade-in";
+                resultBox.innerHTML = `
+                    <div class="flex items-center gap-2 font-black text-sm text-emerald-950 dark:text-emerald-100">
+                        <i class="ph-fill ph-check-circle text-xl text-emerald-600 dark:text-emerald-400"></i>
+                        Protocolo Homologado com Sucesso na Secretaria Acadêmica!
+                    </div>
+                    <p class="text-emerald-800 dark:text-emerald-300">
+                        Seus documentos foram arquivados com segurança no prontuário institucional oficial sob a custódia da instituição. Veja a conferência de cada documento abaixo.
+                    </p>
+                `;
+
+                Object.entries(data.results).forEach(([docKey, result]) => {
+                    const badge = document.getElementById(`badge-${docKey}`);
+                    const feedback = document.getElementById(`feedback-${docKey}`);
+                    if (!badge) return;
+
+                    if (result.is_approved || result.status === 'approved') {
+                        badge.className = "badge badge-success gap-1";
+                        badge.innerHTML = '<i class="ph-bold ph-check-bold"></i> Aprovado';
+                        if (feedback) {
+                            feedback.className = "mt-2 p-2.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border-emerald-800";
+                            feedback.textContent = result.reason || "Documento conferido e em total conformidade.";
+                            feedback.classList.remove('hidden');
+                        }
+                    } else if (result.status === 'in_review' || result.system_error || result.status === 'pending_review') {
+                        badge.className = "badge badge-review gap-1";
+                        badge.innerHTML = '<i class="ph-bold ph-hourglass-high"></i> Em Conferência';
+                        if (feedback) {
+                            feedback.className = "mt-2 p-2.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-900 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-800";
+                            feedback.textContent = result.reason || "Documento protocolado com sucesso e direcionado para validação da Secretaria Acadêmica.";
+                            feedback.classList.remove('hidden');
+                        }
+                    } else {
+                        badge.className = "badge badge-pending gap-1";
+                        badge.innerHTML = '<i class="ph-bold ph-warning-circle"></i> Necessita Ajuste';
+                        if (feedback) {
+                            feedback.className = "mt-2 p-2.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-200 dark:border-amber-800";
+                            feedback.textContent = result.reason || "Documento requer substituição conforme orientações.";
+                            feedback.classList.remove('hidden');
+                        }
+                    }
+                });
+            } else {
+                resultBox.className = "p-5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-200 text-xs font-semibold space-y-1 shadow-sm";
+                resultBox.innerHTML = `
+                    <div class="flex items-center gap-2 font-black text-sm text-blue-950 dark:text-blue-100">
+                        <i class="ph-fill ph-info text-xl text-blue-600 dark:text-blue-400"></i>
+                        Protocolo Recebido pela Secretaria Acadêmica
+                    </div>
+                    <p class="text-blue-800 dark:text-blue-300">
+                        Os arquivos foram transmitidos e estão aguardando a homologação final pela equipe da Secretaria.
+                    </p>
+                `;
+            }
+
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- ASSISTENTE ACADÊMICO VIRTUAL (CHAT) ---
+        function toggleChat() {
+            if (chatBubble.classList.contains('hidden')) {
+                chatBubble.classList.remove('hidden');
+                chatOverlay.classList.remove('hidden');
+                setTimeout(() => {
+                    chatBubble.classList.remove('opacity-0', 'translate-y-20', 'md:translate-y-10');
+                    chatOverlay.classList.remove('opacity-0');
+                    chatInput.focus();
+                }, 10);
+            } else {
+                closeChat();
+            }
+        }
+
+        function closeChat() {
+            chatBubble.classList.add('opacity-0', 'translate-y-20', 'md:translate-y-10');
+            chatOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                chatBubble.classList.add('hidden');
+                chatOverlay.classList.add('hidden');
+            }, 300);
+        }
+
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            addChatMessage(text, 'user');
+            chatInput.value = '';
+
+            const typingEl = addTypingIndicator();
+
+            try {
+                const res = await fetch('/api/assistant/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: text,
+                        studentName: studentData.name || 'Estudante',
+                        institution_id: CURRENT_INSTITUTION_ID
+                    })
+                });
+
+                typingEl.remove();
+
+                if (res.ok) {
+                    const data = await res.json();
+                    addChatMessage(data.answer || "Estou à disposição para orientar sobre sua documentação acadêmica.", 'assistant');
+                } else {
+                    addChatMessage("A Secretaria Acadêmica orienta a entrega de fotos nítidas dos documentos originais ou arquivos digitais em PDF.", 'assistant');
+                }
+            } catch (err) {
+                typingEl.remove();
+                addChatMessage("A Secretaria Acadêmica orienta a entrega de fotos nítidas dos documentos originais ou arquivos digitais em PDF.", 'assistant');
+            }
+        }
+
+        function addChatMessage(msg, sender) {
+            const div = document.createElement('div');
+            div.className = sender === 'user' ? 'flex justify-end' : 'flex justify-start';
+            div.innerHTML = `
+                <div class="${sender === 'user' ? 'bg-imes-blue text-white rounded-2xl rounded-tr-xs' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-xs'} p-3.5 max-w-[85%] text-xs font-medium shadow-sm leading-relaxed">
+                    ${msg}
+                </div>
+            `;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const div = document.createElement('div');
+            div.className = 'flex justify-start';
+            div.innerHTML = `
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-xs p-3 flex items-center gap-1.5 shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-slate-400 animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+            `;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            return div;
+        }
+
+        // --- MODAL GENÉRICO ---
+        function showModal(title, message) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = `<p>${message}</p>`;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+    
+
+        // Auto-carregamento imediato do aluno modelo para exibição direta da REVISÃO VISUAL COMPLETA
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("[Portal] Inicializando Portal com a Revisão Visual Completa...");
+            setTimeout(() => {
+                // Aluno modelo pré-carregado
+                studentData = {
+                    id: "202610482",
+                    name: "Lucas Gabriel Mendonça",
+                    cpf: "123.456.789-00",
+                    existingDocs: {
+                        "RG": { encontrado: true, status: "approved", nome_arquivo: "Lucas Gabriel Mendonça - RG.pdf" },
+                        "CPF": { encontrado: true, status: "approved", nome_arquivo: "Lucas Gabriel Mendonça - CPF.pdf" },
+                        "CERTIDAO_NASCIMENTO": { encontrado: true, status: "approved", nome_arquivo: "Lucas Gabriel Mendonça - Certidão.pdf" }
+                    },
+                    originalDocs: {}
+                };
+
+                const firstName = studentData.name.split(' ')[0];
+                if (userGreeting) userGreeting.querySelector('strong').textContent = firstName;
+                if (studentNameDisplay) studentNameDisplay.textContent = studentData.name;
+                
+                // Configura Curso
+                if (courseTypeSelect) {
+                    courseTypeSelect.value = 'graduacao_1';
+                    courseTypeSelect.disabled = false;
+                }
+
+                // Dispara direto para o Screen 2 (Painel de Documentos)
+                const selectedConfig = criteria["graduacao_1"] || Object.values(criteria)[0];
+                const displayLabel = selectedConfig.label;
+
+                const dName = document.getElementById('dashboard-student-name');
+                const dCpf = document.getElementById('dashboard-student-cpf');
+                const dCourse = document.getElementById('dashboard-course-name');
+                if (dName) dName.textContent = studentData.name;
+                if (dCpf) dCpf.textContent = `CPF: ${studentData.cpf}`;
+                if (dCourse) dCourse.textContent = displayLabel;
+
+                renderizarDocumentosDoCurso();
+                showScreen2();
+            }, 100);
         });
-    </script>
+    
+</script>
 </body>
 </html>

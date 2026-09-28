@@ -1,32 +1,29 @@
+# -*- coding: utf-8 -*-
+"""
+Ponto de Entrada Principal da Aplicação ProtocoloEdu (SaaS Multi-Institucional).
+Inicializa o servidor Web, APIs de Compliance MEC e Portais Integrados.
+"""
+
 import os
 import sys
-from env_manager import load_encrypted_env
+import logging
 
-# 1. Carregar variáveis seguras ANTES de qualquer outra coisa
-try:
-    # A chave deve vir do ambiente do servidor (Heroku, Docker, AWS, etc.)
-    # Em desenvolvimento local, se não tiver a chave, ele tentará ler o .env normal
-    master_key = os.environ.get('MASTER_KEY')
-    
-    # Se estiver em produção e não tiver chave, é melhor falhar cedo
-    if not master_key and os.path.exists('.env.enc'):
-         print("❌ ERRO CRÍTICO: MASTER_KEY não encontrada em produção.")
-         sys.exit(1)
+# Carrega a aplicação oficial e logger do api_server
+from api_server import app, logger
 
-    load_encrypted_env(master_key)
-except Exception as e:
-    print(f"Erro fatal ao carregar configurações: {e}")
-    sys.exit(1)
-
-# 2. O resto da sua aplicação
-print("\n--- Aplicação Python Iniciada ---")
-print(f"Base de Dados Host: {os.environ.get('DB_HOST', 'Não definido')}")
-print(f"API Key: {'********' if os.environ.get('API_KEY') else 'Não definida'}")
-
-# Exemplo simples de servidor ou lógica
 def main():
-    print("A executar lógica de negócio com variáveis seguras...")
-    # conectar_banco(os.environ['DB_PASS'])
+    port = int(os.environ.get("PORT", 8080))
+    host = os.environ.get("HOST", "0.0.0.0")
+    
+    print("=" * 70)
+    print("🎓 PROTOCOLOEDU - PLATAFORMA DIGITAL DE GESTÃO E PROTOCOLO MEC")
+    print(f"🚀 Servidor Web iniciado com sucesso em http://{host}:{port}")
+    print(f"👉 Portal do Aluno:       http://localhost:{port}/portal/imes")
+    print(f"👉 Central Super Admin:   http://localhost:{port}/superadmin")
+    print("=" * 70)
+    
+    logger.info(f"ProtocoloEdu online na porta {port}.")
+    app.run(host=host, port=port, debug=False)
 
 if __name__ == "__main__":
     main()

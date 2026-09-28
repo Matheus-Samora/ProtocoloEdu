@@ -833,15 +833,17 @@
             const qInst = params.get('inst') || params.get('institution') || params.get('faculdade');
             if (qInst) return qInst.toLowerCase().trim();
 
-            // 2. Tenta pathname: /portal/colegio_modelo ou /colegio_modelo
-            const pathParts = window.location.pathname.split('/').filter(Boolean);
-            if (pathParts.length > 0) {
-                if (pathParts[0] === 'portal' && pathParts.length > 1) {
-                    return pathParts[1].toLowerCase().trim();
-                }
-                const reserved = ['admin', 'superadmin', 'secretaria', 'index.html', 'static', 'api'];
-                if (!reserved.includes(pathParts[0])) {
-                    return pathParts[0].toLowerCase().trim();
+            // 2. Tenta pathname apenas quando servido via HTTP/HTTPS
+            if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+                const pathParts = window.location.pathname.split('/').filter(Boolean);
+                if (pathParts.length > 0) {
+                    if (pathParts[0] === 'portal' && pathParts.length > 1) {
+                        return pathParts[1].toLowerCase().trim();
+                    }
+                    const reserved = ['admin', 'superadmin', 'secretaria', 'index.html', 'static', 'api', 'showcase'];
+                    if (!reserved.includes(pathParts[0])) {
+                        return pathParts[0].toLowerCase().trim();
+                    }
                 }
             }
 
