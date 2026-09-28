@@ -1,0 +1,75 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/spec/main/schema/2024-11-05/schema.json",
+  "mcpServers": {
+    "protocolo-mcp-gateway": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_services.mcp_server",
+        "--service",
+        "gateway"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "description": "Gateway interno unificado Stdio/JSON-RPC para expor todas as ferramentas do sistema ProtocoloEdu para agentes de IA."
+    },
+    "icp-brasil-validator": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_services.mcp_server",
+        "--service",
+        "icp-brasil-validator"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "description": "Validador de assinaturas digitais ICP-Brasil e PAdES em PDFs acadêmicos (Portaria MEC 315/2018 e Diploma Digital / RVDD)."
+    },
+    "notification-dispatcher": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_services.mcp_server",
+        "--service",
+        "notification-dispatcher"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "description": "Serviço de mensageria institucional multicanal para notificações de pendência ou homologação de matrícula via WhatsApp Cloud, Webhooks e E-mail."
+    },
+    "academic-erp-sync": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_services.mcp_server",
+        "--service",
+        "academic-erp-sync"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "description": "Conector bidirecional para ERPs acadêmicos (Solis GE, TOTVS Educacional RM, SophiA e ERPs REST genéricos)."
+    },
+    "system-telemetry": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_services.mcp_server",
+        "--service",
+        "system-telemetry"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "description": "Monitoramento em tempo real de latência da IA (Gemini 2.5 Flash), integridade do servidor e taxas de conversão de matrícula."
+    }
+  }
+}

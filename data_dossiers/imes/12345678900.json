@@ -1,0 +1,68 @@
+{
+  "institution_id": "imes",
+  "student_id": "12345678900",
+  "student_name": "LUCAS GABRIEL MENDONCA",
+  "course_name": "1ª Graduação (Administração)",
+  "cpf": "123.456.789-00",
+  "status": "PENDENTE",
+  "documents": {
+    "RG": {
+      "document_id": "RG",
+      "display_name": "Carteira de Identidade (RG)",
+      "status": "approved",
+      "reason": "Aprovado e homologado com carimbo pela Secretaria Acadêmica.",
+      "admin_diagnostic": null,
+      "system_error": false,
+      "extracted_data": {
+        "numero_rg": "12.345.678-9",
+        "orgao_expedidor": "SSP/SP",
+        "data_expedicao": null,
+        "data_nascimento": "15/05/1998",
+        "naturalidade": "SAO PAULO - SP",
+        "filiacao": "JOSE DA SILVA E MARIA DE SOUZA SILVA",
+        "numero_cpf": "123.456.789-00"
+      },
+      "file_name": null,
+      "storage_url": null,
+      "updated_at": "2026-09-28T01:47:04.192240Z"
+    },
+    "HISTORICO_ENSINO_MEDIO": {
+      "document_id": "HISTORICO_ENSINO_MEDIO",
+      "display_name": "Histórico do Ensino Médio",
+      "status": "approved",
+      "reason": "Homologado com sucesso na auditoria multi-agente.",
+      "admin_diagnostic": null,
+      "system_error": false,
+      "extracted_data": {
+        "instituicao_ensino": null,
+        "cidade_escola": null,
+        "uf_escola": null,
+        "data_conclusao": null
+      },
+      "file_name": null,
+      "storage_url": null,
+      "updated_at": "2026-09-28T11:34:48.279977Z"
+    },
+    "COMPROVANTE_RESIDENCIA": {
+      "document_id": "COMPROVANTE_RESIDENCIA",
+      "display_name": "Comprovante de Residência Atualizado",
+      "status": "pending",
+      "reason": "Aguardando anexo do aluno.",
+      "admin_diagnostic": null,
+      "system_error": false,
+      "extracted_data": {},
+      "file_name": null,
+      "storage_url": null,
+      "updated_at": "2026-09-24T22:40:12.215313Z"
+    }
+  },
+  "created_at": "2026-09-24T22:40:12.215313Z",
+  "updated_at": "2026-09-28T11:34:48.279977Z",
+  "exported_at": "2026-09-28T01:47:04.663919Z",
+  "metadata": {
+    "erp_synced": true,
+    "erp_type": "solis",
+    "erp_protocol": "ERP-SOLIS-20260927-39F470",
+    "erp_synced_at": "2026-09-28T01:47:04.663919+00:00"
+  }
+}

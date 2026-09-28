@@ -1,0 +1,31 @@
+{
+  "institution_id": "imes",
+  "student_id": "99988877700",
+  "student_name": "Teste Seguranca Path Traversal",
+  "course_name": "1ª Graduação",
+  "cpf": "99988877700",
+  "status": "EM_ANALISE",
+  "documents": {
+    "RG": {
+      "document_id": "RG",
+      "display_name": "Carteira de Identidade (RG)",
+      "status": "in_review",
+      "reason": "Documento recebido com sucesso no protocolo institucional. Direcionado para conferência da Secretaria Acadêmica.",
+      "admin_diagnostic": "[FALHA NO PIPELINE DE MÍDIA]: ValueError: Formato de arquivo '' não permitido. Extensões aceitas: .pdf, .jpg, .jpeg, .png, .heic.",
+      "system_error": true,
+      "extracted_data": {},
+      "file_name": "passwd",
+      "storage_url": null,
+      "updated_at": "2026-09-25T19:35:03.184894Z"
+    }
+  },
+  "created_at": "2026-09-25T00:03:18.660976Z",
+  "updated_at": "2026-09-28T11:35:56.340063Z",
+  "exported_at": "2026-09-28T11:36:39.847534Z",
+  "metadata": {
+    "erp_synced": true,
+    "erp_type": "solis",
+    "erp_protocol": "ERP-SOLIS-20260928-18BEC0",
+    "erp_synced_at": "2026-09-28T11:36:39.847534+00:00"
+  }
+}

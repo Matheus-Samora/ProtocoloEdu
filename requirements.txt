@@ -42,3 +42,6 @@ watchdog
 functions-framework
 gspread 
 google-auth
+cryptography
+bcrypt
+supabase>=2.31.0

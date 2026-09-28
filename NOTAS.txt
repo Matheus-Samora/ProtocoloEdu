@@ -12,12 +12,3 @@ python -m venv venv
 python -m pip install -r requirements.txt
 
 .\venv\Scripts\activate
-
-gcloud builds submit --tag us-central1-docker.pkg.dev/projeto-protocolo-imes/imes-repo/imes-app:v5
-
-gcloud run deploy imes-servico --image us-central1-docker.pkg.dev/projeto-protocolo-imes/imes-repo/imes-app:v5 --platform managed --region us-central1 --allow-unauthenticated
-
-
-gcloud builds submit --tag us-central1-docker.pkg.dev/projeto-protocolo-imes/imes-repo/imes-processador:v2 .
-
-gcloud run deploy imes-processador-lote --image us-central1-docker.pkg.dev/projeto-protocolo-imes/imes-repo/imes-processador:v2 --platform managed --region us-central1

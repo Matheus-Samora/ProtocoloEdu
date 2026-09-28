@@ -1,0 +1,68 @@
+{
+  "institution_id": "imes",
+  "student_id": "12638612618",
+  "student_name": "MATHEUS ASTUNIO SAMORA",
+  "course_name": "1ª Graduação",
+  "cpf": "126.386.126-18",
+  "status": "COM_PENDENCIA",
+  "documents": {
+    "RG": {
+      "document_id": "RG",
+      "display_name": "Carteira de Identidade (RG)",
+      "status": "rejected",
+      "reason": "O RG deve conter frente e verso legíveis. Por favor, envie os dois lados do documento.",
+      "admin_diagnostic": null,
+      "system_error": false,
+      "extracted_data": {
+        "numero_rg": null,
+        "orgao_expedidor": null,
+        "data_expedicao": null,
+        "data_nascimento": "20/04/1995",
+        "naturalidade": null,
+        "filiacao": "ANTONIO SAMORA E MARIA SAMORA",
+        "numero_cpf": "126.386.126-18"
+      },
+      "file_name": null,
+      "storage_url": null,
+      "updated_at": "2026-09-28T01:47:54.152833Z"
+    },
+    "HISTORICO_ENSINO_MEDIO": {
+      "document_id": "HISTORICO_ENSINO_MEDIO",
+      "display_name": "Histórico do Ensino Médio",
+      "status": "rejected",
+      "reason": "O arquivo enviado não é um Histórico Escolar do Ensino Médio. | Nome constante no histórico do ensino médio diverge do cadastro. | Histórico escolar ilegível.",
+      "admin_diagnostic": null,
+      "system_error": false,
+      "extracted_data": {
+        "instituicao_ensino": null,
+        "cidade_escola": null,
+        "uf_escola": null,
+        "data_conclusao": null
+      },
+      "file_name": null,
+      "storage_url": null,
+      "updated_at": "2026-09-25T00:11:22.203378Z"
+    },
+    "DIPLOMA_GRADUACAO": {
+      "document_id": "DIPLOMA_GRADUACAO",
+      "display_name": "Diploma de Graduação",
+      "status": "rejected",
+      "reason": "Documento incorreto: Foi enviado um Histórico Escolar ou Declaração. Para este campo é estritamente exigido o DIPLOMA ou Certidão de Conclusão com Colação de Grau. | O nome constante no Diploma não coincide com o nome do aluno.",
+      "admin_diagnostic": "[AUDITORIA REJEITADA]: Titularidade divergente e tipo documental inválido. Arquivo descartado da custódia oficial.",
+      "system_error": false,
+      "extracted_data": {
+        "nome_curso": "Especialização em Docência para o Ensino Superior",
+        "instituicao_ensino": "FACULDADE IMES",
+        "data_colacao_grau": "20/08/2026",
+        "numero_registro_diploma": "27961"
+      },
+      "file_name": null,
+      "storage_url": null,
+      "updated_at": "2026-09-25T17:26:00.063384Z"
+    }
+  },
+  "created_at": "2026-09-24T22:42:01.102179Z",
+  "updated_at": "2026-09-28T01:47:54.152833Z",
+  "exported_at": null,
+  "metadata": {}
+}

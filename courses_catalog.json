@@ -1,0 +1,282 @@
+{
+  "version": "2.0.0",
+  "courses": {
+    "1ª Graduação": {
+      "display_name": "1ª Graduação (Bacharelado / Licenciatura / Tecnólogo)",
+      "document_groups": [
+        {
+          "group_id": "identidade",
+          "display_name": "Documento de Identificação Oficial",
+          "type": "ONE_OF",
+          "options": ["RG", "CNH", "RNE"],
+          "description": "Apresentar RG (frente e verso), CNH ou RNE (para estrangeiros)."
+        },
+        {
+          "group_id": "cpf",
+          "display_name": "Cadastro de Pessoa Física (CPF)",
+          "type": "CONDITIONAL",
+          "options": ["CPF"],
+          "condition": "DISPENSED_IF_IN_IDENTITY_DOC",
+          "description": "Obrigatório apenas se o CPF não constar no documento de identidade enviado."
+        },
+        {
+          "group_id": "ensino_medio",
+          "display_name": "Documentação do Ensino Médio",
+          "type": "ONE_OF",
+          "options": [
+            "CERTIFICADO_E_HISTORICO_ENSINO_MEDIO",
+            "CERTIFICADO_ENSINO_MEDIO"
+          ],
+          "companion_if": {
+            "CERTIFICADO_ENSINO_MEDIO": ["HISTORICO_ENSINO_MEDIO"]
+          },
+          "description": "Certificado de Conclusão e Histórico Escolar do Ensino Médio (juntos ou separados)."
+        },
+        {
+          "group_id": "residencia",
+          "display_name": "Comprovante de Residência",
+          "type": "MANDATORY",
+          "options": ["COMPROVANTE_RESIDENCIA"],
+          "description": "Comprovante de residência recente (pode estar em nome de familiares)."
+        },
+        {
+          "group_id": "estado_civil",
+          "display_name": "Certidão de Estado Civil",
+          "type": "MANDATORY",
+          "options": ["CERTIDAO_NASCIMENTO_CASAMENTO"],
+          "description": "Certidão de Nascimento ou Certidão de Casamento."
+        },
+        {
+          "group_id": "militar",
+          "display_name": "Documento Militar",
+          "type": "CONDITIONAL",
+          "options": ["DOCUMENTO_MILITAR"],
+          "condition": "MALE_BETWEEN_18_AND_45",
+          "description": "Obrigatório para alunos do sexo masculino entre 18 e 45 anos."
+        },
+        {
+          "group_id": "eleitoral",
+          "display_name": "Quitação Eleitoral",
+          "type": "MANDATORY",
+          "options": ["QUITACAO_ELEITORAL"],
+          "description": "Certidão de quitação eleitoral do TSE ou comprovante de votação."
+        }
+      ]
+    },
+
+    "2ª Graduação": {
+      "display_name": "2ª Graduação (Portadores de Diploma Superior)",
+      "document_groups": [
+        {
+          "group_id": "identidade",
+          "display_name": "Documento de Identificação Oficial",
+          "type": "ONE_OF",
+          "options": ["RG", "CNH", "RNE"],
+          "description": "Apresentar RG, CNH ou RNE."
+        },
+        {
+          "group_id": "cpf",
+          "display_name": "Cadastro de Pessoa Física (CPF)",
+          "type": "CONDITIONAL",
+          "options": ["CPF"],
+          "condition": "DISPENSED_IF_IN_IDENTITY_DOC"
+        },
+        {
+          "group_id": "graduacao_anterior",
+          "display_name": "Diploma e Histórico da 1ª Graduação",
+          "type": "ONE_OF",
+          "options": [
+            "DIPLOMA_E_HISTORICO_GRADUACAO",
+            "DIPLOMA_GRADUACAO"
+          ],
+          "companion_if": {
+            "DIPLOMA_GRADUACAO": ["HISTORICO_GRADUACAO"]
+          },
+          "description": "Diploma oficial da graduação anterior e respectivo Histórico Escolar com disciplinas e notas."
+        },
+        {
+          "group_id": "residencia",
+          "display_name": "Comprovante de Residência",
+          "type": "MANDATORY",
+          "options": ["COMPROVANTE_RESIDENCIA"]
+        },
+        {
+          "group_id": "estado_civil",
+          "display_name": "Certidão de Estado Civil",
+          "type": "MANDATORY",
+          "options": ["CERTIDAO_NASCIMENTO_CASAMENTO"]
+        },
+        {
+          "group_id": "militar",
+          "display_name": "Documento Militar",
+          "type": "CONDITIONAL",
+          "options": ["DOCUMENTO_MILITAR"],
+          "condition": "MALE_BETWEEN_18_AND_45"
+        },
+        {
+          "group_id": "eleitoral",
+          "display_name": "Quitação Eleitoral",
+          "type": "MANDATORY",
+          "options": ["QUITACAO_ELEITORAL"]
+        }
+      ]
+    },
+
+    "Pós-Graduação": {
+      "display_name": "Pós-Graduação Lato Sensu (Especialização / MBA)",
+      "document_groups": [
+        {
+          "group_id": "identidade",
+          "display_name": "Documento de Identificação Oficial",
+          "type": "ONE_OF",
+          "options": ["RG", "CNH", "RNE"]
+        },
+        {
+          "group_id": "cpf",
+          "display_name": "Cadastro de Pessoa Física (CPF)",
+          "type": "CONDITIONAL",
+          "options": ["CPF"],
+          "condition": "DISPENSED_IF_IN_IDENTITY_DOC"
+        },
+        {
+          "group_id": "diploma_superior",
+          "display_name": "Diploma de Graduação",
+          "type": "MANDATORY",
+          "options": ["DIPLOMA_GRADUACAO", "DIPLOMA_E_HISTORICO_GRADUACAO"],
+          "description": "Diploma de nível superior reconhecido pelo MEC (não pode ser substituído apenas por histórico)."
+        },
+        {
+          "group_id": "historico_superior",
+          "display_name": "Histórico da Graduação",
+          "type": "MANDATORY",
+          "options": ["HISTORICO_GRADUACAO", "DIPLOMA_E_HISTORICO_GRADUACAO"],
+          "description": "Histórico Escolar do curso superior com notas e carga horária."
+        },
+        {
+          "group_id": "residencia",
+          "display_name": "Comprovante de Residência",
+          "type": "MANDATORY",
+          "options": ["COMPROVANTE_RESIDENCIA"]
+        },
+        {
+          "group_id": "estado_civil",
+          "display_name": "Certidão de Estado Civil",
+          "type": "MANDATORY",
+          "options": ["CERTIDAO_NASCIMENTO_CASAMENTO"]
+        }
+      ]
+    },
+
+    "Cursos Rápidos": {
+      "display_name": "Cursos de Extensão e Capacitação Rápida",
+      "document_groups": [
+        {
+          "group_id": "identidade",
+          "display_name": "Documento de Identificação",
+          "type": "ONE_OF",
+          "options": ["RG", "CNH", "CPF"]
+        },
+        {
+          "group_id": "residencia",
+          "display_name": "Comprovante de Residência",
+          "type": "MANDATORY",
+          "options": ["COMPROVANTE_RESIDENCIA"]
+        }
+      ]
+    },
+
+    "Ensino Fundamental (1º ao 9º ano)": {
+      "display_name": "Ensino Fundamental (1º ao 9º ano - Escola Básica)",
+      "document_groups": [
+        {
+          "group_id": "identidade_aluno",
+          "display_name": "Certidão de Nascimento ou RG do Aluno",
+          "type": "ONE_OF",
+          "options": ["CERTIDAO_NASCIMENTO_CASAMENTO", "RG"],
+          "description": "Certidão de nascimento da criança/estudante ou RG (se já possuir)."
+        },
+        {
+          "group_id": "documento_pais",
+          "display_name": "Documento dos Pais ou Responsável Legal",
+          "type": "MANDATORY",
+          "options": ["DOCUMENTO_RESPONSAVEL"],
+          "description": "RG ou CNH do pai, mãe ou responsável legal pela matrícula."
+        },
+        {
+          "group_id": "vacinacao",
+          "display_name": "Caderneta / Cartão de Vacinação",
+          "type": "MANDATORY",
+          "options": ["CARTAO_VACINACAO"],
+          "description": "Comprovante de vacinação atualizado (obrigatório para menores)."
+        },
+        {
+          "group_id": "residencia",
+          "display_name": "Comprovante de Residência dos Pais",
+          "type": "MANDATORY",
+          "options": ["COMPROVANTE_RESIDENCIA"],
+          "description": "Comprovante de residência em nome dos pais ou responsável."
+        },
+        {
+          "group_id": "historico_ou_transferencia",
+          "display_name": "Declaração de Transferência ou Histórico Escolar",
+          "type": "ONE_OF",
+          "options": ["DECLARACAO_TRANSFERENCIA", "HISTORICO_ENSINO_MEDIO"],
+          "description": "Declaração de transferência da escola de origem ou histórico anterior."
+        },
+        {
+          "group_id": "foto_aluno",
+          "display_name": "Foto 3x4 do Aluno",
+          "type": "MANDATORY",
+          "options": ["FOTO_3X4"],
+          "description": "Foto 3x4 recente para o prontuário escolar."
+        }
+      ]
+    },
+
+    "Ensino Médio (1ª a 3ª série)": {
+      "display_name": "Ensino Médio (1ª a 3ª série - Colégio)",
+      "document_groups": [
+        {
+          "group_id": "identidade_aluno",
+          "display_name": "RG e CPF do Estudante",
+          "type": "MANDATORY",
+          "options": ["RG"],
+          "description": "RG oficial do estudante."
+        },
+        {
+          "group_id": "documento_pais",
+          "display_name": "Documento do Responsável (se menor de 18 anos)",
+          "type": "CONDITIONAL",
+          "options": ["DOCUMENTO_RESPONSAVEL"],
+          "condition": "STUDENT_UNDER_18"
+        },
+        {
+          "group_id": "conclusao_fundamental",
+          "display_name": "Histórico Escolar do Ensino Fundamental",
+          "type": "MANDATORY",
+          "options": ["HISTORICO_ENSINO_MEDIO"],
+          "description": "Comprovante de conclusão do Ensino Fundamental."
+        },
+        {
+          "group_id": "residencia",
+          "display_name": "Comprovante de Residência",
+          "type": "MANDATORY",
+          "options": ["COMPROVANTE_RESIDENCIA"]
+        },
+        {
+          "group_id": "vacinacao",
+          "display_name": "Caderneta de Vacinação",
+          "type": "MANDATORY",
+          "options": ["CARTAO_VACINACAO"]
+        },
+        {
+          "group_id": "foto_aluno",
+          "display_name": "Foto 3x4 do Estudante",
+          "type": "MANDATORY",
+          "options": ["FOTO_3X4"]
+        }
+      ]
+    }
+  }
+}
+

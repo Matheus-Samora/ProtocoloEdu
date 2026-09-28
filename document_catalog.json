@@ -1,0 +1,1717 @@
+{
+  "version": "2.0.0",
+  "description": "Catálogo Unificado e Parametrizado de Documentos e Critérios do Protocolo IMES",
+  "documents": {
+    "RG": {
+      "id": "RG",
+      "display_name": "Carteira de Identidade (RG)",
+      "expected_doc_type": "RG",
+      "aliases": [
+        "RG",
+        "IDENTIDADE",
+        "CARTEIRA DE IDENTIDADE",
+        "R.G",
+        "RG FRENTE",
+        "RG VERSO",
+        "CIN"
+      ],
+      "target_filename_pattern": "{aluno_nome} - RG{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "rg_tipo_documental",
+          "name": "Tipo Documental RG",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma Carteira de Identidade Civil (RG ou nova CIN) e não outro documento.",
+          "params": {
+            "accepted_types": [
+              "RG",
+              "CARTEIRA_DE_IDENTIDADE",
+              "CIN_CARTEIRA_IDENTIDADE_NACIONAL"
+            ],
+            "forbidden_types": [
+              "CNH",
+              "PASSAPORTE",
+              "DIPLOMA",
+              "HISTORICO_ESCOLAR",
+              "CERTIDAO"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é um RG válido. Certifique-se de enviar a Carteira de Identidade oficial."
+        },
+        {
+          "id": "rg_completude_frente_verso",
+          "name": "Completude Frente e Verso",
+          "rule_type": "COMPLETENESS",
+          "is_mandatory": true,
+          "description": "Verificar se ambas as faces (frente com foto/impressão e verso com dados) foram enviadas.",
+          "params": {
+            "requires_both_sides": true,
+            "allow_single_page_if": "CIN_NOVO_MODELO_COM_QRCODE"
+          },
+          "failure_message": "O RG deve conter frente e verso legíveis. Por favor, envie os dois lados do documento."
+        },
+        {
+          "id": "rg_qualidade_legibilidade",
+          "name": "Legibilidade e Integridade",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O documento deve estar nítido, sem cortes nas bordas ou reflexos que ocultem os números.",
+          "params": {
+            "critical_fields": [
+              "numero_rg",
+              "orgao_expedidor",
+              "data_nascimento",
+              "nome_completo"
+            ]
+          },
+          "failure_message": "A imagem do RG está ilegível, borrada ou cortada. Envie uma foto nítida e bem iluminada."
+        },
+        {
+          "id": "rg_titularidade",
+          "name": "Validação de Titularidade",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome no RG deve corresponder ao nome do aluno no sistema, aceitando abreviações e alteração por casamento.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome constante no RG não corresponde ao nome cadastrado para o aluno."
+        },
+        {
+          "id": "rg_foto_presente",
+          "name": "Presença de Foto do Titular",
+          "rule_type": "ELEMENT_PRESENCE",
+          "is_mandatory": true,
+          "description": "Verificar a presença da fotografia oficial do titular na face da frente.",
+          "params": {
+            "element": "foto_titular"
+          },
+          "failure_message": "Não foi possível identificar a foto do titular no RG enviado."
+        },
+        {
+          "id": "rg_assinatura_presente",
+          "name": "Presença de Assinatura",
+          "rule_type": "ELEMENT_PRESENCE",
+          "is_mandatory": true,
+          "description": "Verificar a presença da assinatura do titular (ou carimbo oficial de não alfabetizado/impossibilitado).",
+          "params": {
+            "element": "assinatura_titular"
+          },
+          "failure_message": "A assinatura do titular não foi identificada no documento."
+        },
+        {
+          "id": "rg_extracao_dados",
+          "name": "Extração Cadastral do RG",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair dados cadastrais para enriquecimento do cadastro do aluno.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "numero_rg",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "orgao_expedidor",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "data_expedicao",
+                "type": "date",
+                "mandatory": false
+              },
+              {
+                "field_name": "data_nascimento",
+                "type": "date",
+                "mandatory": true
+              },
+              {
+                "field_name": "naturalidade",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "filiacao",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "numero_cpf",
+                "type": "cpf",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível extrair os números essenciais do RG (número ou órgão expedidor)."
+        }
+      ]
+    },
+    "CPF": {
+      "id": "CPF",
+      "display_name": "Cadastro de Pessoa Física (CPF)",
+      "expected_doc_type": "CPF",
+      "aliases": [
+        "CPF",
+        "CADASTRO DE PESSOA FISICA",
+        "CIC",
+        "COMPROVANTE DE CPF"
+      ],
+      "target_filename_pattern": "{aluno_nome} - CPF{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "cpf_tipo_documental",
+          "name": "Tipo Documental CPF",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é um comprovante oficial de inscrição/situação cadastral no CPF emitido pela Receita Federal ou cartão físico.",
+          "params": {
+            "accepted_types": [
+              "CPF",
+              "COMPROVANTE_INSCRICAO_CPF",
+              "CARTAO_CPF"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é um comprovante de CPF válido."
+        },
+        {
+          "id": "cpf_titularidade",
+          "name": "Validação de Titularidade do CPF",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome constante no comprovante deve corresponder ao nome do aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome impresso no comprovante de CPF não coincide com o nome do aluno."
+        },
+        {
+          "id": "cpf_validacao_numero",
+          "name": "Validação do Número de CPF",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": true,
+          "description": "Extrair e validar o cálculo dos dígitos verificadores do CPF no formato 000.000.000-00.",
+          "params": {
+            "field_name": "numero_cpf",
+            "validate_check_digits": true,
+            "format_mask": "XXX.XXX.XXX-XX"
+          },
+          "failure_message": "O número do CPF não foi localizado ou possui dígitos inválidos."
+        },
+        {
+          "id": "cpf_legibilidade",
+          "name": "Legibilidade do CPF",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O comprovante deve ser totalmente legível sem dados apagados.",
+          "params": {},
+          "failure_message": "O comprovante de CPF está ilegível ou corrompido."
+        }
+      ]
+    },
+    "CNH": {
+      "id": "CNH",
+      "display_name": "Carteira Nacional de Habilitação (CNH)",
+      "expected_doc_type": "CNH",
+      "aliases": [
+        "CNH",
+        "HABILITACAO",
+        "CARTEIRA DE MOTORISTA",
+        "CARTEIRA NACIONAL DE HABILITACAO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - CNH{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "cnh_tipo_documental",
+          "name": "Tipo Documental CNH",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma Carteira Nacional de Habilitação oficial física ou CNH Digital com QR Code.",
+          "params": {
+            "accepted_types": [
+              "CNH",
+              "CNH_DIGITAL"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é uma CNH válida."
+        },
+        {
+          "id": "cnh_completude",
+          "name": "Completude da CNH",
+          "rule_type": "COMPLETENESS",
+          "is_mandatory": true,
+          "description": "Frente e verso (física) ou espelho digital completo aberto com QR Code.",
+          "params": {
+            "allow_single_page_if": "CNH_DIGITAL_COMPLETA"
+          },
+          "failure_message": "Para CNH impressa, envie ambos os lados ou o PDF oficial exportado do app Carteira Digital de Trânsito."
+        },
+        {
+          "id": "cnh_titularidade",
+          "name": "Titularidade da CNH",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome constante na CNH deve corresponder ao do aluno cadastrado.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome do titular na CNH diverge do nome do aluno cadastrado."
+        },
+        {
+          "id": "cnh_foto_presente",
+          "name": "Presença de Foto do Titular",
+          "rule_type": "ELEMENT_PRESENCE",
+          "is_mandatory": true,
+          "description": "A CNH deve conter a fotografia oficial do condutor.",
+          "params": {
+            "element": "foto_titular"
+          },
+          "failure_message": "A foto do titular na CNH não foi identificada."
+        },
+        {
+          "id": "cnh_extracao_dados",
+          "name": "Extração de Dados da CNH",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": true,
+          "description": "Extrair número da CNH, CPF, RG, Órgão, Data de Emissão e Validade.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "numero_cnh",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "numero_cpf",
+                "type": "cpf",
+                "mandatory": true
+              },
+              {
+                "field_name": "numero_rg",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "orgao_expedidor",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "data_nascimento",
+                "type": "date",
+                "mandatory": true
+              },
+              {
+                "field_name": "data_validade",
+                "type": "date",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível extrair com clareza o número da CNH ou o CPF."
+        },
+        {
+          "id": "cnh_legibilidade",
+          "name": "Legibilidade da CNH",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O documento deve estar perfeitamente legível.",
+          "params": {},
+          "failure_message": "A CNH enviada está ilegível ou com baixa resolução."
+        }
+      ]
+    },
+    "RNE": {
+      "id": "RNE",
+      "display_name": "Registro Nacional de Estrangeiro (RNE/CRNM)",
+      "expected_doc_type": "RNE_CRNM",
+      "aliases": [
+        "RNE",
+        "CRNM",
+        "CIE",
+        "REGISTRO NACIONAL DE ESTRANGEIRO",
+        "CARTEIRA DE REGISTRO NACIONAL MIGRATORIO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - RNE_CRNM{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "rne_tipo_documental",
+          "name": "Tipo Documental RNE / CRNM",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é RNE (antigo) ou CRNM (novo) oficial expedido pela Polícia Federal. Rejeitar terminantemente RG Civil brasileiro ou CNH se for exigido RNE.",
+          "params": {
+            "accepted_types": [
+              "RNE",
+              "CRNM",
+              "CIE",
+              "PROTOCOLO_REFUGIO"
+            ],
+            "forbidden_types": [
+              "RG",
+              "CNH",
+              "DIPLOMA"
+            ]
+          },
+          "failure_message": "Para estudantes estrangeiros é obrigatório enviar RNE ou CRNM expedido pela Polícia Federal (RG Civil ou CNH não são aceitos para esta finalidade)."
+        },
+        {
+          "id": "rne_completude",
+          "name": "Frente e Verso do RNE/CRNM",
+          "rule_type": "COMPLETENESS",
+          "is_mandatory": true,
+          "description": "Frente e verso do documento de identificação de estrangeiro.",
+          "params": {
+            "requires_both_sides": true
+          },
+          "failure_message": "O RNE/CRNM deve conter frente e verso legíveis."
+        },
+        {
+          "id": "rne_titularidade",
+          "name": "Titularidade do RNE",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome no RNE deve corresponder ao do aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome constante no RNE/CRNM não coincide com o nome cadastrado."
+        },
+        {
+          "id": "rne_elementos_visuais",
+          "name": "Foto e Assinatura no RNE",
+          "rule_type": "ELEMENT_PRESENCE",
+          "is_mandatory": true,
+          "description": "Verificar foto do titular e assinatura oficial.",
+          "params": {
+            "elements": [
+              "foto_titular",
+              "assinatura_titular"
+            ]
+          },
+          "failure_message": "Foto ou assinatura do titular ausentes no RNE/CRNM."
+        },
+        {
+          "id": "rne_extracao_dados",
+          "name": "Extração de Dados do RNE",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": true,
+          "description": "Extrair número RNE/CRNM, Nacionalidade, Filiação, Data de Nascimento e Validade.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "numero_rne",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "nacionalidade",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "data_nascimento",
+                "type": "date",
+                "mandatory": true
+              },
+              {
+                "field_name": "data_validade",
+                "type": "date",
+                "mandatory": false
+              },
+              {
+                "field_name": "filiacao",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível extrair o número do RNE ou nacionalidade do estrangeiro."
+        }
+      ]
+    },
+    "DIPLOMA_GRADUACAO": {
+      "id": "DIPLOMA_GRADUACAO",
+      "display_name": "Diploma de Graduação",
+      "expected_doc_type": "DIPLOMA_SUPERIOR",
+      "aliases": [
+        "DIPLOMA SUPERIOR",
+        "DIPLOMA",
+        "DIPLOMA DE GRADUACAO",
+        "DIPLOMA FACULDADE",
+        "CERTIFICADO DE CONCLUSAO DE CURSO SUPERIOR"
+      ],
+      "target_filename_pattern": "{aluno_nome} - DIPLOMA SUPERIOR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "dip_tipo_documental_estrito",
+          "name": "Tipo Documental Diploma Superior",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é estritamente um Diploma de Graduação ou Certidão Oficial de Conclusão com colação de grau. REJEITAR IMEDIATAMENTE se for apenas Histórico Escolar (grade de notas) ou Declaração de Matrícula.",
+          "params": {
+            "accepted_types": [
+              "DIPLOMA_SUPERIOR",
+              "CERTIDAO_CONCLUSAO_SUPERIOR"
+            ],
+            "forbidden_types": [
+              "HISTORICO_ESCOLAR",
+              "DECLARACAO_MATRICULA",
+              "PLANO_ENSINO"
+            ]
+          },
+          "failure_message": "Documento incorreto: Foi enviado um Histórico Escolar ou Declaração. Para este campo é estritamente exigido o DIPLOMA ou Certidão de Conclusão com Colação de Grau."
+        },
+        {
+          "id": "dip_titularidade",
+          "name": "Titularidade do Diploma",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome do diplomado deve corresponder ao do aluno cadastrado.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome constante no Diploma não coincide com o nome do aluno."
+        },
+        {
+          "id": "dip_integridade_academica",
+          "name": "Dados Acadêmicos e Registro",
+          "rule_type": "ACADEMIC_INTEGRITY",
+          "is_mandatory": true,
+          "description": "O diploma deve conter o nome do curso superior conferido, o nome da Instituição de Ensino Superior (IES) e a data de colação de grau ou registro oficial.",
+          "params": {
+            "must_contain": [
+              "nome_curso",
+              "instituicao_ensino"
+            ]
+          },
+          "failure_message": "O diploma não apresenta informações claras do curso superior concluído ou da instituição emissora."
+        },
+        {
+          "id": "dip_extracao_dados",
+          "name": "Extração de Dados do Diploma",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair nome do curso, instituição, data de colação de grau e número de registro no MEC.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "nome_curso",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "instituicao_ensino",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "data_colacao_grau",
+                "type": "date",
+                "mandatory": false
+              },
+              {
+                "field_name": "numero_registro_diploma",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Falha na extração dos dados cadastrais do diploma."
+        },
+        {
+          "id": "dip_legibilidade",
+          "name": "Legibilidade do Diploma",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O diploma deve ser totalmente legível, incluindo assinaturas e dados de registro no verso (se houver).",
+          "params": {},
+          "failure_message": "A imagem do diploma está ilegível ou incompleta."
+        },
+        {
+          "id": "dip_assinatura_digital_mec",
+          "name": "Assinatura Digital e Registro MEC (Portaria 315/2018 e 360/2022)",
+          "rule_type": "DIGITAL_SIGNATURE",
+          "is_mandatory": true,
+          "description": "Verificar se o diploma possui assinatura digital ICP-Brasil qualificada, carimbo do tempo e QR Code/URL de validação de registro perante o MEC.",
+          "params": {
+            "accepted_formats": [
+              "DIPLOMA_DIGITAL_XML",
+              "RVDD_COM_QRCODE",
+              "DIPLOMA_FISICO_REGISTRADO"
+            ]
+          },
+          "failure_message": "O diploma não apresenta assinatura digital ICP-Brasil válida, carimbo do tempo ou dados de validação de registro no MEC (Portarias MEC 315/2018 e 360/2022)."
+        },
+        {
+          "id": "dip_nitidez_carimbo_registro",
+          "name": "Nitidez do Carimbo e Registro de Diploma",
+          "rule_type": "STAMP_LEGIBILITY",
+          "is_mandatory": true,
+          "description": "Em diplomas físicos digitalizados, verificar a nitidez do carimbo de registro no verso, contendo livro, folha, número de ordem e chancela da IES registradora.",
+          "params": {},
+          "failure_message": "Carimbo ou dados de registro no verso do diploma ilegíveis ou incompletos."
+        }
+      ],
+      "compliance_315": {
+        "conarq_classification": "125.1",
+        "retention_schedule": "PERMANENTE",
+        "requires_school_stamp_legibility": true,
+        "requires_digital_signature_check": true,
+        "requires_civil_annotation_check": false
+      }
+    },
+    "HISTORICO_GRADUACAO": {
+      "id": "HISTORICO_GRADUACAO",
+      "display_name": "Histórico da Graduação",
+      "expected_doc_type": "HISTORICO_SUPERIOR",
+      "aliases": [
+        "HISTORICO SUPERIOR",
+        "HISTORICO FACULDADE",
+        "HISTORICO GRADUACAO",
+        "HISTORICO ACADEMICO",
+        "GRADE CURRICULAR GRADUACAO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - HISTORICO SUPERIOR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "hist_grad_tipo_documental",
+          "name": "Tipo Documental Histórico Superior",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é um Histórico Escolar de Ensino Superior completo (contendo relação de disciplinas, notas/conceitos, carga horária e situação de conclusão). REJEITAR IMEDIATAMENTE se for apenas a folha de frente do Diploma sem a grade.",
+          "params": {
+            "accepted_types": [
+              "HISTORICO_SUPERIOR",
+              "HISTORICO_ACADEMICO"
+            ],
+            "forbidden_types": [
+              "DIPLOMA_ISOLADO",
+              "COMPROVANTE_MATRICULA"
+            ]
+          },
+          "failure_message": "Documento incorreto: Foi enviado apenas o Diploma ou Certificado. É obrigatório o envio do HISTÓRICO ESCOLAR COMPLETO contendo as disciplinas e notas."
+        },
+        {
+          "id": "hist_grad_titularidade",
+          "name": "Titularidade do Histórico",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome constante no histórico deve corresponder ao do aluno cadastrado.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome constante no Histórico Escolar não coincide com o nome do aluno."
+        },
+        {
+          "id": "hist_grad_extracao_dados",
+          "name": "Extração de Dados do Histórico Superior",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair nome do curso, instituição, carga horária total e data de conclusão/colação de grau.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "nome_curso",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "instituicao_ensino",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "carga_horaria_total",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "data_conclusao",
+                "type": "date",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível extrair a carga horária ou curso do histórico."
+        },
+        {
+          "id": "hist_grad_legibilidade",
+          "name": "Legibilidade do Histórico",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "Todas as páginas do histórico devem ser legíveis, permitindo a leitura das disciplinas cursadas.",
+          "params": {},
+          "failure_message": "O histórico escolar enviado está ilegível ou faltam páginas de disciplinas."
+        },
+        {
+          "id": "hist_grad_assinatura_digital",
+          "name": "Assinatura Digital e Autenticidade (Portaria MEC 315/2018)",
+          "rule_type": "DIGITAL_SIGNATURE",
+          "is_mandatory": false,
+          "description": "Verificar assinatura digital qualificada ICP-Brasil / Gov.br ou chave de autenticação digital no histórico de graduação.",
+          "params": {},
+          "failure_message": "Histórico de graduação digital sem chave ou assinatura válida."
+        },
+        {
+          "id": "hist_grad_nitidez_carimbo",
+          "name": "Nitidez de Carimbo da Secretaria Acadêmica",
+          "rule_type": "STAMP_LEGIBILITY",
+          "is_mandatory": true,
+          "description": "Verificar se o carimbo e a assinatura da secretaria acadêmica da faculdade de origem estão perfeitamente visíveis e autênticos.",
+          "params": {},
+          "failure_message": "Carimbo da secretaria acadêmica da IES de origem ilegível."
+        }
+      ],
+      "compliance_315": {
+        "conarq_classification": "125.1",
+        "retention_schedule": "PERMANENTE",
+        "requires_school_stamp_legibility": true,
+        "requires_digital_signature_check": true,
+        "requires_civil_annotation_check": false
+      }
+    },
+    "DIPLOMA_E_HISTORICO_GRADUACAO": {
+      "id": "DIPLOMA_E_HISTORICO_GRADUACAO",
+      "display_name": "Diploma e Histórico da Graduação (Juntos)",
+      "expected_doc_type": "DIPLOMA_E_HISTORICO_SUPERIOR",
+      "aliases": [
+        "DIPLOMA E HISTORICO",
+        "DIPLOMA COM HISTORICO",
+        "PACOTE ACADEMICO GRADUACAO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - DIPLOMA E HISTORICO SUPERIOR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf"
+      ],
+      "criteria": [
+        {
+          "id": "diph_tipo_documental",
+          "name": "Presença Conjunta de Diploma e Histórico",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o arquivo PDF contém simultaneamente o Diploma/Certificado de Conclusão E as páginas do Histórico Escolar.",
+          "params": {
+            "accepted_types": [
+              "DIPLOMA_E_HISTORICO_SUPERIOR"
+            ]
+          },
+          "failure_message": "O arquivo deve conter ambos: o Diploma E o Histórico Escolar de graduação."
+        },
+        {
+          "id": "diph_titularidade",
+          "name": "Titularidade do Pacote Acadêmico",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome em ambos os documentos deve corresponder ao do aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "Nome do aluno diverge dos documentos acadêmicos apresentados."
+        },
+        {
+          "id": "diph_extracao_dados",
+          "name": "Extração de Dados Integrada",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair dados da graduação (curso, colação, registro, carga horária).",
+          "params": {
+            "fields": [
+              {
+                "field_name": "nome_curso",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "instituicao_ensino",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "carga_horaria_total",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "numero_registro_diploma",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Dados do curso ou registro incompletos."
+        }
+      ]
+    },
+    "CERTIFICADO_ENSINO_MEDIO": {
+      "id": "CERTIFICADO_ENSINO_MEDIO",
+      "display_name": "Certificado de Conclusão do Ensino Médio",
+      "expected_doc_type": "CERTIFICADO_ESCOLAR",
+      "aliases": [
+        "CERTIFICADO ESCOLAR",
+        "CERTIFICADO MEDIO",
+        "CERTIFICADO 2 GRAU",
+        "DIPLOMA ENSINO MEDIO",
+        "DECLARACAO DE CONCLUSAO MEDIO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - CERTIFICADO ESCOLAR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "cert_em_tipo_documental",
+          "name": "Tipo Documental Certificado Médio",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento comprova a conclusão do Ensino Médio (antigo 2º grau / Supletivo / ENCCEJA / EJA).",
+          "params": {
+            "accepted_types": [
+              "CERTIFICADO_ESCOLAR",
+              "CERTIFICADO_ENCCEJA",
+              "CERTIFICADO_EJA",
+              "DECLARACAO_CONCLUSAO_MEDIO"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é um Certificado de Conclusão do Ensino Médio válido."
+        },
+        {
+          "id": "cert_em_titularidade",
+          "name": "Titularidade do Certificado",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome do concluinte deve coincidir com o aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome no certificado de conclusão não corresponde ao do aluno."
+        },
+        {
+          "id": "cert_em_extracao_dados",
+          "name": "Extração de Instituição e Data",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair nome da escola e data/ano de conclusão.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "instituicao_ensino",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "data_conclusao",
+                "type": "date",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Instituição de ensino ou data não identificadas."
+        },
+        {
+          "id": "cert_em_legibilidade",
+          "name": "Legibilidade do Certificado",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O certificado deve estar totalmente legível.",
+          "params": {},
+          "failure_message": "Certificado de conclusão ilegível."
+        },
+        {
+          "id": "cert_em_nitidez_carimbo",
+          "name": "Nitidez de Carimbo Escolar e Visto de Inspeção",
+          "rule_type": "STAMP_LEGIBILITY",
+          "is_mandatory": true,
+          "description": "Verificar a nitidez, legibilidade e integridade do carimbo da instituição escolar ou visto de inspeção escolar / 'confere com o original' (Portaria MEC 315/2018).",
+          "params": {
+            "requires_stamp": true
+          },
+          "failure_message": "Carimbo escolar ou visto de inspeção ausente ou ilegível no Certificado de Conclusão."
+        },
+        {
+          "id": "cert_em_assinatura_digital",
+          "name": "Assinatura Digital / Validação Eletrônica",
+          "rule_type": "DIGITAL_SIGNATURE",
+          "is_mandatory": false,
+          "description": "Caso emitido digitalmente, verificar se o certificado possui assinatura ICP-Brasil / Gov.br ou código de autenticidade eletrônica nos termos da Portaria MEC 315/2018.",
+          "params": {},
+          "failure_message": "Código de validação eletrônica ou assinatura digital não verificável."
+        }
+      ],
+      "compliance_315": {
+        "conarq_classification": "125.1",
+        "retention_schedule": "PERMANENTE",
+        "requires_school_stamp_legibility": true,
+        "requires_digital_signature_check": false,
+        "requires_civil_annotation_check": false
+      }
+    },
+    "HISTORICO_ENSINO_MEDIO": {
+      "id": "HISTORICO_ENSINO_MEDIO",
+      "display_name": "Histórico do Ensino Médio",
+      "expected_doc_type": "HISTORICO_ESCOLAR",
+      "aliases": [
+        "HISTORICO ESCOLAR",
+        "HISTORICO MEDIO",
+        "HISTORICO 2 GRAU",
+        "HISTORICO SEGUNDO GRAU",
+        "HISTORICO ENSINO MEDIO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - HISTORICO ESCOLAR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "hist_em_tipo_documental",
+          "name": "Tipo Documental Histórico do Ensino Médio",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é o Histórico Escolar com as notas do 1º, 2º e 3º anos do Ensino Médio.",
+          "params": {
+            "accepted_types": [
+              "HISTORICO_ESCOLAR",
+              "HISTORICO_MEDIO"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é um Histórico Escolar do Ensino Médio."
+        },
+        {
+          "id": "hist_em_titularidade",
+          "name": "Titularidade do Histórico Médio",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "Nome constante no histórico deve coincidir com o aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "Nome constante no histórico do ensino médio diverge do cadastro."
+        },
+        {
+          "id": "hist_em_extracao_dados",
+          "name": "Dados da Escola e Conclusão",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair nome da escola, cidade, UF e ano de conclusão.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "instituicao_ensino",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "cidade_escola",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "uf_escola",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "data_conclusao",
+                "type": "date",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível identificar a escola no histórico."
+        },
+        {
+          "id": "hist_em_legibilidade",
+          "name": "Legibilidade do Histórico Médio",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "Todas as séries e notas devem estar visíveis e legíveis.",
+          "params": {},
+          "failure_message": "Histórico escolar ilegível."
+        },
+        {
+          "id": "hist_em_nitidez_carimbo",
+          "name": "Nitidez de Carimbos e Assinaturas da Direção/Secretaria",
+          "rule_type": "STAMP_LEGIBILITY",
+          "is_mandatory": true,
+          "description": "O histórico escolar deve apresentar carimbos e identificação nítida da direção e da secretaria escolar, com matrícula ou registro oficial (Portaria MEC 315/2018).",
+          "params": {},
+          "failure_message": "Carimbo da secretaria/diretoria escolar ilegível ou ausente no Histórico Escolar."
+        },
+        {
+          "id": "hist_em_assinatura_digital",
+          "name": "Validação Eletrônica / Assinatura Digital",
+          "rule_type": "DIGITAL_SIGNATURE",
+          "is_mandatory": false,
+          "description": "Verificar assinatura digital padrão ICP-Brasil ou carimbo do tempo quando apresentado em formato nato-digital.",
+          "params": {},
+          "failure_message": "Assinatura digital do histórico escolar inválida ou não reconhecida."
+        }
+      ],
+      "compliance_315": {
+        "conarq_classification": "125.1",
+        "retention_schedule": "PERMANENTE",
+        "requires_school_stamp_legibility": true,
+        "requires_digital_signature_check": false,
+        "requires_civil_annotation_check": false
+      }
+    },
+    "CERTIFICADO_E_HISTORICO_ENSINO_MEDIO": {
+      "id": "CERTIFICADO_E_HISTORICO_ENSINO_MEDIO",
+      "display_name": "Certificado e Histórico do Ensino Médio (Juntos)",
+      "expected_doc_type": "CERTIFICADO_E_HISTORICO_ESCOLAR",
+      "aliases": [
+        "CERTIFICADO E HISTORICO",
+        "HISTORICO E CERTIFICADO",
+        "DOCS ESCOLARES"
+      ],
+      "target_filename_pattern": "{aluno_nome} - CERTIFICADO E HISTORICO ESCOLAR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf"
+      ],
+      "criteria": [
+        {
+          "id": "certh_em_tipo",
+          "name": "Presença Conjunta de Certificado e Histórico Médio",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "O arquivo PDF deve conter o Certificado de Conclusão e a relação de notas do Ensino Médio.",
+          "params": {
+            "accepted_types": [
+              "CERTIFICADO_E_HISTORICO_ESCOLAR"
+            ]
+          },
+          "failure_message": "O arquivo deve conter ambos: o Certificado de Conclusão E o Histórico do Ensino Médio."
+        },
+        {
+          "id": "certh_em_titularidade",
+          "name": "Titularidade dos Documentos Escolares",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome nos documentos deve coincidir com o aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome do aluno não corresponde aos documentos escolares."
+        }
+      ]
+    },
+    "COMPROVANTE_RESIDENCIA": {
+      "id": "COMPROVANTE_RESIDENCIA",
+      "display_name": "Comprovante de Residência",
+      "expected_doc_type": "COMPROVANTE_DE_RESIDENCIA",
+      "aliases": [
+        "COMPROVANTE DE RESIDENCIA",
+        "RESIDENCIA",
+        "ENDERECO",
+        "COMPROVANTE ENDERECO",
+        "CONTA DE LUZ",
+        "CONTA DE AGUA",
+        "CONTA DE TELEFONE"
+      ],
+      "target_filename_pattern": "{aluno_nome} - COMPROVANTE DE RESIDENCIA{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "res_tipo_documental",
+          "name": "Tipo Documental de Comprovante de Residência",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma conta de consumo (energia, água, gás, internet, telefone fixo/móvel) ou boleto bancário oficial recente.",
+          "params": {
+            "accepted_types": [
+              "CONTA_LUZ",
+              "CONTA_AGUA",
+              "CONTA_GAS",
+              "CONTA_TELECOM",
+              "EXTRATO_BANCARIO",
+              "FATURA_CARTAO",
+              "CONTRATO_LOCACAO"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é um comprovante de residência aceito (envie conta de luz, água, gás, internet ou telefone)."
+        },
+        {
+          "id": "res_regra_titularidade_terceiros",
+          "name": "Política de Titularidade Flexível (Aceita Terceiros)",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": false,
+          "description": "REGRA DE NEGÓCIO ESPECIAL: O comprovante de residência PODE estar em nome de terceiros (pais, cônjuge, parentes ou locador). NÃO reprovar se o nome divergir do aluno.",
+          "params": {
+            "matching_mode": "IGNORE"
+          },
+          "failure_message": ""
+        },
+        {
+          "id": "res_extracao_endereco",
+          "name": "Extração do Endereço Completo",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": true,
+          "description": "Extrair rua/logradouro, número, bairro, cidade, estado (UF) e CEP.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "endereco_completo",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "cep",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "cidade",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "estado_uf",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível identificar o endereço ou CEP legível no comprovante."
+        },
+        {
+          "id": "res_legibilidade",
+          "name": "Legibilidade do Comprovante",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O comprovante deve conter o cabeçalho e o bloco de endereço perfeitamente visíveis.",
+          "params": {},
+          "failure_message": "Comprovante de residência ilegível."
+        }
+      ]
+    },
+    "CERTIDAO_NASCIMENTO_CASAMENTO": {
+      "id": "CERTIDAO_NASCIMENTO_CASAMENTO",
+      "display_name": "Certidão de Nascimento ou Casamento",
+      "expected_doc_type": "CERTIDAO_NASCIMENTO_CASAMENTO",
+      "aliases": [
+        "CERTIDAO DE NASCIMENTO",
+        "CERTIDAO DE CASAMENTO",
+        "CERTIDAO DE NASCIMENTO OU CASAMENTO",
+        "ESTADO CIVIL",
+        "CERTIDAO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - {tipo_certidao_especifico}{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "cert_tipo_documental",
+          "name": "Tipo Documental Certidão de Registro Civil",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma Certidão de Nascimento ou Certidão de Casamento emitida por Cartório de Registro Civil.",
+          "params": {
+            "accepted_types": [
+              "CERTIDAO_NASCIMENTO",
+              "CERTIDAO_CASAMENTO"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é uma Certidão de Nascimento ou Casamento oficial."
+        },
+        {
+          "id": "cert_titularidade",
+          "name": "Validação de Titularidade da Certidão",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome na certidão deve coincidir com o aluno (considerando nome de solteiro ou nome após o casamento).",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome na certidão não corresponde ao aluno ou seu histórico civil."
+        },
+        {
+          "id": "cert_extracao_dados",
+          "name": "Extração de Dados da Certidão",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair filiação, data de nascimento/casamento, averbações de divórcio (se houver) e cartório emissor.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "tipo_certidao",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "filiacao",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "data_evento",
+                "type": "date",
+                "mandatory": false
+              },
+              {
+                "field_name": "dados_cartorio",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "averbacao_divorcio",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Falha na extração de dados do registro civil."
+        },
+        {
+          "id": "cert_legibilidade",
+          "name": "Legibilidade da Certidão",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "A certidão deve estar totalmente legível.",
+          "params": {},
+          "failure_message": "Certidão ilegível ou com cortes."
+        },
+        {
+          "id": "cert_averbacao_civil",
+          "name": "Averbação Civil de Continuidade de Nome (Portaria MEC 315/2018)",
+          "rule_type": "CIVIL_ANNOTATION",
+          "is_mandatory": true,
+          "description": "Verificar a presença e legibilidade de averbação civil (casamento, separação, divórcio ou alteração de prenome/gênero) caso o nome do aluno divirja de outros documentos acadêmicos do acervo.",
+          "params": {
+            "requires_annotation_if_name_diverges": true
+          },
+          "failure_message": "Ausência de averbação civil comprovando a mudança ou retificação do nome do aluno."
+        }
+      ],
+      "compliance_315": {
+        "conarq_classification": "125.1",
+        "retention_schedule": "PERMANENTE",
+        "requires_school_stamp_legibility": false,
+        "requires_digital_signature_check": false,
+        "requires_civil_annotation_check": true
+      }
+    },
+    "DOCUMENTO_MILITAR": {
+      "id": "DOCUMENTO_MILITAR",
+      "display_name": "Documento Militar (sexo masculino)",
+      "expected_doc_type": "DOCUMENTO_MILITAR",
+      "aliases": [
+        "DOCUMENTO MILITAR",
+        "RESERVISTA",
+        "CERTIFICADO DE RESERVISTA",
+        "CDI",
+        "CAM",
+        "DISPENSA DE INCORPORACAO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - DOCUMENTO MILITAR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "mil_tipo_documental",
+          "name": "Tipo Documental Militar",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é Certificado de Reservista, Certificado de Dispensa de Incorporação (CDI), Certificado de Alistamento Militar (CAM) ou Isenção.",
+          "params": {
+            "accepted_types": [
+              "RESERVISTA",
+              "CDI",
+              "CAM",
+              "CERTIFICADO_ISENCAO_MILITAR"
+            ]
+          },
+          "failure_message": "O documento enviado não é um comprovante de quitação do serviço militar válido."
+        },
+        {
+          "id": "mil_titularidade",
+          "name": "Titularidade do Documento Militar",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome constante no documento deve coincidir com o aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome no documento militar não corresponde ao do aluno."
+        },
+        {
+          "id": "mil_extracao_dados",
+          "name": "Extração de Número do Certificado Militar",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair número do RA (Registro de Alistamento) ou número do certificado de reservista/CDI e filiação.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "numero_documento_militar",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "filiacao",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível identificar o número do documento militar."
+        },
+        {
+          "id": "mil_legibilidade",
+          "name": "Legibilidade do Documento Militar",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O documento deve estar nítido e legível.",
+          "params": {},
+          "failure_message": "Documento militar ilegível."
+        }
+      ]
+    },
+    "QUITACAO_ELEITORAL": {
+      "id": "QUITACAO_ELEITORAL",
+      "display_name": "Quitação Eleitoral",
+      "expected_doc_type": "QUITACAO_ELEITORAL",
+      "aliases": [
+        "QUITACAO ELEITORAL",
+        "TITULO DE ELEITOR",
+        "E-TITULO",
+        "SITUACAO ELEITORAL",
+        "CERTIDAO DE QUITACAO ELEITORAL"
+      ],
+      "target_filename_pattern": "{aluno_nome} - QUITACAO ELEITORAL{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "eleit_tipo_documental",
+          "name": "Tipo Documental Quitação Eleitoral",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma Certidão de Quitação Eleitoral emitida pelo TSE/TRE, Título de Eleitor físico ou E-Título digital.",
+          "params": {
+            "accepted_types": [
+              "CERTIDAO_QUITACAO_ELEITORAL",
+              "TITULO_ELEITOR",
+              "E_TITULO"
+            ]
+          },
+          "failure_message": "O arquivo enviado não comprova quitação eleitoral válida (envie Certidão do TSE ou Título de Eleitor)."
+        },
+        {
+          "id": "eleit_titularidade",
+          "name": "Titularidade do Eleitor",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome do eleitor deve corresponder ao do aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome constante no documento eleitoral diverge do aluno."
+        },
+        {
+          "id": "eleit_extracao_dados",
+          "name": "Extração de Dados do Título/Quitação",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair número de inscrição do Título de Eleitor, zona, seção e situação de quitação.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "numero_titulo_eleitor",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "zona_eleitoral",
+                "type": "string",
+                "mandatory": false
+              },
+              {
+                "field_name": "secao_eleitoral",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Não foi possível extrair o número do título eleitoral."
+        },
+        {
+          "id": "eleit_legibilidade",
+          "name": "Legibilidade do Documento Eleitoral",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "Certidão ou título totalmente legíveis.",
+          "params": {},
+          "failure_message": "Comprovante eleitoral ilegível."
+        }
+      ]
+    },
+    "DOCUMENTO_RESPONSAVEL": {
+      "id": "DOCUMENTO_RESPONSAVEL",
+      "display_name": "Documento de Identificação do Responsável Legal",
+      "expected_doc_type": "DOCUMENTO_RESPONSAVEL",
+      "aliases": [
+        "RG DO RESPONSAVEL",
+        "CNH DO RESPONSAVEL",
+        "DOCUMENTO DOS PAIS",
+        "RESPONSAVEL LEGAL"
+      ],
+      "target_filename_pattern": "{aluno_nome} - RG RESPONSAVEL{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "resp_tipo_documental",
+          "name": "Tipo Documental RG ou CNH do Responsável",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma Carteira de Identidade (RG) ou CNH do pai, mãe ou tutor legal.",
+          "params": {
+            "accepted_types": [
+              "RG",
+              "CNH",
+              "RNE"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é um documento oficial de identidade do responsável (RG ou CNH)."
+        },
+        {
+          "id": "resp_completude",
+          "name": "Frente e Verso do Documento do Responsável",
+          "rule_type": "COMPLETENESS",
+          "is_mandatory": true,
+          "description": "Ambos os lados do documento de identificação do responsável.",
+          "params": {
+            "requires_both_sides": true
+          },
+          "failure_message": "Envie frente e verso legíveis do documento do responsável."
+        },
+        {
+          "id": "resp_titularidade_pais",
+          "name": "Titularidade do Responsável",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": false,
+          "description": "O documento deve estar em nome do responsável legal cadastrado (pai, mãe ou tutor).",
+          "params": {
+            "matching_mode": "IGNORE"
+          },
+          "failure_message": ""
+        },
+        {
+          "id": "resp_extracao_dados",
+          "name": "Extração de Dados do Responsável",
+          "rule_type": "FIELD_EXTRACTION",
+          "is_mandatory": false,
+          "description": "Extrair nome do responsável, CPF e número do RG.",
+          "params": {
+            "fields": [
+              {
+                "field_name": "nome_responsavel",
+                "type": "string",
+                "mandatory": true
+              },
+              {
+                "field_name": "cpf_responsavel",
+                "type": "cpf",
+                "mandatory": true
+              },
+              {
+                "field_name": "rg_responsavel",
+                "type": "string",
+                "mandatory": false
+              }
+            ]
+          },
+          "failure_message": "Nome ou CPF do responsável ilegíveis."
+        },
+        {
+          "id": "resp_legibilidade",
+          "name": "Legibilidade do Documento do Responsável",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "Documento perfeitamente legível.",
+          "params": {},
+          "failure_message": "Documento do responsável ilegível."
+        }
+      ]
+    },
+    "CARTAO_VACINACAO": {
+      "id": "CARTAO_VACINACAO",
+      "display_name": "Caderneta / Cartão de Vacinação",
+      "expected_doc_type": "CARTAO_VACINACAO",
+      "aliases": [
+        "CARTAO DE VACINA",
+        "CADERNETA DE VACINACAO",
+        "VACINA",
+        "COMPROVANTE DE VACINACAO"
+      ],
+      "target_filename_pattern": "{aluno_nome} - CARTAO DE VACINACAO{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "vac_tipo_documental",
+          "name": "Tipo Documental Cartão de Vacinação",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma Caderneta de Vacinação ou Declaração de Vacinação Atualizada emitida pelo Posto de Saúde/SUS.",
+          "params": {
+            "accepted_types": [
+              "CADERNETA_VACINACAO",
+              "DECLARACAO_VACINACAO_SUS",
+              "CERTIFICADO_VACINAL"
+            ]
+          },
+          "failure_message": "O arquivo enviado não é um comprovante oficial de vacinação (SUS ou rede privada)."
+        },
+        {
+          "id": "vac_titularidade",
+          "name": "Titularidade da Criança/Estudante",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome na caderneta deve ser o da criança/estudante cadastrado.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome no cartão de vacina não corresponde ao do estudante."
+        },
+        {
+          "id": "vac_legibilidade",
+          "name": "Legibilidade das Vacinas",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "A identificação do aluno e o quadro de doses aplicadas devem estar visíveis.",
+          "params": {},
+          "failure_message": "Cartão de vacinação ilegível."
+        }
+      ]
+    },
+    "DECLARACAO_TRANSFERENCIA": {
+      "id": "DECLARACAO_TRANSFERENCIA",
+      "display_name": "Declaração de Transferência Escolar",
+      "expected_doc_type": "DECLARACAO_TRANSFERENCIA",
+      "aliases": [
+        "DECLARACAO DE TRANSFERENCIA",
+        "TRANSFERENCIA ESCOLAR",
+        "GUIA DE TRANSFERENCIA"
+      ],
+      "target_filename_pattern": "{aluno_nome} - TRANSFERENCIA ESCOLAR{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "transf_tipo_documental",
+          "name": "Tipo Documental Transferência Escolar",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se o documento é uma Declaração de Transferência emitida pela escola anterior com carimbo e assinatura da direção/secretaria.",
+          "params": {
+            "accepted_types": [
+              "DECLARACAO_TRANSFERENCIA",
+              "GUIA_TRANSFERENCIA"
+            ]
+          },
+          "failure_message": "O arquivo não é uma declaração de transferência escolar válida."
+        },
+        {
+          "id": "transf_titularidade",
+          "name": "Titularidade do Estudante",
+          "rule_type": "HOLDER_MATCH",
+          "is_mandatory": true,
+          "description": "O nome na declaração deve coincidir com o aluno.",
+          "params": {
+            "target_field": "aluno.nome_completo",
+            "matching_mode": "FLEXIBLE",
+            "fuzzy_threshold": 85
+          },
+          "failure_message": "O nome do aluno na transferência diverge do cadastro."
+        },
+        {
+          "id": "transf_legibilidade",
+          "name": "Legibilidade da Declaração",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O documento deve estar legível com dados da escola de origem.",
+          "params": {},
+          "failure_message": "Declaração de transferência ilegível."
+        }
+      ]
+    },
+    "FOTO_3X4": {
+      "id": "FOTO_3X4",
+      "display_name": "Foto 3x4 do Estudante",
+      "expected_doc_type": "FOTO_3X4",
+      "aliases": [
+        "FOTO 3X4",
+        "FOTO ALUNO",
+        "FOTO ROSTO",
+        "FOTOGRAFIA"
+      ],
+      "target_filename_pattern": "{aluno_nome} - FOTO 3X4{sufixo_pagina}{ext}",
+      "target_drive_folder": "DOC",
+      "allowed_extensions": [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic"
+      ],
+      "criteria": [
+        {
+          "id": "foto_tipo",
+          "name": "Tipo Documental Foto 3x4",
+          "rule_type": "DOC_TYPE",
+          "is_mandatory": true,
+          "description": "Confirmar se a imagem é uma foto de rosto frontal da criança/estudante com fundo neutro e boa iluminação.",
+          "params": {
+            "accepted_types": [
+              "FOTO_ROSTO",
+              "FOTO_3X4"
+            ]
+          },
+          "failure_message": "Envie uma foto de rosto nítida (estilo 3x4) com fundo claro e sem óculos escuros/boné."
+        },
+        {
+          "id": "foto_qualidade",
+          "name": "Qualidade e Enquadramento",
+          "rule_type": "QUALITY_CHECK",
+          "is_mandatory": true,
+          "description": "O rosto deve estar centralizado e nítido.",
+          "params": {},
+          "failure_message": "Foto escura, tremida ou sem enquadramento adequado do rosto."
+        }
+      ]
+    }
+  }
+}

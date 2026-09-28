@@ -1,0 +1,12 @@
+# Regras de Redirecionamento Oficiais Netlify (ProtocoloEdu)
+# Redireciona /admin e /secretaria para a Central Unificada de Registros no Super Admin
+/admin        /superadmin.html                302
+/secretaria   /superadmin.html                302
+/superadmin   /superadmin.html                200
+/super-admin  /superadmin.html                200
+
+# Roteamento SPA dos Portais de Alunos Personalizados por Instituição
+/portal/*     /index.html                     200
+/portal       /index.html                     200
+/aluno        /index.html                     200
+/*            /index.html                     200

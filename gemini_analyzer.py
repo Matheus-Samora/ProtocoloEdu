@@ -1,26 +1,24 @@
-# ARQUIVO: gemini_analyzer.py (Versão com Lógica RNE Estrita + Diploma/Histórico Separados)
-# DESCRIÇÃO: Módulo responsável pela análise de documentos usando Google Document AI (Classificação)
-#            e Google Gemini (Extração e Validação).
-#            Inclui suporte seguro para sanitização de imagens via document_processor.
+# ARQUIVO: gemini_analyzer.py (Versão BLINDADA contra arquivos vazios, erro 429 e com formatação de CPF)
+# DESCRIÇÃO: Inclui verificação de arquivo vazio, Retry para Cota e formatação automática de CPF (XXX.XXX.XXX-XX).
 
 import logging
 import base64
 import json
-import io  # Necessário para manipulação de streams
+import io 
+import time 
+import random 
+import re  # Adicionado para manipulação de Regex no CPF
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part, GenerationConfig
 from google.cloud import documentai
-from google.api_core.exceptions import GoogleAPICallError, PermissionDenied, Unauthenticated
+from google.api_core.exceptions import GoogleAPICallError, PermissionDenied, Unauthenticated, ResourceExhausted
 
-# Tenta importar o processador de documentos para limpeza de imagens
 document_processor = None
 try:
     import document_processor
 except ImportError:
     logging.warning("Módulo 'document_processor' não encontrado. A sanitização de imagens será ignorada.")
 
-# Mapeamento de chaves para padronização do JSON de saída
-# ATUALIZADO: Incluído suporte para RNE
 KEY_MAPPING = {
     "nome completo": "nome_completo", "filiação": "filiacao", "registro geral": "numero_rg",
     "rg": "numero_rg", "órgão expedidor": "orgao_expedidor", "cpf": "numero_cpf",
@@ -30,15 +28,12 @@ KEY_MAPPING = {
     "número de registro oficial do diploma": "numero_registro_diploma",
     "número de inscrição": "numero_inscricao_eleitor",
     "número de alistamento militar": "numero_alistamento_militar",
-    # Mapeamentos específicos para RNE
     "rne": "numero_rne", "registro nacional de estrangeiro": "numero_rne",
     "crnm": "numero_rne", "classificação": "classificacao_visto"
 }
 
 def _generate_dynamic_schema(criteria_list: list) -> str:
-    """Gera o schema JSON dinamicamente com base nos critérios solicitados."""
     schema_fields = set()
-    # Adiciona o novo campo fixo ao schema para comparação posterior
     schema_fields.add('          "nome_aluno_sistema": "string|null"')
     
     for criterion in criteria_list:
@@ -47,7 +42,6 @@ def _generate_dynamic_schema(criteria_list: list) -> str:
             if keyword in criterion_lower:
                 schema_fields.add(f'          "{key}": "string|null"')
     
-    # Se não encontrar critérios específicos, adiciona campos base
     if len(schema_fields) <= 1: 
         base_fields = [
             '          "nome_completo": "string|null"',
@@ -82,15 +76,10 @@ class DocumentAIAnalyzer:
             logging.critical(f"[ERRO DE INICIALIZAÇÃO] {self.initialization_error}")
 
     def classify_document_type(self, processor_id: str, processor_version_id: str, file_content_bytes: bytes, mime_type: str):
-        """
-        Classifica o tipo do documento usando o Document AI.
-        Inclui sanitização prévia (HEIC->JPG) SE o módulo estiver disponível.
-        """
         if self.initialization_error:
             return None, self.initialization_error
         
         try:
-            # 1. Prepara o conteúdo (limpeza opcional)
             clean_content_bytes = file_content_bytes
             clean_mime_type = mime_type
 
@@ -111,7 +100,16 @@ class DocumentAIAnalyzer:
             
             raw_document = documentai.RawDocument(content=clean_content_bytes, mime_type=clean_mime_type)
             request = documentai.ProcessRequest(name=name, raw_document=raw_document, skip_human_review=True)
-            result = self.doc_ai_client.process_document(request=request)
+            
+            for attempt in range(3):
+                try:
+                    result = self.doc_ai_client.process_document(request=request)
+                    break
+                except ResourceExhausted:
+                    time.sleep(2 * (attempt + 1))
+            else:
+                 return None, "Erro de Cota no Document AI após retries."
+
             document = result.document
 
             if not document.entities:
@@ -136,55 +134,30 @@ class DocumentAIAnalyzer:
             return None, f"Erro interno na classificação: {e}"
 
     def _infer_doc_type_from_criteria(self, criteria_list: list) -> str:
-        """
-        Tenta adivinhar o tipo de documento baseado nas palavras-chave dos critérios.
-        Prioridade ajustada para evitar falsos positivos e separar Diploma de Histórico.
-        """
         text_criteria = " ".join(criteria_list).lower()
-        
-        # 1. RNE / Documentos de Estrangeiro (PRIORIDADE MÁXIMA)
         if "rne" in text_criteria or "estrangeiro" in text_criteria or "migrat" in text_criteria or "crnm" in text_criteria:
             return "RNE - REGISTRO NACIONAL DE ESTRANGEIRO"
-
-        # 2. Documentos Acadêmicos (SEPARADOS)
         if "diploma" in text_criteria:
             return "DIPLOMA DE GRADUACAO"
-        
         if "histórico" in text_criteria or "historico" in text_criteria:
             return "HISTORICO DE GRADUACAO"
-            
-        # Fallback genérico para acadêmicos se não especificar Diploma ou Histórico
         if "conclusão" in text_criteria or "conclusao" in text_criteria or "curso" in text_criteria:
             return "DOCUMENTO ACADEMICO"
-            
-        # 3. CNH
         if "cnh" in text_criteria or "habilitação" in text_criteria or "motorista" in text_criteria:
             return "CNH"
-
-        # 4. Documentos de Identidade Simples (RG)
         if "rg" in text_criteria or "registro geral" in text_criteria or "expedidor" in text_criteria or "identidade" in text_criteria:
             return "RG"
-
-        # 5. Residência
         if "residência" in text_criteria or "residencia" in text_criteria or "endereço" in text_criteria or "luz" in text_criteria:
             return "COMPROVANTE DE RESIDENCIA"
-
-        # 6. Certidões
         if ("casamento" in text_criteria and "nascimento" in text_criteria) or "civil" in text_criteria:
             return "CERTIDAO DE NASCIMENTO OU CASAMENTO"
-
         if "casamento" in text_criteria:
             return "CERTIDAO DE CASAMENTO"
-            
         if "nascimento" in text_criteria:
             return "CERTIDAO DE NASCIMENTO"
-            
         return "DOCUMENTO"
 
     def validate_document_with_gemini(self, files_data: list, criteria_list: list, nome_aluno_sistema: str = "", expected_doc_type: str = None):
-        """
-        Valida o documento usando o Gemini.
-        """
         if self.initialization_error:
             return None, self.initialization_error
         
@@ -248,9 +221,14 @@ class DocumentAIAnalyzer:
             content_parts = [prompt]
             
             for file_data in files_data:
-                # Lógica Segura de Sanitização
+                # --- CORREÇÃO DE ERRO 400 (DOCUMENT HAS NO PAGES) ---
+                # Se o arquivo estiver vazio (falha de download), ignora para não travar a IA
+                if not file_data.get('content'):
+                    logging.warning(f"Arquivo '{file_data.get('name')}' ignorado pois está vazio (0 bytes).")
+                    continue
+
                 file_bytes = file_data['content']
-                file_mime = "application/pdf" if file_data.get("name", "").lower().endswith(".pdf") else "image/png" # Fallback simples
+                file_mime = "application/pdf" if file_data.get("name", "").lower().endswith(".pdf") else "image/png"
                 
                 if document_processor:
                     try:
@@ -266,15 +244,54 @@ class DocumentAIAnalyzer:
                     data=file_bytes
                 ))
 
+            # Se todos os arquivos foram ignorados (vazios), retorna erro controlado
+            if len(content_parts) == 1: # Só tem o prompt
+                return None, "Todos os arquivos enviados estavam vazios ou corrompidos."
+
             generation_config = GenerationConfig(response_mime_type="application/json")
 
-            response = model.generate_content(content_parts, generation_config=generation_config)
-            validation_result = json.loads(response.text)
+            max_gemini_retries = 3
+            for attempt in range(max_gemini_retries):
+                try:
+                    response = model.generate_content(content_parts, generation_config=generation_config)
+                    validation_result = json.loads(response.text)
 
-            if 'extracted_data' in validation_result and nome_aluno_sistema:
-                validation_result['extracted_data']['nome_aluno_sistema'] = nome_aluno_sistema
+                    # --- INICIO BLOCO DE FORMATACAO DE CPF ---
+                    # Formata o CPF para o padrao 000.000.000-00 se ele tiver sido extraido
+                    if 'extracted_data' in validation_result:
+                        extracted = validation_result['extracted_data']
+                        raw_cpf = extracted.get('numero_cpf')
+                        
+                        if raw_cpf:
+                            # Remove tudo que não for dígito
+                            cpf_limpo = re.sub(r'\D', '', str(raw_cpf))
+                            
+                            # Verifica se tem 11 dígitos para formatar corretamente
+                            if len(cpf_limpo) == 11:
+                                cpf_formatado = f"{cpf_limpo[:3]}.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-{cpf_limpo[9:]}"
+                                validation_result['extracted_data']['numero_cpf'] = cpf_formatado
+                                logging.info(f"CPF formatado com sucesso: {cpf_formatado}")
+                            else:
+                                # Se não tiver 11 dígitos, mantém o original (pode ser erro de OCR ou CPF incompleto)
+                                logging.warning(f"CPF extraído não possui 11 dígitos ({raw_cpf}), mantendo original.")
+                    # --- FIM BLOCO DE FORMATACAO DE CPF ---
 
-            return validation_result, None
+                    if 'extracted_data' in validation_result and nome_aluno_sistema:
+                        validation_result['extracted_data']['nome_aluno_sistema'] = nome_aluno_sistema
+
+                    return validation_result, None
+                
+                except ResourceExhausted:
+                    wait_time = 5 * (attempt + 1) + random.uniform(0, 2)
+                    logging.warning(f"Cota Gemini Excedida (429). Aguardando {wait_time:.1f}s... (Tentativa {attempt+1}/{max_gemini_retries})")
+                    time.sleep(wait_time)
+                except Exception as inner_e:
+                     if "503" in str(inner_e):
+                         time.sleep(2)
+                         continue
+                     raise inner_e
+            
+            return None, "Falha na validação Gemini: Cota excedida após múltiplas tentativas."
             
         except Exception as e:
             logging.error(f"[ERRO DE VALIDAÇÃO GEMINI] Erro inesperado: {e}", exc_info=True)

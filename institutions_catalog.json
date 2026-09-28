@@ -1,0 +1,128 @@
+{
+  "version": "2.1.0",
+  "institutions": {
+    "imes": {
+      "id": "imes",
+      "name": "Faculdade IMES - Instituto Mineiro de Educação Superior",
+      "institution_type": "FACULDADE",
+      "branding": {
+        "logo_url": "/static/images/logo_protocoloedu.jpg",
+        "primary_color": "#0B192C",
+        "secondary_color": "#1D4ED8",
+        "portal_title": "Portal Oficial de Matrícula - Faculdade IMES"
+      },
+      "storage": {
+        "provider": "local",
+        "base_path": "storage",
+        "drive_id": null,
+        "root_folder_id": "storage_imes",
+        "partitioning_mode": "ALPHABETICAL_A_Z",
+        "partitions": {}
+      },
+      "erp": {
+        "erp_type": "solis",
+        "api_url": "SOLIS_API_URL",
+        "jwt_token_env_var": "SOLIS_JWT_TOKEN",
+        "reports_map": {
+          "search_cpf": "6820251203155305",
+          "search_name": "6620251203154311",
+          "get_by_id": "7020251204095501"
+        }
+      },
+      "enabled_courses": [
+        "1ª Graduação",
+        "2ª Graduação",
+        "Pós-Graduação",
+        "Cursos Rápidos"
+      ],
+      "require_student_cpf": true,
+      "subscription": {
+        "plan_tier": "ENTERPRISE",
+        "plan_name": "Plano Enterprise Pro 2026",
+        "monthly_limit": 2000,
+        "current_month_usage": 5,
+        "is_active": true,
+        "admin_access_key": "imes-admin-2026",
+        "billing_day": 10
+      }
+    },
+    "colegio_exemplo": {
+      "id": "colegio_exemplo",
+      "name": "Colégio e Escola Básica Integrada",
+      "institution_type": "COLEGIO",
+      "branding": {
+        "logo_url": "/static/images/logo_colegio.png",
+        "primary_color": "#1e3a8a",
+        "secondary_color": "#10b981",
+        "portal_title": "Matrícula e Rematrícula Escolar"
+      },
+      "storage": {
+        "provider": "local",
+        "base_path": "storage",
+        "drive_id": null,
+        "root_folder_id": "storage_colegio",
+        "partitioning_mode": "ALPHABETICAL_A_Z",
+        "partitions": {}
+      },
+      "erp": {
+        "erp_type": "mock",
+        "api_url": null,
+        "jwt_token_env_var": null,
+        "reports_map": {}
+      },
+      "enabled_courses": [
+        "Ensino Fundamental (1º ao 9º ano)",
+        "Ensino Médio (1ª a 3ª série)"
+      ],
+      "require_student_cpf": false,
+      "subscription": {
+        "plan_tier": "PROFISSIONAL",
+        "plan_name": "Plano Colégio Pro (Upgrade)",
+        "monthly_limit": 300,
+        "current_month_usage": 8,
+        "is_active": true,
+        "admin_access_key": "colegio-admin-2026",
+        "billing_day": 10
+      }
+    },
+    "universidade_federal_demo": {
+      "id": "universidade_federal_demo",
+      "name": "Universidade Federal Demo",
+      "institution_type": "UNIVERSIDADE",
+      "branding": {
+        "logo_url": "/static/images/logo.png",
+        "primary_color": "#0a2351",
+        "secondary_color": "#fdb913",
+        "portal_title": "Portal de Documentos - Universidade Federal Demo"
+      },
+      "storage": {
+        "provider": "local",
+        "base_path": "storage",
+        "drive_id": null,
+        "root_folder_id": "storage_uf_demo",
+        "partitioning_mode": "ALPHABETICAL_A_Z",
+        "partitions": {}
+      },
+      "erp": {
+        "erp_type": "mock",
+        "api_url": null,
+        "jwt_token_env_var": null,
+        "reports_map": {}
+      },
+      "enabled_courses": [
+        "1ª Graduação",
+        "Pós-Graduação"
+      ],
+      "require_student_cpf": true,
+      "subscription": {
+        "plan_tier": "ENTERPRISE",
+        "plan_name": "Plano Enterprise",
+        "monthly_limit": 1500,
+        "current_month_usage": 0,
+        "is_active": true,
+        "admin_access_key": "uf-demo-sec-2026",
+        "billing_day": 1
+      }
+    }
+  }
+}

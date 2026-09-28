@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath . -b :$PORT servidor_web:app
+web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 api_server:app

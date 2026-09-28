@@ -10,11 +10,13 @@ def get_all_keys():
     
     Instrução: Substitua "SUA_CHAVE_API_..." pelas suas chaves reais.
     """
-    api_keys = [
-        "AIzaSyBbxXALaM60hn-Es-kjKY0yopJ4qaDXF-s",
-        "AIzaSyDQQDtxL79WXTdf6rpTSWngjVgE7vRzmFs",
-        # Você pode adicionar mais chaves aqui, se tiver.
-        # "SUA_CHAVE_API_3_AQUI", 
-    ]
+    import os
+    env_key = os.environ.get("GEMINI_API_KEY")
+    api_keys = []
+    if env_key and env_key.startswith("AIza"):
+        api_keys.append(env_key)
+    active_key = "AIzaSyBbxXALaM60hn-Es-kjKY0yopJ4qaDXF-s"
+    if active_key not in api_keys:
+        api_keys.append(active_key)
     return api_keys
 
