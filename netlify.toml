@@ -13,3 +13,23 @@
   for = "/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+[[redirects]]
+  from = "/admin"
+  to = "/superadmin.html"
+  status = 302
+
+[[redirects]]
+  from = "/secretaria"
+  to = "/superadmin.html"
+  status = 302
+
+[[redirects]]
+  from = "/super-admin"
+  to = "/superadmin.html"
+  status = 302
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
