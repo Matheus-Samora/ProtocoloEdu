@@ -7,15 +7,14 @@ uvicorn
 requests
 thefuzz[speedup]
 # Para o Gemini
-google-generativeai
+google-genai
 google-cloud-firestore
 google-cloud-aiplatform
 # Para extração de dados de ficheiros
-pypdf
+pypdf==6.19.0
 python-docx
-Pillow
+Pillow==12.3.0
 PyMuPDF
-PyPDF2
 requests
 pydantic
 python-dotenv
@@ -42,7 +41,7 @@ watchdog
 functions-framework
 gspread 
 google-auth
-cryptography
+cryptography==50.0.2
 bcrypt
 supabase>=2.31.0
 

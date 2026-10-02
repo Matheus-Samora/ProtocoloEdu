@@ -101,6 +101,7 @@ VALUES (
     ]
 )
 ON CONFLICT (id) DO UPDATE SET
+    public = FALSE,
     file_size_limit = EXCLUDED.file_size_limit,
     allowed_mime_types = EXCLUDED.allowed_mime_types;
 
@@ -113,26 +114,34 @@ ALTER TABLE public.document_audits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.institutions ENABLE ROW LEVEL SECURITY;
 
 -- Políticas permissivas para a Service Role (Backend ProtocoloEdu)
+DROP POLICY IF EXISTS "Permitir acesso total para a Service Role em student_dossiers" ON public.student_dossiers;
 CREATE POLICY "Permitir acesso total para a Service Role em student_dossiers"
     ON public.student_dossiers
     FOR ALL
-    USING (auth.role() = 'service_role' OR auth.role() = 'anon');
+    TO service_role
+    USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Permitir acesso total para a Service Role em document_audits" ON public.document_audits;
 CREATE POLICY "Permitir acesso total para a Service Role em document_audits"
     ON public.document_audits
     FOR ALL
-    USING (auth.role() = 'service_role' OR auth.role() = 'anon');
+    TO service_role
+    USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Permitir acesso total para a Service Role em institutions" ON public.institutions;
 CREATE POLICY "Permitir acesso total para a Service Role em institutions"
     ON public.institutions
     FOR ALL
-    USING (auth.role() = 'service_role' OR auth.role() = 'anon');
+    TO service_role
+    USING (true) WITH CHECK (true);
 
 -- Políticas de Storage para o Bucket 'documentos-alunos'
+DROP POLICY IF EXISTS "Acesso backend total ao bucket documentos-alunos" ON storage.objects;
 CREATE POLICY "Acesso backend total ao bucket documentos-alunos"
     ON storage.objects
     FOR ALL
-    USING (bucket_id = 'documentos-alunos');
+    TO service_role
+    USING (bucket_id = 'documentos-alunos') WITH CHECK (bucket_id = 'documentos-alunos');
 
 -- ==============================================================================
 -- 7. DADOS INICIAIS (SEED DA INSTITUIÇÃO PILOTO IMES)
@@ -149,3 +158,6 @@ VALUES (
 ON CONFLICT (id) DO UPDATE SET
     name = EXCLUDED.name,
     storage = EXCLUDED.storage;
+
+REVOKE ALL ON public.student_dossiers, public.document_audits, public.institutions FROM anon, authenticated;
+GRANT ALL ON public.student_dossiers, public.document_audits, public.institutions TO service_role;

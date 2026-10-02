@@ -4,65 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Portal de Envio e Protocolo de Documentos - ProtocoloEdu</title>
-    
+
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 
     <!-- Tailwind CSS Oficial via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                    },
-                    colors: {
-                        imes: {
-                            blue: '#0a2351',
-                            blueLight: '#153a7a',
-                            gold: '#fdb913',
-                            goldHover: '#e8a800',
-                        },
-                        dark: {
-                            bg: '#0f172a',
-                            card: '#1e293b',
-                            border: '#334155'
-                        }
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.4s ease-out forwards',
-                        'slide-up': 'slideUp 0.4s ease-out forwards',
-                        'float': 'float 3s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { opacity: '0', transform: 'translateY(16px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-8px)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+
+
+
+
+    <!-- Phosphor Icons -->
+
+
+
 
     <style>
         :root {
@@ -101,7 +57,7 @@
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
+
         body.dark-mode .custom-scroll::-webkit-scrollbar-thumb { background: #334155; }
         body.dark-mode .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
 
@@ -112,7 +68,7 @@
             box-shadow: var(--shadow-soft);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         body.dark-mode .modern-card {
             background: #1e293b;
             border-color: #334155;
@@ -126,7 +82,7 @@
         }
 
         .input-group { position: relative; }
-        
+
         .modern-input {
             width: 100%;
             padding: 0.9rem 1rem 0.9rem 2.8rem;
@@ -136,7 +92,7 @@
             transition: all 0.3s ease;
             font-weight: 600;
         }
-        
+
         body.dark-mode .modern-input {
             background-color: #1e293b;
             color: white;
@@ -149,7 +105,7 @@
             border-color: #0a2351;
             box-shadow: 0 0 0 4px rgba(10, 35, 81, 0.12);
         }
-        
+
         body.dark-mode .modern-input:focus {
             background-color: #0f172a;
             border-color: #fdb913;
@@ -166,7 +122,7 @@
             pointer-events: none;
             transition: color 0.3s;
         }
-        
+
         .modern-input:focus + .input-icon { color: #0a2351; }
         body.dark-mode .modern-input:focus + .input-icon { color: #fdb913; }
 
@@ -210,7 +166,7 @@
         .badge-pending { background-color: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
         .badge-success { background-color: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
         .badge-review  { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
-        
+
         body.dark-mode .badge-pending { background-color: #451a03; color: #fbbf24; border-color: #92400e; }
         body.dark-mode .badge-success { background-color: #064e3b; color: #4ade80; border-color: #065f46; }
         body.dark-mode .badge-review  { background-color: #172554; color: #60a5fa; border-color: #1e3a8a; }
@@ -245,7 +201,7 @@
         .ring:nth-child(2) { border-bottom: 8px solid #0a2351; animation: rotate2 2s linear infinite; }
         .ring:nth-child(3) { border-bottom: 8px solid #fdb913; animation: rotate3 2s linear infinite; }
         .ring:nth-child(4) { border-bottom: 8px solid #0a2351; animation: rotate4 2s linear infinite; }
-        
+
         body.dark-mode .ring:nth-child(2),
         body.dark-mode .ring:nth-child(4) { border-bottom-color: #3b82f6; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         body.dark-mode .ring:nth-child(1),
@@ -263,7 +219,7 @@
         .slider:before { position: absolute; content: ""; height: 1.4em; width: 1.4em; border-radius: 50%; left: 0.45em; bottom: 0.4em; transition: 0.4s; background: white; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
         input:checked + .slider { background-color: #3b82f6; }
         input:checked + .slider:before { transform: translateX(2.1em); background: #fdb913; box-shadow: 0 0 8px #fdb913; }
-        
+
         /* Moldura do Scanner de Câmera */
         .camera-scanner-frame {
             position: relative;
@@ -330,20 +286,20 @@
         }
     </style>
     <!-- FontAwesome para ícones complementares -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>const supabaseClient = null;</script>
+
+    <script nonce="{{ csp_nonce }}">const supabaseClient = null;</script>
 
 
-</head>
+<link rel="stylesheet" href="/static/vendor/tailwind.css"><link rel="stylesheet" href="/static/vendor/phosphor/icons.css"></head>
 <body class="antialiased text-slate-700 dark:text-slate-300">
     <!-- MAIN APP CONTAINER -->
     <div id="app-container" class="min-h-[100dvh] w-full overflow-hidden flex flex-col">
-        
+
         <!-- TELA 1: IDENTIFICAÇÃO E SELEÇÃO -->
         <div id="screen-1" class="flex flex-col items-center justify-start sm:justify-center min-h-[100dvh] w-full px-4 py-6 sm:py-10 relative overflow-y-auto custom-scroll bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 transition-colors duration-300">
             <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute bottom-1/4 right-1/4 w-72 h-72 bg-amber-400/5 rounded-full blur-3xl pointer-events-none"></div>
-            
+
             <!-- Stepper Institucional de 3 Etapas -->
             <div class="w-full max-w-[460px] mb-3 sm:mb-4 relative z-10 animate-fade-in">
                 <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -371,9 +327,9 @@
                 <div class="flex flex-col items-center mb-6 sm:mb-8">
                     <!-- Brasão / Logotipo Institucional Dinâmico (Sem logo IMES estático) -->
                     <div id="portal-inst-logo-container" class="w-20 h-20 sm:w-24 sm:h-24 mb-3 sm:mb-4 rounded-full flex items-center justify-center border-4 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl overflow-hidden relative">
-                        <img id="portal-inst-logo" 
-                             src="" 
-                             alt="Logomarca Institucional" 
+                        <img id="portal-inst-logo"
+                             src=""
+                             alt="Logomarca Institucional"
                              class="w-full h-full object-contain p-2 hidden">
                         <div id="portal-inst-logo-fallback" class="w-full h-full flex flex-col items-center justify-center text-slate-700 dark:text-slate-200 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
                             <i class="ph-bold ph-graduation-cap text-3xl sm:text-4xl text-blue-600 dark:text-amber-400"></i>
@@ -400,13 +356,15 @@
                             <div class="input-group">
                                 <input type="tel" id="student-cpf" class="w-full pl-10 pr-12 py-3 sm:py-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:bg-white focus:border-imes-blue dark:focus:border-imes-gold transition-all text-base sm:text-sm font-semibold min-h-[48px]" placeholder="000.000.000-00" maxlength="14">
                                 <i class="ph ph-identification-card absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"></i>
-                                
+
                                 <button id="search-cpf-btn" class="w-9 h-9 sm:w-10 sm:h-10 absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 flex items-center justify-center bg-imes-gold text-imes-blue rounded-lg hover:bg-imes-goldHover active:scale-95 transition-all shadow-md" aria-label="Buscar Aluno">
                                     <i id="search-cpf-btn-icon" class="ph-bold ph-magnifying-glass text-base pointer-events-none"></i>
                                     <div id="search-cpf-btn-loader" class="hidden w-4 h-4 border-2 border-imes-blue border-t-transparent rounded-full animate-spin pointer-events-none"></div>
                                 </button>
                             </div>
-                            <p id="cpf-error-message" class="hidden text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1.5"><i class="ph-bold ph-warning-circle text-sm"></i> <span>Aluno não encontrado na base de dados.</span></p>
+                            <label for="student-access-code" class="block text-xs font-bold mt-3">Código de acesso entregue pela secretaria</label>
+                            <input id="student-access-code" type="password" autocomplete="off" maxlength="128" class="w-full p-3 rounded-xl bg-slate-100 dark:bg-slate-900" placeholder="Código individual de acesso">
+                            <p id="cpf-error-message" class="hidden text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1.5"><i class="ph-bold ph-warning-circle text-sm"></i> <span>Identificador ou código de acesso inválido.</span></p>
                         </div>
 
                         <div id="student-name-display-container" class="hidden animate-fade-in">
@@ -446,7 +404,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="mt-6 sm:mt-8 text-center text-xs text-slate-400 dark:text-slate-500">
                     <span id="portal-footer-copy">&copy; 2026 ProtocoloEdu. Todos os direitos reservados.</span>
                 </div>
@@ -483,7 +441,7 @@
             <!-- Grid Content Panel -->
             <div id="screen-2-grid" class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
                 <div class="absolute inset-0 opacity-[0.015] pointer-events-none" style="background-image: radial-gradient(#0a2351 1px, transparent 1px); background-size: 24px 24px;"></div>
-                
+
                 <!-- Summary Sidebar (Left Column) -->
                 <aside class="w-full md:w-[320px] p-6 bg-white dark:bg-[#1e293b] border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 flex flex-col flex-shrink-0 overflow-y-auto custom-scroll z-10">
                     <div class="space-y-6 flex-grow">
@@ -499,7 +457,7 @@
                                     <p id="dashboard-student-cpf" class="text-slate-400 dark:text-slate-500 text-xs font-mono font-bold"></p>
                                 </div>
                             </div>
-                            
+
                             <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
                                 <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Curso Selecionado</h3>
                                 <p id="dashboard-course-name" class="text-slate-700 dark:text-slate-300 font-semibold text-sm truncate"></p>
@@ -551,7 +509,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- OVERLAY DE CARREGAMENTO & AUDITORIA DE DOCUMENTOS -->
     <div id="loading-overlay" class="fixed inset-0 hidden z-[100] flex flex-col justify-center items-center bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 p-4">
         <div class="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center animate-fade-in">
@@ -560,15 +518,15 @@
                 <i class="ph-bold ph-shield-check text-3xl text-blue-600 dark:text-blue-400"></i>
                 <div class="absolute -inset-1 rounded-2xl border-2 border-blue-500/30 border-t-blue-600 animate-spin"></div>
             </div>
-            
+
             <h3 class="text-lg font-extrabold text-slate-800 dark:text-white mb-1">Processando Protocolo</h3>
             <p id="loading-doc-name" class="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-4 truncate w-full">Preparando envio criptografado...</p>
-            
+
             <!-- Barra de Progresso -->
             <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden mb-2">
                 <div id="loading-progress-bar" class="bg-gradient-to-r from-blue-600 to-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-out" style="width: 15%"></div>
             </div>
-            
+
             <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400">
                 <span id="loading-step-text" class="font-bold text-slate-600 dark:text-slate-300 uppercase">Iniciando</span>
                 <span id="loading-percentage" class="font-bold text-blue-600 dark:text-blue-400">15%</span>
@@ -588,7 +546,7 @@
 
     <!-- CHAT INTERFACE -->
     <div id="chat-bubble" class="fixed inset-x-0 bottom-0 md:inset-auto md:bottom-28 md:right-8 w-full md:w-[400px] h-[80dvh] bg-white dark:bg-[#1e293b] md:rounded-2xl shadow-2xl flex flex-col hidden opacity-0 translate-y-20 md:translate-y-10 z-50 overflow-hidden border border-slate-200 dark:border-slate-700 transition-all duration-300 ease-out">
-        
+
         <div class="sidebar-gradient p-4 flex justify-between items-center text-white shadow-md z-10">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
@@ -606,9 +564,9 @@
                 <i class="ph-bold ph-x text-lg"></i>
             </button>
         </div>
-        
+
         <div id="chat-area" class="flex-1 p-4 overflow-y-auto custom-scroll bg-slate-50 dark:bg-[#0f172a] space-y-4"></div>
-        
+
         <div class="p-4 bg-white dark:bg-[#1e293b] border-t border-slate-200 dark:border-slate-700 pb-safe">
             <form id="chat-form" class="relative flex items-center gap-2">
                 <input type="text" id="chat-input" class="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-imes-blue dark:focus:ring-imes-gold text-slate-800 dark:text-white placeholder-slate-400 transition-all text-sm" placeholder="Digite sua dúvida sobre documentos..." autocomplete="off">
@@ -618,7 +576,7 @@
             </form>
         </div>
     </div>
-    
+
     <!-- MODAL DE CÂMERA INTELIGENTE COM GUIA DE ENQUADRAMENTO -->
     <div id="camera-modal" class="fixed inset-0 z-[70] hidden flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 animate-fade-in">
         <div class="relative w-full max-w-xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex flex-col">
@@ -629,7 +587,7 @@
                     <h3 class="text-sm font-bold truncate">Captura do Documento</h3>
                     <span id="camera-doc-name-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-imes-gold/20 text-imes-gold border border-imes-gold/30 truncate max-w-[160px]"></span>
                 </div>
-                <button onclick="closeCameraModal()" class="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition">
+                <button data-click-action="closeCameraModal()" class="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition">
                     <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
@@ -654,16 +612,16 @@
 
             <!-- Controles do Scanner -->
             <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-3">
-                <button onclick="toggleCameraFacing()" class="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm transition" title="Alternar Câmera">
+                <button data-click-action="toggleCameraFacing()" class="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm transition" title="Alternar Câmera">
                     <i class="ph-bold ph-arrows-clockwise text-lg"></i>
                 </button>
 
-                <button onclick="capturePhoto()" class="py-3 px-6 btn-gold rounded-full flex items-center gap-2 shadow-lg active:scale-95 text-sm font-extrabold cursor-pointer">
+                <button data-click-action="capturePhoto()" class="py-3 px-6 btn-gold rounded-full flex items-center gap-2 shadow-lg active:scale-95 text-sm font-extrabold cursor-pointer">
                     <i class="ph-bold ph-camera text-xl"></i>
                     <span>Capturar Foto</span>
                 </button>
 
-                <button onclick="triggerFileInputFromModal()" class="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm transition" title="Escolher Arquivo da Galeria">
+                <button data-click-action="triggerFileInputFromModal()" class="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm transition" title="Escolher Arquivo da Galeria">
                     <i class="ph-bold ph-folder-open text-lg"></i>
                 </button>
             </div>
@@ -679,7 +637,7 @@
                     <h3 id="preview-modal-title" class="text-sm sm:text-base font-bold text-slate-800 dark:text-white truncate">Conferência do Arquivo</h3>
                     <p id="preview-modal-file-info" class="text-xs text-slate-400 font-mono"></p>
                 </div>
-                <button onclick="closePreviewModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-800 dark:hover:text-white transition">
+                <button data-click-action="closePreviewModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-800 dark:hover:text-white transition">
                     <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
@@ -696,26 +654,26 @@
             <!-- Toolbar de Ajuste de Imagem -->
             <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-1.5">
-                    <button onclick="adjustPreviewZoom(-0.2)" class="p-2 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition" title="Reduzir Zoom">
+                    <button data-click-action="adjustPreviewZoom(-0.2)" class="p-2 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition" title="Reduzir Zoom">
                         <i class="ph-bold ph-magnifying-glass-minus text-base"></i>
                     </button>
-                    <button onclick="resetPreviewTransform()" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 transition">
+                    <button data-click-action="resetPreviewTransform()" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 transition">
                         100%
                     </button>
-                    <button onclick="adjustPreviewZoom(0.2)" class="p-2 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition" title="Aumentar Zoom">
+                    <button data-click-action="adjustPreviewZoom(0.2)" class="p-2 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition" title="Aumentar Zoom">
                         <i class="ph-bold ph-magnifying-glass-plus text-base"></i>
                     </button>
-                    <button onclick="rotatePreviewCurrent(90)" class="p-2 rounded-lg bg-imes-gold text-imes-blue font-bold hover:bg-imes-goldHover transition flex items-center gap-1 text-xs" title="Girar 90 graus">
+                    <button data-click-action="rotatePreviewCurrent(90)" class="p-2 rounded-lg bg-imes-gold text-imes-blue font-bold hover:bg-imes-goldHover transition flex items-center gap-1 text-xs" title="Girar 90 graus">
                         <i class="ph-bold ph-arrow-clockwise text-base"></i>
                         <span>Girar 90°</span>
                     </button>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button onclick="replaceCurrentFileTrigger()" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                    <button data-click-action="replaceCurrentFileTrigger()" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                         Substituir
                     </button>
-                    <button onclick="closePreviewModal()" class="px-4 py-2 bg-imes-blue text-white rounded-lg font-bold text-xs hover:bg-imes-blueLight transition">
+                    <button data-click-action="closePreviewModal()" class="px-4 py-2 bg-imes-blue text-white rounded-lg font-bold text-xs hover:bg-imes-blueLight transition">
                         Confirmar
                     </button>
                 </div>
@@ -725,18 +683,18 @@
 
     <!-- MODAL GENÉRICO DE AVISOS -->
     <div id="modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-        
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" data-click-action="closeModal()"></div>
+
         <div class="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full relative z-10 animate-fade-in transform border border-slate-100 dark:border-slate-700 text-center">
-            <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition" onclick="closeModal()">
+            <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition" data-click-action="closeModal()">
                 <i class="ph-bold ph-x text-xl"></i>
             </button>
-            
+
             <div id="modal-content-wrapper" class="flex flex-col items-center">
                 <h3 id="modal-title" class="text-2xl font-bold mb-4 text-slate-900 dark:text-white"></h3>
                 <div id="modal-body" class="text-slate-600 dark:text-slate-300 space-y-4 text-left max-h-[50vh] overflow-y-auto custom-scroll w-full text-sm"></div>
-                
-                <button id="modal-close-btn" class="w-full mt-8 py-3 bg-imes-blue hover:bg-imes-blueLight text-white dark:bg-imes-gold dark:text-imes-blue dark:hover:bg-imes-goldHover font-bold rounded-xl transition shadow-lg" onclick="closeModal()">
+
+                <button id="modal-close-btn" class="w-full mt-8 py-3 bg-imes-blue hover:bg-imes-blueLight text-white dark:bg-imes-gold dark:text-imes-blue dark:hover:bg-imes-goldHover font-bold rounded-xl transition shadow-lg" data-click-action="closeModal()">
                     Entendido
                 </button>
             </div>
@@ -746,7 +704,7 @@
     <!-- ========================================================================= -->
     <!-- JAVASCRIPT DE GERENCIAMENTO DO PORTAL                                     -->
     <!-- ========================================================================= -->
-    <script>
+    <script nonce="{{ csp_nonce }}">
         // MOTOR MULTI-TENANT: RESOLUÇÃO DE INSTITUIÇÃO E BRANDING DINÂMICO
         // =========================================================================
         let CURRENT_INSTITUTION_ID = "imes";
@@ -894,7 +852,7 @@
             }
         }
 
-        
+
         // --- CRITÉRIOS DE DOCUMENTOS POR CURSO ---
         const criteria = {
             "graduacao_1": {
@@ -904,7 +862,7 @@
                     "CPF": { "display_name": "Cadastro de Pessoa Física (CPF)" },
                     "RNE": { "display_name": "Registro Nacional Estrangeiro (RNE/CRNM)" },
                     "HISTORICO_ENSINO_MEDIO": { "display_name": "Histórico Escolar do Ensino Médio" },
-                    "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio" }, 
+                    "CERTIFICADO_ENSINO_MEDIO": { "display_name": "Certificado de Conclusão do Ensino Médio" },
                     "CERTIDAO_NASCIMENTO_CASAMENTO": { "display_name": "Certidão de Nascimento ou Casamento" },
                     "DOCUMENTO_MILITAR": { "display_name": "Certificado de Reservista" },
                     "QUITACAO_ELEITORAL": { "display_name": "Comprovante de Quitação Eleitoral" },
@@ -1145,7 +1103,7 @@
                         const res = await fetch('/api/student/search', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ identifier: raw, institution_id: CURRENT_INSTITUTION_ID })
+                            body: JSON.stringify({ identifier: raw, access_code:document.getElementById('student-access-code').value, institution_id: CURRENT_INSTITUTION_ID })
                         });
                         if (res.ok) {
                             studentFound = await res.json();
@@ -1158,6 +1116,7 @@
 
                 if (studentFound) {
                     if (errorMsgEl) errorMsgEl.classList.add('hidden');
+                    document.getElementById('student-access-code').value='';
                     setupIdentifiedStudent(studentFound);
                 } else {
                     // ALUNO NÃO ENCONTRADO NO BANCO DE DADOS: BLOQUEIA E RETORNA MENSAGEM
@@ -1165,7 +1124,7 @@
                         errorMsgEl.classList.remove('hidden');
                     }
                     showModal(
-                        "Aluno não encontrado na base de dados.",
+                        "Identificador ou código de acesso inválido.",
                         `O identificador informado (<strong>${escapeHtml(studentCpfInput.value)}</strong>) não possui cadastro ativo no banco de dados de <strong>${escapeHtml(CURRENT_INSTITUTION_DATA.name)}</strong>.<br><br><span class="text-xs text-slate-500 dark:text-slate-400">Verifique o identificador digitado ou solicite à secretaria acadêmica a inclusão da sua matrícula.</span>`
                     );
                     // Bloqueia qualquer avanço
@@ -1192,7 +1151,7 @@
             const firstName = studentData.name.split(' ')[0];
             if (userGreeting) userGreeting.querySelector('strong').textContent = firstName;
             studentNameDisplay.textContent = studentData.name;
-            
+
             studentCpfContainer.classList.add('hidden');
             studentNameDisplayContainer.classList.remove('hidden');
 
@@ -1265,7 +1224,7 @@
                 const doc = requiredDocs[key];
                 const existing = studentData.existingDocs[key];
                 const isApproved = existing && (existing.encontrado === true || existing.status === 'approved');
-                
+
                 if (isApproved) deliveredCount++;
 
                 let badgeClass = isApproved ? 'badge-success' : 'badge-pending';
@@ -1282,7 +1241,7 @@
                 if (key === 'RNE') {
                     rneOptionHtml = `
                         <label class="flex items-center gap-2 py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-xl cursor-pointer transition text-xs border border-slate-200 dark:border-slate-700 select-none">
-                            <input type="checkbox" id="checkbox-rne-nao-estrangeiro" ${naoEstrangeiro ? 'checked' : ''} onchange="toggleNaoEstrangeiro(this.checked)" class="w-4 h-4 rounded text-imes-blue focus:ring-imes-gold">
+                            <input type="checkbox" id="checkbox-rne-nao-estrangeiro" ${naoEstrangeiro ? 'checked' : ''} data-change-action="toggleNaoEstrangeiro(this.checked)" class="w-4 h-4 rounded text-imes-blue focus:ring-imes-gold">
                             <span>Não sou estrangeiro</span>
                         </label>
                     `;
@@ -1313,16 +1272,16 @@
                     <div class="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0 flex-wrap sm:flex-nowrap">
                         ${rneOptionHtml}
                         <!-- Botão Câmera Inteligente -->
-                        <button onclick="openCameraModal('${key}', '${doc.display_name}')" class="flex-1 md:flex-none min-h-[42px] py-2.5 px-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-xl cursor-pointer active:scale-95 transition flex items-center justify-center gap-2 text-xs border border-slate-200 dark:border-slate-700 select-none">
+                        <button data-click-action="openCameraModal('${key}', '${doc.display_name}')" class="flex-1 md:flex-none min-h-[42px] py-2.5 px-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-xl cursor-pointer active:scale-95 transition flex items-center justify-center gap-2 text-xs border border-slate-200 dark:border-slate-700 select-none">
                             <i class="ph-bold ph-camera text-base text-imes-blue dark:text-imes-gold"></i>
                             <span>Foto</span>
                         </button>
-                        
+
                         <!-- Botão Anexar Arquivo -->
                         <label class="flex-1 md:flex-none min-h-[42px] py-2.5 px-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-xl cursor-pointer active:scale-95 transition flex items-center justify-center gap-2 text-xs border border-slate-200 dark:border-slate-700 select-none text-center">
                             <i class="ph-bold ph-upload-simple text-base text-imes-blue dark:text-imes-gold"></i>
                             <span>Anexar</span>
-                            <input type="file" id="input-${key}" class="hidden" multiple accept="image/*,application/pdf" onchange="handleFileSelect('${key}', this.files)">
+                            <input type="file" id="input-${key}" class="hidden" multiple accept="image/*,application/pdf" data-change-action="handleFileSelect('${key}', this.files)">
                         </label>
                     </div>
                 `;
@@ -1396,20 +1355,20 @@
                 return `
                     <div class="flex items-center gap-2 p-1.5 pr-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs">
                         ${isImage ? `
-                            <img src="${item.url}" class="w-8 h-8 rounded-lg object-cover cursor-pointer" style="transform: rotate(${item.rotation}deg);" onclick="openPreviewModal('${docKey}', ${i})" alt="Miniatura">
+                            <img src="${item.url}" class="w-8 h-8 rounded-lg object-cover cursor-pointer" style="transform: rotate(${item.rotation}deg);" data-click-action="openPreviewModal('${docKey}', ${i})" alt="Miniatura">
                         ` : `
                             <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 flex items-center justify-center font-bold">
                                 <i class="ph-bold ph-file-pdf"></i>
                             </div>
                         `}
-                        <div class="truncate max-w-[120px] sm:max-w-[160px] cursor-pointer" onclick="openPreviewModal('${docKey}', ${i})">
+                        <div class="truncate max-w-[120px] sm:max-w-[160px] cursor-pointer" data-click-action="openPreviewModal('${docKey}', ${i})">
                             <span class="font-bold text-slate-800 dark:text-white block truncate leading-tight">${item.name}</span>
                             <span class="text-[10px] text-slate-400">${mb} MB</span>
                         </div>
-                        <button onclick="quickRotateFile('${docKey}', ${i})" class="w-6 h-6 rounded hover:bg-slate-200 dark:hover:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300" title="Girar 90°">
+                        <button data-click-action="quickRotateFile('${docKey}', ${i})" class="w-6 h-6 rounded hover:bg-slate-200 dark:hover:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300" title="Girar 90°">
                             <i class="ph-bold ph-arrow-clockwise"></i>
                         </button>
-                        <button onclick="removeFile('${docKey}', ${i})" class="w-6 h-6 rounded hover:bg-red-100 dark:hover:bg-red-950 text-red-500 flex items-center justify-center" title="Remover">
+                        <button data-click-action="removeFile('${docKey}', ${i})" class="w-6 h-6 rounded hover:bg-red-100 dark:hover:bg-red-950 text-red-500 flex items-center justify-center" title="Remover">
                             <i class="ph-bold ph-trash"></i>
                         </button>
                     </div>
@@ -1630,7 +1589,7 @@
                 loadingStepText.textContent = "Homologando";
 
                 const data = await res.json();
-                
+
                 loadingProgressBar.style.width = "100%";
                 loadingPercentage.textContent = "100%";
 
@@ -1748,6 +1707,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         question: text,
+                        student_id: studentData.id,
                         studentName: studentData.name || 'Estudante',
                         institution_id: CURRENT_INSTITUTION_ID
                     })
@@ -1804,9 +1764,26 @@
         function closeModal() {
             modal.classList.add('hidden');
         }
-    
 
 
+
+
+        const permittedActions = new Set(["adjustPreviewZoom", "capturePhoto", "closeCameraModal", "closeModal", "closePreviewModal", "handleFileSelect", "openCameraModal", "openPreviewModal", "quickRotateFile", "removeFile", "replaceCurrentFileTrigger", "resetPreviewTransform", "rotatePreviewCurrent", "toggleCameraFacing", "toggleNaoEstrangeiro", "triggerFileInputFromModal"]);
+        for (const type of ['click','change']) document.addEventListener(type, event => {
+            const target=event.target.closest('[data-'+type+'-action]');
+            if (!target) return;
+            const command=target.getAttribute('data-'+type+'-action');
+            const match=/^(\w+)\((.*)\)$/.exec(command);
+            if(!match || !permittedActions.has(match[1])) return;
+            const args=[];let remaining=match[2].trim();
+            while(remaining){
+                const token=/^(?:'([^']*)'|(-?\d+(?:\.\d+)?)|(this\.(?:files|checked)))(?:\s*,\s*|$)/.exec(remaining);
+                if(!token)return;
+                args.push(token[1]!==undefined?token[1]:token[2]!==undefined?Number(token[2]):token[3]==='this.files'?target.files:target.checked);
+                remaining=remaining.slice(token[0].length);
+            }
+            if(typeof window[match[1]]==='function')window[match[1]](...args);
+        });
 </script>
 </body>
 </html>

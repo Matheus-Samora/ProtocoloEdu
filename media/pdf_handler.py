@@ -9,7 +9,7 @@ from typing import Tuple, Dict, Any, Optional
 
 logger = logging.getLogger("PDF_HANDLER")
 
-# Tentativa segura de importar fitz (PyMuPDF) e PyPDF2
+# Tentativa segura de importar fitz (PyMuPDF) e pypdf
 PYMUPDF_AVAILABLE = False
 try:
     import fitz  # PyMuPDF
@@ -19,7 +19,7 @@ except ImportError:
 
 PYPDF2_AVAILABLE = False
 try:
-    from PyPDF2 import PdfReader
+    from pypdf import PdfReader
     PYPDF2_AVAILABLE = True
 except ImportError:
     pass
@@ -69,6 +69,8 @@ class PDFHandler:
                     return result
 
                 result["page_count"] = len(doc)
+                if len(doc)>100:
+                    doc.close();result["is_valid_pdf"]=False;return result
                 all_text = []
                 for page in doc:
                     txt = page.get_text()
@@ -83,9 +85,9 @@ class PDFHandler:
                 doc.close()
                 return result
             except Exception as e:
-                logger.warning(f"PyMuPDF falhou ao ler PDF, tentando PyPDF2: {e}")
+                logger.warning(f"PyMuPDF falhou ao ler PDF, tentando pypdf: {e}")
 
-        # 2. Fallback com PyPDF2
+        # 2. Fallback com pypdf
         if PYPDF2_AVAILABLE:
             try:
                 stream = io.BytesIO(file_bytes)
@@ -95,6 +97,8 @@ class PDFHandler:
                     return result
 
                 result["page_count"] = len(reader.pages)
+                if len(doc)>100:
+                    doc.close();result["is_valid_pdf"]=False;return result
                 all_text = []
                 for p in reader.pages:
                     txt = p.extract_text() or ""
@@ -108,7 +112,7 @@ class PDFHandler:
 
                 return result
             except Exception as e:
-                logger.error(f"PyPDF2 falhou ao ler PDF: {e}")
+                logger.error(f"pypdf falhou ao ler PDF: {e}")
 
         # Se nenhuma biblioteca externa conseguiu abrir mas o header era %PDF
         result["page_count"] = 1

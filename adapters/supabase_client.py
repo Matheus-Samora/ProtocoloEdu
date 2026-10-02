@@ -9,6 +9,8 @@ import os
 import logging
 from typing import Optional, Dict, Any, List
 import requests
+from security.policy import validate_remote_url
+from security.storage import production
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,6 +37,8 @@ class SupabaseClientManager:
 
     def _init_client(self):
         """Inicializa o cliente oficial da biblioteca supabase se a chave estiver configurada."""
+        if production() and os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()!='true':self._client=None;return
+        if self.key:validate_remote_url(self.url)
         if not self.key:
             logger.info("Chave do Supabase (SUPABASE_KEY) ainda não configurada no ambiente. Conexão em modo passivo.")
             self._client = None
@@ -51,7 +55,7 @@ class SupabaseClientManager:
     def update_credentials(self, url: Optional[str] = None, key: Optional[str] = None, bucket: Optional[str] = None):
         """Atualiza dinamicamente as credenciais da conexão e reinicializa o cliente."""
         if url:
-            self.url = url.rstrip("/")
+            self.url = validate_remote_url(url.rstrip("/"))
         if key:
             self.key = key.strip()
         if bucket:
@@ -61,7 +65,7 @@ class SupabaseClientManager:
     @property
     def is_configured(self) -> bool:
         """Retorna True se as credenciais mínimas estiverem presentes."""
-        return bool(self.url and self.key)
+        return bool(self.url and self.key and (not production() or os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()=='true'))
 
     @property
     def client(self):

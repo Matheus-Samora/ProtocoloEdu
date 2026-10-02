@@ -4,6 +4,8 @@
 # DESCRIÇÃO: Servidor principal ajustado para conectar no banco 'default'.
 # -----------------------------------------------------------------
 import os
+if os.environ.get("ENABLE_LEGACY_SERVERS") != "true" or os.environ.get("PROTOCOL_ENV", "").lower() == "production":
+    raise RuntimeError("Retired legacy server. Use api_server:app with the security gateway.")
 import logging
 import json
 import re

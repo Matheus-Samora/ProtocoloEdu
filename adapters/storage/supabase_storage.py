@@ -92,12 +92,7 @@ class SupabaseStorageProvider(StorageProvider):
                     file_options={"content-type": media.mime_type, "upsert": "true"}
                 )
 
-                # Gera URL pública ou assinada
-                try:
-                    signed_url_info = storage_client.create_signed_url(storage_path, expires_in=86400 * 7) # 7 dias
-                    storage_url = signed_url_info.get("signedURL") or signed_url_info.get("signedUrl")
-                except Exception:
-                    storage_url = f"{self.manager.url}/storage/v1/object/public/{self.bucket_name}/{storage_path}"
+                storage_url = f"supabase://{self.bucket_name}/{storage_path}"
 
                 logger.info(f"[SUPABASE STORAGE] Arquivo '{safe_filename}' enviado com sucesso para '{storage_path}'")
                 return StoredFileInfo(

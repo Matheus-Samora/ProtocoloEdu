@@ -9,6 +9,7 @@ import re
 import string
 import logging
 import unicodedata
+from security.storage import component, contained, write_document, read_document
 from typing import Optional, List, Dict, Any, Tuple
 
 from adapters.storage.base import StorageProvider, StoredFileInfo
@@ -49,7 +50,10 @@ def sanitize_folder_or_file_name(name: str) -> str:
     # Remove caracteres reservados em sistemas de arquivos: \ / : * ? " < > |
     cleaned = re.sub(r'[\\/*?:"<>|]', '', str(name)).strip()
     cleaned = re.sub(r'\s+', ' ', cleaned)
-    return cleaned or "SEM_NOME"
+    cleaned = cleaned.strip('. ')
+    if not cleaned or cleaned.upper().split('.')[0] in {'CON','PRN','AUX','NUL',*[f'COM{i}' for i in range(1,10)],*[f'LPT{i}' for i in range(1,10)]}:
+        raise ValueError('Invalid storage name')
+    return cleaned
 
 
 class LocalDiskStorageProvider(StorageProvider):
@@ -75,8 +79,8 @@ class LocalDiskStorageProvider(StorageProvider):
         precreate_alphabet: bool = True
     ):
         self.base_dir = os.path.abspath(base_directory)
-        self.institution_id = sanitize_folder_or_file_name(institution_id).lower()
-        self.institution_dir = os.path.join(self.base_dir, self.institution_id)
+        self.institution_id = component(institution_id).lower()
+        self.institution_dir = str(contained(self.base_dir,self.institution_id))
         os.makedirs(self.institution_dir, exist_ok=True)
 
         # Pré-criação da estrutura de pastas A a Z para organização instantânea
@@ -105,19 +109,19 @@ class LocalDiskStorageProvider(StorageProvider):
         if os.path.exists(letter_dir):
             with os.scandir(letter_dir) as entries:
                 for entry in entries:
-                    if entry.is_dir() and entry.name.upper() == clean_name.upper():
+                    if entry.is_dir(follow_symlinks=False) and entry.name.upper() == clean_name.upper():
                         target_student_dir = entry.path
                         clean_name = entry.name
                         break
 
 
         if not target_student_dir:
-            target_student_dir = os.path.join(letter_dir, clean_name)
+            target_student_dir = str(contained(self.institution_dir,letter,clean_name))
             os.makedirs(target_student_dir, exist_ok=True)
 
         # Cria as subpastas obrigatórias
-        doc_dir = os.path.join(target_student_dir, "DOC")
-        outros_docs_dir = os.path.join(target_student_dir, "Outros Docs")
+        doc_dir = str(contained(self.institution_dir,letter,clean_name,"DOC"))
+        outros_docs_dir = str(contained(self.institution_dir,letter,clean_name,"Outros Docs"))
         os.makedirs(doc_dir, exist_ok=True)
         os.makedirs(outros_docs_dir, exist_ok=True)
 
@@ -178,8 +182,8 @@ class LocalDiskStorageProvider(StorageProvider):
         target_name = sanitize_folder_or_file_name(target_name)
         file_path = os.path.join(target_dir, target_name)
 
-        with open(file_path, "wb") as f:
-            f.write(media.content_bytes)
+        file_path = str(contained(self.institution_dir, os.path.relpath(file_path,self.institution_dir)))
+        write_document(self.base_dir,file_path,media.content_bytes)
 
         rel_key = os.path.relpath(file_path, self.base_dir).replace("\\", "/")
         storage_url = (
@@ -187,7 +191,7 @@ class LocalDiskStorageProvider(StorageProvider):
             f"{clean_student}/{subfolder_label}/{target_name}"
         )
 
-        logger.info(f"[LOCAL STORAGE] Arquivo gravado com sucesso: '{file_path}' ({len(media.content_bytes)} bytes)")
+        logger.debug(f"[LOCAL STORAGE] Arquivo gravado com sucesso: '{file_path}' ({len(media.content_bytes)} bytes)")
 
         return StoredFileInfo(
             file_id=rel_key,
@@ -220,17 +224,18 @@ class LocalDiskStorageProvider(StorageProvider):
         """
         paths = self.get_student_paths(student_name)
         for folder in (paths["doc_dir"], paths["outros_docs_dir"]):
-            file_path = os.path.join(folder, filename)
+            if filename != os.path.basename(filename) or '\\' in filename: raise ValueError('Invalid filename')
+            file_path = str(contained(self.institution_dir,os.path.relpath(folder,self.institution_dir),filename))
             if os.path.exists(file_path) and os.path.isfile(file_path):
-                with open(file_path, "rb") as f:
-                    return f.read()
+                return read_document(self.base_dir,file_path)
         return None
 
     def get_file_absolute_path(self, student_name: str, filename: str) -> Optional[str]:
         """Retorna o caminho absoluto do arquivo no disco caso exista."""
         paths = self.get_student_paths(student_name)
         for folder in (paths["doc_dir"], paths["outros_docs_dir"]):
-            file_path = os.path.join(folder, filename)
+            if filename != os.path.basename(filename) or '\\' in filename: raise ValueError('Invalid filename')
+            file_path = str(contained(self.institution_dir,os.path.relpath(folder,self.institution_dir),filename))
             if os.path.exists(file_path) and os.path.isfile(file_path):
                 return file_path
         return None
@@ -245,13 +250,14 @@ class LocalDiskStorageProvider(StorageProvider):
         paths = self.get_student_paths(student_name)
         deleted = False
         for folder in (paths["doc_dir"], paths["outros_docs_dir"]):
-            file_path = os.path.join(folder, filename)
+            if filename != os.path.basename(filename) or '\\' in filename: raise ValueError('Invalid filename')
+            file_path = str(contained(self.institution_dir,os.path.relpath(folder,self.institution_dir),filename))
             if os.path.exists(file_path) and os.path.isfile(file_path):
                 try:
                     os.remove(file_path)
                     logger.info(f"[LOCAL STORAGE] Arquivo excluído da custódia com sucesso: '{file_path}'")
                     deleted = True
                 except Exception as e:
-                    logger.error(f"[LOCAL STORAGE] Erro ao excluir arquivo '{file_path}': {e}")
+                    logger.error("Operation failed; inspect restricted security events")
         return deleted
 

@@ -20,13 +20,21 @@ import logging
 from functools import wraps
 from collections import defaultdict
 from typing import Dict, List, Any, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from dotenv import load_dotenv
 load_dotenv()
+from security.policy import validate_config, external_processing_allowed
+validate_config()
 
 from flask import Flask, request, jsonify, render_template, send_file, Response, g, make_response, redirect, session
 from flask_cors import CORS
+from werkzeug.security import check_password_hash, generate_password_hash
+from security.storage import production, component, contained, read_document
+from security.sessions import SQLiteSessionInterface
+from security.audit import append_event, pseudonym
+from security.accounts import authenticate, current_identity, identity_version
+from security.proxy import TrustedProxy
 
 from core_dossier_models import DocumentAuditItem
 from core_institution_models import (
@@ -44,6 +52,7 @@ logging.basicConfig(level=logging.INFO, format='[API_SERVER] [%(levelname)s] %(a
 logger = logging.getLogger("API_SERVER")
 
 app = Flask(__name__, template_folder='templates/default', static_folder='static')
+app.wsgi_app=TrustedProxy(app.wsgi_app)
 
 # 1. SEGURANÇA: Limite de tamanho de upload (50MB) para evitar DoS por esgotamento de memória
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
@@ -52,7 +61,13 @@ app.config['JSON_AS_ASCII'] = False
 # 2. SEGURANÇA: CORS restrito e sem credenciais em wildcard
 CORS(app, resources={r"/api/*": {"origins": os.environ.get("ALLOWED_ORIGINS", "").split(",") if os.environ.get("ALLOWED_ORIGINS") else []}}, supports_credentials=False)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
-app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax", SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "false").lower() == "true")
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Strict", SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "false").lower() == "true")
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=20)
+app.config['MAX_FORM_MEMORY_SIZE'] = 1024 * 1024
+app.config['MAX_FORM_PARTS'] = 40
+if os.environ.get('ALLOWED_HOSTS'): app.config['TRUSTED_HOSTS'] = [x.strip() for x in os.environ['ALLOWED_HOSTS'].split(',')]
+app.session_interface = SQLiteSessionInterface(os.path.join(os.environ.get('SECURITY_STATE_DIR','security-state'),'sessions.sqlite'))
 
 # Chave mestra de autenticação do proprietário do aplicativo (SaaS Super Admin)
 SUPER_ADMIN_KEY = os.environ.get("SUPER_ADMIN_KEY", "")
@@ -72,8 +87,11 @@ class InMemoryRateLimiter:
         self.lock = threading.Lock()
 
     def is_allowed(self, client_key: str, max_requests: int = 30, window_seconds: int = 60) -> bool:
-        now = time.time()
+        now = time.monotonic()
         with self.lock:
+            if client_key not in self.requests and len(self.requests)>=5000:
+                self.requests = defaultdict(list,{k:v for k,v in self.requests.items() if v and now-v[-1]<3600})
+                if len(self.requests)>=5000:return False
             timestamps = self.requests[client_key]
             # Remove requisições mais antigas que a janela
             self.requests[client_key] = [t for t in timestamps if now - t < window_seconds]
@@ -88,9 +106,7 @@ rate_limiter = InMemoryRateLimiter()
 
 def get_client_ip() -> str:
     """Extrai o IP real do cliente mesmo atrás de Proxies Reversos ou Load Balancers."""
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    # Forwarding headers are untrusted. Configure a trusted proxy at the infrastructure layer.
     return request.remote_addr or "127.0.0.1"
 
 
@@ -99,17 +115,30 @@ def get_client_ip() -> str:
 # ==============================================================================
 
 def valid_key(supplied, expected):
-    return bool(supplied and expected and expected not in {"secretaria-2026", "protocolo-admin-2026", "master-protocolo-2026"} and hmac.compare_digest(str(supplied), str(expected)))
+    if not isinstance(supplied,str) or not isinstance(expected,str) or not supplied or not expected or len(supplied)>512:return False
+    if expected in {"secretaria-2026", "protocolo-admin-2026", "master-protocolo-2026"}:return False
+    if expected.startswith(('scrypt:','pbkdf2:')):
+        try:return check_password_hash(expected,supplied)
+        except (ValueError,TypeError):return False
+    return not production() and hmac.compare_digest(supplied,expected)
+
+def credential_version(value):return pseudonym(value)
+def cookie_identity(kind,value):return session.get(kind) is True and session.get('credential_version')==credential_version(value)
 
 def request_key():
     return request.headers.get("X-Admin-Key", "")
 
 def is_master():
-    return valid_key(request_key(), SUPER_ADMIN_KEY) or (bool(SUPER_ADMIN_KEY) and session.get("master") is True)
+    account=current_identity(session)
+    if account:return account.get('role')=='master'
+    return not production() and (valid_key(request_key(),SUPER_ADMIN_KEY) or (bool(SUPER_ADMIN_KEY) and cookie_identity('master',SUPER_ADMIN_KEY)))
 
 def mutation_origin_allowed():
     origin = request.headers.get("Origin")
-    return not origin or origin.rstrip("/") == request.host_url.rstrip("/")
+    if request.headers.get('Sec-Fetch-Site')=='cross-site':return False
+    if origin:return origin.rstrip('/')==request.host_url.rstrip('/')
+    if session and request.method not in ('GET','HEAD','OPTIONS'):return bool(request_key())
+    return True
 
 def require_super_admin_auth(f):
     @wraps(f)
@@ -131,7 +160,7 @@ def require_institution_admin_auth(f):
         inst = coordinator.get_institution(tenant)
         if not inst:
             return jsonify({"error": "Instituição não localizada."}), 404
-        allowed = is_master() or valid_key(request_key(), inst.subscription.admin_access_key) or session.get("admin_tenant") == inst.id
+        allowed = tenant_admin(inst.id)
         if not allowed:
             return jsonify({"error": "Autenticação da instituição requerida."}), 401
         if request.method not in ("GET", "HEAD") and not mutation_origin_allowed():
@@ -148,13 +177,24 @@ def login_endpoint():
         return jsonify({"error": "Aguarde antes de tentar novamente."}), 429
     data = request.get_json(silent=True) or {}
     if not isinstance(data, dict): return jsonify({"error": "Formato inválido."}), 400
+    if data.get('username'):
+        account=authenticate(data['username'],data.get('key',''),data.get('otp',''))
+        if not account:return jsonify({'error':'Credenciais inválidas.'}),401
+        if account.get('role')=='secretary' and account.get('tenant')!=data.get('institution_id'):return jsonify({'error':'Credenciais inválidas.'}),401
+        app.session_interface.rotate(session);session.permanent=True
+        session['principal']=data['username'];session['account_version']=identity_version(account)
+        session['admin_tenant']=account.get('tenant')
+        return jsonify({'success':True})
+    if production():return jsonify({'error':'Conta individual e MFA obrigatórios.'}),401
     key = data.get("key", "")
     tenant = data.get("institution_id", "")
     inst = coordinator.get_institution(tenant) if tenant else None
     master = valid_key(key, SUPER_ADMIN_KEY)
     if not master and not (inst and valid_key(key, inst.subscription.admin_access_key)):
         return jsonify({"error": "Credencial inválida ou acesso não configurado."}), 401
-    session.clear()
+    app.session_interface.rotate(session)
+    session.permanent=True
+    session['credential_version']=credential_version(SUPER_ADMIN_KEY if master else inst.subscription.admin_access_key)
     if master: session['master'] = True
     else: session['admin_tenant'] = inst.id
     return jsonify({"success": True}), 200
@@ -162,8 +202,49 @@ def login_endpoint():
 @app.route('/api/auth/logout', methods=['POST'])
 def logout_endpoint():
     if not mutation_origin_allowed(): return jsonify({"error": "Origem não autorizada."}), 403
-    session.clear()
+    app.session_interface.rotate(session)
     return jsonify({"success": True})
+
+
+def tenant_admin(tenant):
+    inst=coordinator.get_institution(tenant)
+    account=current_identity(session)
+    if account:return bool(inst and (account.get('role')=='master' or (account.get('role')=='secretary' and account.get('tenant')==inst.id)))
+    return bool(inst and (is_master() or (not production() and (valid_key(request_key(),inst.subscription.admin_access_key) or (session.get('admin_tenant')==inst.id and session.get('credential_version')==credential_version(inst.subscription.admin_access_key))))))
+
+def require_student_access(f):
+    @wraps(f)
+    def protected(*args,**kwargs):
+        data=request.get_json(silent=True) or request.form or {}
+        if not isinstance(data,dict) and not hasattr(data,'get'):return jsonify({'error':'Formato inválido.'}),400
+        tenant=str(data.get('institution_id') or g.tenant_id).lower().strip()
+        sid=data.get('studentId') or data.get('student_id')
+        if not sid:return jsonify({'error':'Identificador obrigatório.'}),400
+        sid=re.sub(r'[^a-zA-Z0-9_-]','',str(sid))
+        if tenant_admin(tenant):return f(*args,**kwargs)
+        if not mutation_origin_allowed():return jsonify({'error':'Origem não autorizada.'}),403
+        dossier=coordinator.dossier_repo.get_dossier(tenant,sid) if coordinator.get_institution(tenant) else None
+        if not dossier or session.get('student_tenant')!=tenant or session.get('student_id')!=sid or session.get('credential_version')!=credential_version(dossier.metadata.get('portal_access_hash','')):
+            return jsonify({'error':'Identificação e código de acesso necessários.'}),401
+        if data.get('studentName') and data.get('studentName')!=dossier.student_name:return jsonify({'error':'Identidade divergente.'}),403
+        g.student_dossier=dossier
+        return f(*args,**kwargs)
+    return protected
+
+@app.route('/api/admin/student-access',methods=['POST'])
+@require_institution_admin_auth
+def create_student_access():
+    data=request.get_json(silent=True) or {}
+    if not isinstance(data,dict):return jsonify({'error':'Formato inválido.'}),400
+    try:sid=component(data.get('student_id',''))
+    except ValueError:return jsonify({'error':'Identificador inválido.'}),400
+    dossier=coordinator.dossier_repo.get_dossier(g.tenant_id,sid)
+    if not dossier:return jsonify({'error':'Cadastro não localizado.'}),404
+    if production() and not os.environ.get('DATA_ENCRYPTION_KEY') and not os.environ.get('DATA_ENCRYPTION_KEYS_JSON'):return jsonify({'error':'Criptografia não configurada.'}),503
+    code=secrets.token_urlsafe(24)
+    dossier.metadata['portal_access_hash']=generate_password_hash(code)
+    if not coordinator.dossier_repo.save_dossier(dossier):return jsonify({'error':'Código não persistido.'}),503
+    return jsonify({'success':True,'access_code':code,'instruction':'Entregue ao titular/responsável por canal autenticado. O código substitui o anterior.'})
 
 def public_audit_result(value):
     if isinstance(value, dict):
@@ -185,7 +266,35 @@ def resolve_tenant_id() -> str:
 
 @app.before_request
 def before_request_func():
+    g.csp_nonce=secrets.token_urlsafe(24)
     g.tenant_id = resolve_tenant_id()
+    if request.path.startswith('/api/') and not rate_limiter.is_allowed('api:'+get_client_ip(),120,60):return jsonify({'error':'Limite de requisições excedido.'}),429
+    if request.is_json:
+        data=request.get_json(silent=True)
+        if data is not None and not isinstance(data,(dict,list)):return jsonify({'error':'Formato JSON inválido.'}),400
+        if isinstance(data,list) and 'batch' not in request.path:return jsonify({'error':'Objeto JSON obrigatório.'}),400
+    if production() and not request.is_secure:return jsonify({'error':'HTTPS obrigatório.'}),403
+
+@app.context_processor
+def security_template_context():return {'csp_nonce':g.get('csp_nonce','')}
+
+@app.after_request
+def secure_response(response):
+    nonce=g.get('csp_nonce','')
+    response.headers['Content-Security-Policy']=("default-src 'self'; script-src 'self' 'nonce-"+nonce+"'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+    response.headers['X-Content-Type-Options']='nosniff'
+    response.headers['X-Frame-Options']='DENY'
+    response.headers['Referrer-Policy']='no-referrer'
+    response.headers['Permissions-Policy']='camera=(self), microphone=(), geolocation=()'
+    if request.path.startswith('/api/') or request.path.startswith(('/admin','/super','/portal')):response.headers['Cache-Control']='no-store, private'
+    if production():response.headers['Strict-Transport-Security']='max-age=31536000; includeSubDomains'
+    if request.path.startswith('/api/'):
+        try:append_event(request.endpoint or 'unknown',str(response.status_code),session.get('principal') or session.get('admin_tenant') or session.get('student_id') or ('master' if is_master() else 'anonymous'))
+        except Exception:
+            logger.error('Security event persistence failed')
+            if production():
+                failure=jsonify({'error':'Auditoria de segurança indisponível.'});failure.status_code=503;failure.headers['Cache-Control']='no-store';return failure
+    return response
 
 
 # ==============================================================================
@@ -235,7 +344,7 @@ def student_portal_route(institution_id: str):
     is_suspended = hasattr(inst, "subscription") and not inst.subscription.is_active
     return render_template(
         'portal.html',
-        institution=inst.model_dump(),
+        institution=inst.model_dump(exclude={'subscription':{'admin_access_key'},'erp':True}),
         portal_title=inst.branding.portal_title,
         is_suspended=is_suspended
     )
@@ -272,20 +381,31 @@ def search_student_endpoint():
         }), 429
 
     data = request.get_json(silent=True) or request.form or {}
+    if not hasattr(data,'get'):return jsonify({'error':'Formato inválido.'}),400
     identifier = data.get('identifier') or data.get('cpf') or data.get('student_id') or data.get('matricula')
     if not identifier:
         return jsonify({"error": "Identificador (CPF ou Matrícula) não informado."}), 400
 
-    clean_id = re.sub(r'[^a-zA-Z0-9]', '', str(identifier))
+    clean_id = re.sub(r'[^a-zA-Z0-9_-]', '', str(identifier))
     tenant_id = data.get('institution_id') or g.tenant_id
 
+    if not isinstance(data,dict):return jsonify({'error':'Formato inválido.'}),400
+    if not tenant_admin(tenant_id):
+        if not mutation_origin_allowed():return jsonify({'error':'Origem não autorizada.'}),403
+        dossier=coordinator.dossier_repo.get_dossier(tenant_id,clean_id) if coordinator.get_institution(tenant_id) else None
+        current=bool(dossier and session.get('student_tenant')==tenant_id and session.get('student_id')==clean_id and session.get('credential_version')==credential_version(dossier.metadata.get('portal_access_hash','')))
+        if not current and (not dossier or not valid_key(data.get('access_code'),dossier.metadata.get('portal_access_hash',''))):
+            return jsonify({'error':'Identificador ou código de acesso inválido.'}),401
+        app.session_interface.rotate(session);session.permanent=True
+        session['student_tenant']=tenant_id;session['student_id']=clean_id
+        session['credential_version']=credential_version(dossier.metadata['portal_access_hash'])
     try:
         student = coordinator.get_student(tenant_id, clean_id)
         if student:
             return jsonify(student), 200
         return jsonify({"error": "Estudante não localizado no cadastro da instituição."}), 404
     except Exception as e:
-        logger.error(f"Erro ao buscar aluno: {e}", exc_info=True)
+        logger.error("Operation failed; inspect restricted security events")
         return jsonify({"error": "Falha na consulta cadastral."}), 500
     finally:
         gc.collect()
@@ -293,6 +413,7 @@ def search_student_endpoint():
 
 @app.route('/verificar-documentos', methods=['POST'])
 @app.route('/api/documents/check', methods=['POST'])
+@require_student_access
 def check_documents_endpoint():
     """Diagnóstico de documentos exigidos vs já aprovados/arquivados no prontuário."""
     data = request.get_json() or {}
@@ -313,7 +434,7 @@ def check_documents_endpoint():
             "documentos": diag.get("documentos", {})
         }), 200
     except Exception as e:
-        logger.error(f"Erro na verificação de documentos: {e}", exc_info=True)
+        logger.error("Operation failed; inspect restricted security events")
         return jsonify({"success": False, "error": "Erro ao verificar situação documental."}), 500
     finally:
         gc.collect()
@@ -321,6 +442,7 @@ def check_documents_endpoint():
 
 @app.route('/analisar', methods=['POST'])
 @app.route('/api/documents/audit', methods=['POST'])
+@require_student_access
 def audit_documents_endpoint():
     """
     Recebe os uploads multipart do estudante, higieniza no MediaPipeline,
@@ -344,11 +466,14 @@ def audit_documents_endpoint():
         return jsonify({"success": False, "error": "Dados incompletos ou nenhum arquivo enviado."}), 400
 
     clean_id = re.sub(r'[^a-zA-Z0-9]', '', str(student_id))
-    clean_name = re.sub(r'[^\w\s-]', '', str(student_name)).strip()
+    registered=coordinator.dossier_repo.get_dossier(tenant_id,clean_id)
+    clean_name=registered.student_name if registered else re.sub(r'[^\w\s-]', '', str(student_name)).strip()
 
+    if not external_processing_allowed():return jsonify({'error':'Processamento externo não habilitado para esta implantação.'}),503
     # Agrupa arquivos recebidos por tipo de documento
     grouped_files = defaultdict(list)
-    for key, file_storage in request.files.items():
+    if len(list(request.files.items(multi=True)))>20:return jsonify({'error':'Máximo de 20 arquivos por envio.'}),400
+    for key, file_storage in request.files.items(multi=True):
         doc_key = key.split('-')[1] if '-' in key else key
         content = file_storage.read()
         if content:
@@ -372,7 +497,7 @@ def audit_documents_endpoint():
         )
         return jsonify(public_audit_result(verdict)), 200
     except Exception as e:
-        logger.error(f"Erro na auditoria de documentos: {e}", exc_info=True)
+        logger.error("Operation failed; inspect restricted security events")
         return jsonify({"success": False, "code": "RECEIPT_NOT_CONFIRMED", "error": "Não foi possível confirmar o armazenamento. Tente novamente ou contate a secretaria."}), 503
     finally:
         gc.collect()
@@ -396,6 +521,7 @@ def verify_signature_endpoint():
     file_bytes = None
     filename = "documento.pdf"
 
+    if production() and not (current_identity(session) or session.get('student_id')):return jsonify({'error':'Autenticação requerida.'}),401
     # 1. Verifica upload multipart
     if request.files:
         uploaded_file = request.files.get('file') or request.files.get('pdf') or next(iter(request.files.values()), None)
@@ -414,7 +540,7 @@ def verify_signature_endpoint():
                 clean_b64 = re.sub(r'^data:application/pdf;base64,', '', b64_content.strip())
                 file_bytes = binascii.a2b_base64(clean_b64)
             except Exception as e:
-                return jsonify({"success": False, "error": f"Base64 inválido: {e}"}), 400
+                return jsonify({"success": False, "error": "Base64 inválido."}), 400
         elif data.get('student_id') and data.get('document_id'):
             check = require_institution_admin_auth(lambda: None)()
             if check is not None: return check
@@ -428,10 +554,9 @@ def verify_signature_endpoint():
             inst = coordinator.get_institution(tenant_id)
             provider = __import__('adapters.storage.factory', fromlist=['StorageFactory']).StorageFactory.get_provider(inst)
             file_path = provider.get_file_absolute_path(dossier.student_name, item.file_name) if item.file_name and hasattr(provider, 'get_file_absolute_path') else ''
-            if os.path.isfile(file_path):
-                with open(file_path, "rb") as f:
-                    file_bytes = f.read()
-                    filename = os.path.basename(file_path)
+            if file_path and os.path.isfile(file_path):
+                file_bytes=provider.get_file_bytes(dossier.student_name,item.file_name)
+                filename=item.file_name
 
     if not file_bytes:
         return jsonify({
@@ -446,10 +571,10 @@ def verify_signature_endpoint():
             "report": report.model_dump()
         }), 200
     except Exception as e:
-        logger.error(f"Erro ao verificar assinatura digital: {e}", exc_info=True)
+        logger.error("Operation failed; inspect restricted security events")
         return jsonify({
             "success": False,
-            "error": f"Falha interna ao verificar assinatura digital: {str(e)}"
+            "error": "Falha interna. Consulte o responsável técnico."
         }), 500
     finally:
         gc.collect()
@@ -491,7 +616,7 @@ def list_dossiers_endpoint():
     return jsonify({
         "institution_id": inst_id,
         "total": len(dossiers),
-        "dossiers": [d.model_dump(mode='json') for d in dossiers]
+        "dossiers": [d.model_dump(mode='json',exclude={'metadata':{'portal_access_hash'}}) for d in dossiers]
     }), 200
 
 
@@ -522,7 +647,7 @@ def export_dossiers_endpoint(export_format: str):
                 download_name=filename
             )
     except Exception as e:
-        logger.error(f"Erro na exportação de dossiês: {e}", exc_info=True)
+        logger.error("Operation failed; inspect restricted security events")
         return jsonify({"error": "Falha na geração do pacote de exportação."}), 500
 
 
@@ -560,8 +685,8 @@ def review_document_endpoint():
             "reason": res.get("reason", admin_notes)
         }), 200
     except Exception as e:
-        logger.error(f"Erro na revisão manual do documento: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        logger.error("Operation failed; inspect restricted security events")
+        return jsonify({"error": "Falha interna. Consulte o responsável técnico."}), 500
 
 
 @app.route('/api/admin/notify-student', methods=['POST'])
@@ -602,8 +727,8 @@ def notify_student_endpoint():
             "notification": msg.model_dump() if hasattr(msg, "model_dump") else msg
         }), 200
     except Exception as e:
-        logger.error(f"Erro ao disparar notificação para estudante: {e}", exc_info=True)
-        return jsonify({"success": False, "error": f"Falha no envio de notificação: {str(e)}"}), 500
+        logger.error("Operation failed; inspect restricted security events")
+        return jsonify({"success": False, "error": "Falha interna. Consulte o responsável técnico."}), 500
 
 
 @app.route('/api/admin/erp/sync', methods=['POST'])
@@ -635,8 +760,8 @@ def sync_erp_endpoint():
             "sync_result": sync_res.model_dump()
         }), status_code
     except Exception as e:
-        logger.error(f"Erro na sincronização com ERP: {e}", exc_info=True)
-        return jsonify({"success": False, "error": f"Falha na sincronização com ERP: {str(e)}"}), 500
+        logger.error("Operation failed; inspect restricted security events")
+        return jsonify({"success": False, "error": "Falha interna. Consulte o responsável técnico."}), 500
 
 
 # ==============================================================================
@@ -659,7 +784,7 @@ def list_all_institutions_super_admin():
     return jsonify({
         "success": True,
         "total": len(coordinator.institutions),
-        "institutions": {i_id: inst.model_dump(mode='json') for i_id, inst in coordinator.institutions.items()}
+        "institutions": {i_id: inst.model_dump(mode='json',exclude={'subscription':{'admin_access_key'}}) for i_id, inst in coordinator.institutions.items()}
     }), 200
 
 
@@ -694,7 +819,7 @@ def update_institution_super_admin():
             portal_title=data.get('portal_title')
         )
 
-    return jsonify({"success": True, "institution": updated.model_dump(mode='json')}), 200
+    return jsonify({"success": True, "institution": updated.model_dump(mode='json',exclude={'subscription':{'admin_access_key'}})}), 200
 
 
 @app.route('/api/super-admin/institution/branding', methods=['POST'])
@@ -716,7 +841,7 @@ def update_branding_super_admin():
     if not updated:
         return jsonify({"error": "Instituição não encontrada."}), 404
 
-    return jsonify({"success": True, "institution": updated.model_dump(mode='json')}), 200
+    return jsonify({"success": True, "institution": updated.model_dump(mode='json',exclude={'subscription':{'admin_access_key'}})}), 200
 
 
 @app.route('/api/super-admin/system/health', methods=['GET'])
@@ -761,11 +886,11 @@ def system_health_telemetry_endpoint():
             "telemetry": report
         }), 200
     except Exception as e:
-        logger.error(f"Erro ao obter telemetria do sistema: {e}", exc_info=True)
+        logger.error("Operation failed; inspect restricted security events")
         return jsonify({
             "success": False,
             "status": "degraded",
-            "error": str(e)
+            "error": "Falha interna. Consulte o responsável técnico."
         }), 500
 
 
@@ -786,8 +911,8 @@ def system_swarm_status_endpoint():
             "swarm": status_data
         }), 200
     except Exception as e:
-        logger.error(f"Erro ao obter status do enxame de subagentes: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error("Operation failed; inspect restricted security events")
+        return jsonify({"success": False, "error": "Falha interna. Consulte o responsável técnico."}), 500
 
 
 @app.route('/api/system/supabase/status', methods=['GET'])
@@ -804,14 +929,15 @@ def supabase_status_endpoint():
             "supabase": report
         }), 200
     except Exception as e:
-        logger.error(f"Erro no diagnóstico do Supabase: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error("Operation failed; inspect restricted security events")
+        return jsonify({"success": False, "error": "Falha interna. Consulte o responsável técnico."}), 500
 
 
 @app.route('/api/super-admin/supabase/config', methods=['POST'])
 @require_super_admin_auth
 def supabase_config_endpoint():
     """Configura ou atualiza dinamicamente as credenciais do Supabase."""
+    if production():return jsonify({'error':'Configure credenciais somente pelo gerenciador de segredos da implantação.'}),403
     data = request.get_json() or {}
     url = data.get('url')
     key = data.get('key')
@@ -830,8 +956,8 @@ def supabase_config_endpoint():
             "test_result": report
         }), 200
     except Exception as e:
-        logger.error(f"Erro ao atualizar configuração do Supabase: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        logger.error("Operation failed; inspect restricted security events")
+        return jsonify({"error": "Falha interna. Consulte o responsável técnico."}), 500
 
 
 @app.route('/api/super-admin/institution/reset-usage', methods=['POST'])
@@ -847,7 +973,7 @@ def reset_usage_super_admin():
     if not updated:
         return jsonify({"error": "Instituição não encontrada."}), 404
 
-    return jsonify({"success": True, "institution": updated.model_dump(mode='json')}), 200
+    return jsonify({"success": True, "institution": updated.model_dump(mode='json',exclude={'subscription':{'admin_access_key'}})}), 200
 
 
 @app.route('/api/super-admin/inbound-outbound-records', methods=['GET'])
@@ -883,7 +1009,7 @@ def create_institution_super_admin():
 
     tier = data.get('plan_tier', 'PROFISSIONAL')
     limit = int(data.get('monthly_limit', 500))
-    key = data.get('admin_access_key') or secrets.token_urlsafe(32)
+    key = generate_password_hash(data.get('admin_access_key') or secrets.token_urlsafe(32))
     folder = data.get('drive_folder_id', 'ROOT_FOLDER_ID')
     inst_type = data.get('institution_type', 'FACULDADE')
 
@@ -908,7 +1034,7 @@ def create_institution_super_admin():
         enabled_courses=["1ª Graduação", "Pós-Graduação"] if "FACULDADE" in inst_type or "UNIVERSIDADE" in inst_type else ["Ensino Fundamental", "Ensino Médio"]
     )
     coordinator.create_or_update_institution(new_profile)
-    return jsonify({"success": True, "institution": new_profile.model_dump(mode='json')}), 201
+    return jsonify({"success": True, "institution": new_profile.model_dump(mode='json',exclude={'subscription':{'admin_access_key'}})}), 201
 
 
 # ==============================================================================
@@ -991,7 +1117,7 @@ def batch_import_students_endpoint(institution_id: str):
         try:
             supabase_manager.client.table('student_dossiers').upsert(sb_records).execute()
         except Exception as e:
-            logger.warning(f"Erro ao salvar alunos no Supabase: {e}")
+            logger.warning("Operation failed; inspect restricted security events")
 
     return jsonify({
         "success": True,
@@ -1014,7 +1140,7 @@ def list_institution_students_endpoint(institution_id: str):
             if res.data:
                 students = res.data
         except Exception as e:
-            logger.warning(f"Erro ao consultar alunos no Supabase: {e}")
+            logger.warning("Operation failed; inspect restricted security events")
 
     if not students:
         dossiers = coordinator.dossier_repo.list_dossiers(clean_tenant)
@@ -1039,6 +1165,7 @@ def list_institution_students_endpoint(institution_id: str):
 
 @app.route('/ask-assistant', methods=['POST'])
 @app.route('/api/assistant/ask', methods=['POST'])
+@require_student_access
 def ask_assistant_endpoint():
     """Assistente acadêmico para tirar dúvidas dos alunos com rate-limiting."""
     ip = get_client_ip()
@@ -1063,10 +1190,11 @@ def ask_assistant_endpoint():
             f"O estudante '{safe_name}' tem a seguinte dúvida sobre a entrega de documentos de matrícula: '{safe_question}'. "
             f"Seja educada, objetiva, acolhedora e explique com clareza o que ele precisa providenciar."
         )
+        if not external_processing_allowed():return jsonify({'error':'Processamento externo não habilitado.'}),503
         answer = coordinator.ai_auditor.generate_text(prompt)
         return jsonify({"answer": answer})
     except Exception as e:
-        logger.error(f"Erro no assistente: {e}")
+        logger.error("Operation failed; inspect restricted security events")
         return jsonify({"answer": "Desculpe, ocorreu uma instabilidade momentânea no assistente. Tente novamente em instantes."}), 500
 
 
@@ -1087,21 +1215,18 @@ def get_stored_file_endpoint(institution_id: str, letter: str, student_name: str
     base_dir = getattr(inst.storage, "base_path", "storage") if inst and inst.storage else "storage"
     abs_base = os.path.abspath(base_dir)
 
-    target_file = os.path.abspath(
-        os.path.join(abs_base, clean_inst, clean_letter, clean_student, clean_subfolder, clean_filename)
-    )
+    try:
+        tenant_root=contained(abs_base,clean_inst)
+        target_file=contained(tenant_root,clean_letter,clean_student,clean_subfolder,clean_filename)
+        if not target_file.is_file():return jsonify({'error':'Documento não localizado.'}),404
+        data=read_document(abs_base,target_file)
+    except ValueError:return jsonify({'error':'Caminho ou integridade inválidos.'}),403
+    inline=os.path.splitext(clean_filename.lower())[1] in {'.jpg','.jpeg','.png','.webp'}
+    return send_file(io.BytesIO(data),download_name=clean_filename,as_attachment=not inline)
 
-    # Prevenção contra Directory Traversal (LFI / Path Traversal)
-    if os.path.commonpath([abs_base, target_file]) != abs_base:
-        return jsonify({"error": "Acesso não autorizado ao caminho especificado."}), 403
-
-    if not os.path.exists(target_file) or not os.path.isfile(target_file):
-        return jsonify({"error": "Documento não encontrado no armazenamento local."}), 404
-
-    return send_file(target_file, as_attachment=False)
 
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
     logger.info(f"Iniciando Servidor Web do Protocolo (3 Níveis de Acesso: Aluno, Secretaria, Super Admin) na porta {port}...")
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host=os.environ.get('BIND_HOST','127.0.0.1'), port=port, debug=False)

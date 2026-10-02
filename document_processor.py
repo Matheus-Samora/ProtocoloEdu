@@ -4,7 +4,7 @@
 
 import os
 import fitz  # PyMuPDF
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from PIL import Image, ImageOps
 import io
 import docx
@@ -135,7 +135,7 @@ def _process_pdf(file_content):
         return text, image, None
     
     except Exception:
-        # Fallback com PyPDF2...
+        # Fallback com pypdf...
         try:
             file_content.seek(0)
             reader = PdfReader(file_content)

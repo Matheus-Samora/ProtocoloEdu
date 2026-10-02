@@ -6,6 +6,8 @@ o Storage Provider e o Repositório Central de Dossiês.
 
 import os
 import json
+from security.storage import atomic_write, production
+from werkzeug.security import generate_password_hash
 import logging
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -61,7 +63,7 @@ class ProtocolCoordinator:
                     for i_id, i_data in data.get("institutions", {}).items():
                         self.institutions[i_id] = InstitutionProfile(**i_data)
             except Exception as e:
-                logger.error(f"Erro ao carregar catálogo de instituições: {e}")
+                logger.error("Operation failed; inspect restricted security events")
 
     def save_institutions(self):
         """Persiste os perfis de instituições atualizados no catálogo JSON."""
@@ -70,11 +72,10 @@ class ProtocolCoordinator:
                 "version": "2.1.0",
                 "institutions": {i_id: inst.model_dump(mode="json") for i_id, inst in self.institutions.items()}
             }
-            with open(self.institutions_file, 'w', encoding='utf-8') as f:
-                json.dump(catalog_data, f, indent=2, ensure_ascii=False)
+            atomic_write(self.institutions_file,json.dumps(catalog_data,ensure_ascii=False).encode())
             logger.info("Catálogo de instituições e assinaturas atualizado com sucesso.")
         except Exception as e:
-            logger.error(f"Erro ao salvar catálogo de instituições: {e}", exc_info=True)
+            logger.error("Operation failed; inspect restricted security events")
 
     def get_institution(self, institution_id: str) -> Optional[InstitutionProfile]:
         """Obtém o perfil da instituição."""
@@ -107,7 +108,7 @@ class ProtocolCoordinator:
         if is_active is not None:
             inst.subscription.is_active = bool(is_active)
         if admin_access_key:
-            inst.subscription.admin_access_key = str(admin_access_key).strip()
+            inst.subscription.admin_access_key = generate_password_hash(str(admin_access_key)).strip()
         if billing_day is not None:
             inst.subscription.billing_day = int(billing_day)
 

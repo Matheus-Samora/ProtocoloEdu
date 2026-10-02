@@ -43,3 +43,22 @@ data_dossiers/*/tmp/
 Thumbs.db
 .vscode/
 .idea/
+
+# Dados pessoais, cofres e backups jamais devem ser versionados
+credentials.json
+config/api_keys.json
+institutions_catalog.json
+data_dossiers/
+storage/
+security-state/
+backups/
+test-results/
+.env.*
+!.env.example
+
+private/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.enc

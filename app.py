@@ -13,7 +13,7 @@ from api_server import app, logger
 
 def main():
     port = int(os.environ.get("PORT", 8080))
-    host = os.environ.get("HOST", "0.0.0.0")
+    host = os.environ.get("HOST", "127.0.0.1")
     
     print("=" * 70)
     print("🎓 PROTOCOLOEDU - PLATAFORMA DIGITAL DE GESTÃO E PROTOCOLO MEC")

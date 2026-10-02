@@ -142,7 +142,7 @@ class UniversalExportEngine:
     @staticmethod
     def export_to_json(dossiers: List[StudentDossier]) -> str:
         """Gera payload JSON estruturado de exportação em lote."""
-        data = [d.model_dump(mode='json') for d in dossiers]
+        data = [d.model_dump(mode='json',exclude={'metadata':{'portal_access_hash'}}) for d in dossiers]
         return json.dumps({
             "export_version": "2.0.0",
             "total_records": len(data),
@@ -172,7 +172,7 @@ class UniversalExportEngine:
                 folder_name = f"{clean_student_id} - {clean_student_name}".strip(' -_')
 
                 # Salva o resumo JSON individual do aluno
-                student_json = json.dumps(d.model_dump(mode='json'), indent=2, ensure_ascii=False)
+                student_json = json.dumps(d.model_dump(mode='json',exclude={'metadata':{'portal_access_hash'}}), indent=2, ensure_ascii=False)
                 zf.writestr(f"{folder_name}/prontuario_auditoria.json", student_json.encode('utf-8'))
 
                 # Se houver função para recuperar bytes dos arquivos do storage

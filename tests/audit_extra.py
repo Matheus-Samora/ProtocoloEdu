@@ -6,7 +6,8 @@ from agents.models import SubagentRole
 from core_dossier_models import StudentDossier,DocumentAuditItem,DossierStatus
 from core_criteria_models import DocumentSpecification
 from criteria_engine import CriteriaEvaluator
-co=api.coordinator;c=api.app.test_client();out=[]
+co=api.coordinator;c=api.app.test_client()
+c.environ_base['HTTP_X_ADMIN_KEY']=api.SUPER_ADMIN_KEY;out=[]
 c.environ_base['HTTP_X_ADMIN_KEY']=api.SUPER_ADMIN_KEY
 def case(name,fn):
  try:

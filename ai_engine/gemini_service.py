@@ -12,7 +12,8 @@ import random
 import logging
 from typing import Dict, Any, List, Optional, Tuple
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
 
 from core_criteria_models import DocumentSpecification
@@ -54,6 +55,17 @@ def get_api_key_candidates() -> List[str]:
     return candidates
 
 
+class GeminiModelAdapter:
+    """Short-lived official SDK client; never uses implicit ambient credentials."""
+    def __init__(self,key,model):self.key,self.model=key,model
+    def generate_content(self,content,generation_config=None):
+        if not self.key:raise RuntimeError('Gemini key not configured')
+        if isinstance(content,list):
+            content=[types.Part.from_bytes(data=part['data'],mime_type=part['mime_type']) if isinstance(part,dict) else part for part in content]
+        with genai.Client(api_key=self.key,http_options=types.HttpOptions(timeout=30000,api_version='v1')) as client:
+            return client.models.generate_content(model=self.model,contents=content,config=generation_config)
+
+
 class GeminiDocumentAuditor:
     """Auditor documental inteligente baseado no Google Gemini com failover e mascaramento seguro."""
 
@@ -72,13 +84,11 @@ class GeminiDocumentAuditor:
         return self.api_keys[0] if self.api_keys else ""
 
     def _configure(self):
-        """Inicializa a biblioteca oficial google.generativeai com a chave e modelo ativos."""
+        """Inicializa a biblioteca oficial google-genai com a chave e modelo ativos."""
         key = self.current_api_key
         try:
-            genai.configure(api_key=key)
-            self.model = genai.GenerativeModel(self.model_name)
-            masked_key = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
-            logger.info(f"Conexão com Gemini configurada (Modelo: '{self.model_name}', Chave: {masked_key}).")
+            self.model = GeminiModelAdapter(key,self.model_name)
+            logger.info("Gemini adapter configured; remote availability not verified")
         except Exception as e:
             logger.critical(f"Falha ao configurar a API do Google Gemini: {e}")
 
@@ -154,7 +164,7 @@ class GeminiDocumentAuditor:
                 })
 
             # 3. Força resposta estruturada em JSON
-            generation_config = genai.types.GenerationConfig(
+            generation_config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 temperature=0.1
             )
@@ -182,7 +192,7 @@ class GeminiDocumentAuditor:
                 except Exception as e:
                     last_exception = e
                     err_msg = str(e)
-                    logger.error(f"Erro na chamada ao Gemini ({type(e).__name__}): {err_msg}")
+                    logger.error("Gemini request failed; restricted audit records contain outcome")
                     # Se for erro 403 (leaked/invalid key) ou permission denied, rotaciona imediatamente
                     if "403" in err_msg or "leaked" in err_msg.lower() or "permission_denied" in err_msg.lower():
                         if self.rotate_key():
@@ -207,7 +217,7 @@ class GeminiDocumentAuditor:
             try:
                 ai_data = json.loads(raw_response_text)
             except json.JSONDecodeError as json_err:
-                logger.error(f"Resposta da IA não veio em JSON válido: {raw_response_text[:200]}")
+                logger.error("Gemini returned invalid JSON")
                 return {
                     "document_id": spec.id,
                     "display_name": spec.display_name,

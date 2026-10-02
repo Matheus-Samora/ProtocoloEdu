@@ -1,7 +1,7 @@
 import os, socket, sys, pathlib, logging
 os.environ['PYTHON_DOTENV_DISABLED']='1'
 for k in list(os.environ):
- if any(s in k for s in ('SUPABASE','GEMINI','WHATSAPP','SMTP','SOLIS','TOTVS','SOPHIA','GOOGLE_APPLICATION_CREDENTIALS','GLOBAL_NOTIFICATION')): os.environ.pop(k,None)
+ if any(s in k for s in ('SUPABASE','GEMINI','WHATSAPP','SMTP','SOLIS','TOTVS','SOPHIA','GOOGLE_APPLICATION_CREDENTIALS','GLOBAL_NOTIFICATION','ADMIN_ACCOUNTS','DATA_ENCRYPTION','BACKUP_ENCRYPTION','SECURITY_STATE','PROTOCOL_ENV')): os.environ.pop(k,None)
 os.environ['GEMINI_API_KEY']='AIza_FAKE_AUDIT_ONLY'
 os.environ['SUPER_ADMIN_KEY']='qa-fixture-master'
 os.environ['FLASK_SECRET_KEY']='qa-isolated-session-only'

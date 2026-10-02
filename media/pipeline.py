@@ -124,6 +124,7 @@ class MediaPipeline:
             if not pdf_info.get("is_valid_pdf", True):
                 raise ValueError("O arquivo possui extensão .pdf mas sua estrutura interna está corrompida.")
 
+            if pdf_info.get("page_count",0)>100:raise ValueError("PDF excede 100 páginas.")
             if pdf_info.get("is_encrypted", False):
                 raise ValueError(
                     "O arquivo PDF enviado está protegido por senha. "

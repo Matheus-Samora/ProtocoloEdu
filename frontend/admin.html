@@ -8,42 +8,17 @@
     <link rel="icon" type="image/jpeg" href="{{ institution.branding.logo_url if institution.branding and institution.branding.logo_url else '/static/images/logo-imes.jpg' }}">
 
     <!-- Tailwind CSS Oficial via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
 
     <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+
+
 
     <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                    },
-                    colors: {
-                        imes: {
-                            blue: '{{ institution.branding.primary_color if institution.branding and institution.branding.primary_color else "#0a2351" }}',
-                            blueLight: '#153a7a',
-                            gold: '{{ institution.branding.secondary_color if institution.branding and institution.branding.secondary_color else "#fdb913" }}',
-                            goldHover: '#e8a800',
-                        },
-                        dark: {
-                            bg: '#0f172a',
-                            card: '#1e293b',
-                            border: '#334155'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+
+
 
     <style>
         :root {
@@ -171,8 +146,8 @@
             color: #ffffff;
         }
     </style>
-</head>
-<body class="min-h-screen flex flex-col font-sans"><section id="admin-login" class="p-6 bg-white text-slate-800" hidden><h2>Entrar na secretaria</h2><form id="admin-login-form"><label for="admin-login-key">Credencial da instituição</label><input id="admin-login-key" type="password" autocomplete="current-password" required><button type="submit">Entrar</button></form><p id="login-error" role="alert"></p></section>
+<link rel="stylesheet" href="/static/vendor/tailwind.css"><link rel="stylesheet" href="/static/vendor/phosphor/icons.css"></head>
+<body class="min-h-screen flex flex-col font-sans"><section id="admin-login" class="p-6 bg-white text-slate-800" hidden><h2>Entrar na secretaria</h2><form id="admin-login-form"><label>Usuário individual (produção)<input id="admin-username" autocomplete="username" class="w-full p-2 border rounded"></label><label>Código MFA<input id="admin-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" class="w-full p-2 border rounded"></label><label for="admin-login-key">Credencial da instituição</label><input id="admin-login-key" type="password" autocomplete="current-password" required><button type="submit">Entrar</button></form><p id="login-error" role="alert"></p></section>
 
     <!-- ========================================================================= -->
     <!-- CABEÇALHO CORPORATIVO DA SECRETARIA COM IDENTIDADE IMES                   -->
@@ -182,8 +157,7 @@
             <div class="flex items-center gap-3.5">
                 <img src="{{ institution.branding.logo_url if institution.branding and institution.branding.logo_url else '/static/images/logo-imes.jpg' }}"
                      alt="Logo {{ institution.name }}"
-                     class="w-11 h-11 rounded-xl bg-white p-1 object-contain shadow-md border border-white/20"
-                     onerror="this.onerror=null;this.src='https://placehold.co/96x96/0a2351/fdb913?text=IMES';">
+                     class="w-11 h-11 rounded-xl bg-white p-1 object-contain shadow-md border border-white/20">
                 <div>
                     <h1 class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
                         <span>Secretaria Geral Acadêmica</span>
@@ -205,13 +179,13 @@
                     </label>
                 </div>
 
-                <button onclick="downloadExport('csv')"
+                <button data-click-action="downloadExport('csv')"
                    class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer active:scale-95">
                     <i class="ph-bold ph-file-csv text-base"></i>
                     <span>Exportar Excel</span>
                 </button>
 
-                <button onclick="downloadExport('zip')"
+                <button data-click-action="downloadExport('zip')"
                    class="px-3.5 py-2 btn-gold rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer active:scale-95">
                     <i class="ph-bold ph-archive text-base"></i>
                     <span>Dossiês (ZIP)</span>
@@ -387,15 +361,15 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button onclick="triggerWhatsAppModalFromCurrent()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="Notificar Estudante via WhatsApp">
+                    <button data-click-action="issueStudentCode()" class="p-2 rounded border">Gerar código do aluno</button><button data-click-action="triggerWhatsAppModalFromCurrent()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="Notificar Estudante via WhatsApp">
                         <i class="ph-bold ph-whatsapp-logo text-base"></i>
                         <span class="hidden sm:inline">WhatsApp</span>
                     </button>
-                    <button onclick="triggerErpSyncFromCurrent()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="Sincronizar Dossiê no ERP">
+                    <button data-click-action="triggerErpSyncFromCurrent()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="Sincronizar Dossiê no ERP">
                         <i class="ph-bold ph-arrows-clockwise text-base"></i>
                         <span class="hidden sm:inline">Sincronizar ERP</span>
                     </button>
-                    <button onclick="closeSplitModal()" class="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer">
+                    <button data-click-action="closeSplitModal()" class="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer">
                         <i class="ph-bold ph-x text-xl"></i>
                     </button>
                 </div>
@@ -416,21 +390,21 @@
                         </span>
 
                         <div class="flex items-center gap-1">
-                            <button onclick="adjustDocZoom(-0.2)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Reduzir Zoom (-)">
+                            <button data-click-action="adjustDocZoom(-0.2)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Reduzir Zoom (-)">
                                 <i class="ph-bold ph-magnifying-glass-minus text-sm"></i>
                             </button>
-                            <button onclick="resetDocTransform()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold transition">
+                            <button data-click-action="resetDocTransform()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold transition">
                                 100%
                             </button>
-                            <button onclick="adjustDocZoom(0.2)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Aumentar Zoom (+)">
+                            <button data-click-action="adjustDocZoom(0.2)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Aumentar Zoom (+)">
                                 <i class="ph-bold ph-magnifying-glass-plus text-sm"></i>
                             </button>
                             <div class="h-4 w-px bg-slate-700 mx-1"></div>
-                            <button onclick="rotateDoc(90)" class="px-2.5 py-1 rounded-lg bg-imes-gold text-imes-blue font-bold text-xs hover:bg-imes-goldHover transition flex items-center gap-1" title="Girar 90°">
+                            <button data-click-action="rotateDoc(90)" class="px-2.5 py-1 rounded-lg bg-imes-gold text-imes-blue font-bold text-xs hover:bg-imes-goldHover transition flex items-center gap-1" title="Girar 90°">
                                 <i class="ph-bold ph-arrow-clockwise"></i>
                                 <span>90°</span>
                             </button>
-                            <button onclick="toggleDocFullscreen()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Tela Cheia">
+                            <button data-click-action="toggleDocFullscreen()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Tela Cheia">
                                 <i class="ph-bold ph-corners-out text-sm"></i>
                             </button>
                         </div>
@@ -560,24 +534,24 @@
                     <!-- Bloco 5: Barra de Ações Rápidas (Power-User) -->
                     <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 mt-auto">
                         <div class="flex items-center gap-2 w-full sm:w-auto">
-                            <button onclick="navigateDoc(-1)" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer" title="Documento Anterior (Seta Esquerda)">
+                            <button data-click-action="navigateDoc(-1)" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer" title="Documento Anterior (Seta Esquerda)">
                                 <i class="ph-bold ph-arrow-left"></i> <span class="hidden sm:inline">Anterior</span>
                             </button>
-                            <button onclick="navigateDoc(1)" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer" title="Próximo Documento (Seta Direita)">
+                            <button data-click-action="navigateDoc(1)" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer" title="Próximo Documento (Seta Direita)">
                                 <span class="hidden sm:inline">Próximo</span> <i class="ph-bold ph-arrow-right"></i>
                             </button>
                         </div>
 
                         <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                             <!-- Recusar (R) -->
-                            <button onclick="openRefusalQuickBox()" class="px-4 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded-xl font-bold flex items-center gap-1.5 shadow transition cursor-pointer active:scale-95">
+                            <button data-click-action="openRefusalQuickBox()" class="px-4 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded-xl font-bold flex items-center gap-1.5 shadow transition cursor-pointer active:scale-95">
                                 <i class="ph-bold ph-x-circle text-base"></i>
                                 <span>Solicitar Correção</span>
                                 <span class="key-badge-dark ml-1">R</span>
                             </button>
 
                             <!-- Aprovar (A) -->
-                            <button onclick="approveCurrentDocDirect()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl flex items-center gap-1.5 shadow transition cursor-pointer active:scale-95">
+                            <button data-click-action="approveCurrentDocDirect()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl flex items-center gap-1.5 shadow transition cursor-pointer active:scale-95">
                                 <i class="ph-bold ph-check-circle text-base"></i>
                                 <span>Homologar</span>
                                 <span class="key-badge-dark ml-1">A</span>
@@ -599,7 +573,7 @@
                     <i class="ph-bold ph-warning-octagon text-xl text-rose-200"></i>
                     <h3 class="font-bold text-sm text-white">Solicitar Correção de Documento</h3>
                 </div>
-                <button onclick="closeRefusalQuickBox()" class="text-rose-200 hover:text-white p-1 text-lg cursor-pointer">
+                <button data-click-action="closeRefusalQuickBox()" class="text-rose-200 hover:text-white p-1 text-lg cursor-pointer">
                     <i class="ph-bold ph-x"></i>
                 </button>
             </div>
@@ -610,23 +584,23 @@
                         Selecione um motivo padronizado institucional:
                     </label>
                     <div class="flex flex-wrap gap-1.5">
-                        <button type="button" onclick="selectRefusalReason('Falta carimbo do verso com a assinatura da diretoria ou secretaria escolar.')"
+                        <button type="button" data-click-action="selectRefusalReason('Falta carimbo do verso com a assinatura da diretoria ou secretaria escolar.')"
                                 class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
                             📌 Falta carimbo do verso
                         </button>
-                        <button type="button" onclick="selectRefusalReason('Documento ilegível / foto com baixa resolução que impede a leitura dos dados.')"
+                        <button type="button" data-click-action="selectRefusalReason('Documento ilegível / foto com baixa resolução que impede a leitura dos dados.')"
                                 class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
                             📌 Documento ilegível
                         </button>
-                        <button type="button" onclick="selectRefusalReason('Data de validade vencida. Favor apresentar comprovante ou certidão atualizada.')"
+                        <button type="button" data-click-action="selectRefusalReason('Data de validade vencida. Favor apresentar comprovante ou certidão atualizada.')"
                                 class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
                             📌 Validade vencida
                         </button>
-                        <button type="button" onclick="selectRefusalReason('Documento incompleto. É obrigatório o envio das páginas de frente e verso.')"
+                        <button type="button" data-click-action="selectRefusalReason('Documento incompleto. É obrigatório o envio das páginas de frente e verso.')"
                                 class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
                             📌 Documento incompleto
                         </button>
-                        <button type="button" onclick="selectRefusalReason('Corte de bordas ou reflexo sobre informações essenciais (CPF, Nome ou Assinatura).')"
+                        <button type="button" data-click-action="selectRefusalReason('Corte de bordas ou reflexo sobre informações essenciais (CPF, Nome ou Assinatura).')"
                                 class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
                             📌 Corte de bordas / reflexo
                         </button>
@@ -642,10 +616,10 @@
             </div>
 
             <div class="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2 text-xs">
-                <button onclick="closeRefusalQuickBox()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-white font-bold rounded-xl cursor-pointer">
+                <button data-click-action="closeRefusalQuickBox()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-white font-bold rounded-xl cursor-pointer">
                     Cancelar
                 </button>
-                <button onclick="confirmRefusalSubmit()" class="px-5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl shadow transition cursor-pointer">
+                <button data-click-action="confirmRefusalSubmit()" class="px-5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl shadow transition cursor-pointer">
                     Confirmar Recusa e Notificar
                 </button>
             </div>
@@ -662,7 +636,7 @@
                     <i class="ph-bold ph-whatsapp-logo text-xl"></i>
                     <h3 class="font-bold text-sm">Disparo de Notificação WhatsApp</h3>
                 </div>
-                <button onclick="closeWhatsAppModal()" class="text-white hover:text-emerald-100 p-1">
+                <button data-click-action="closeWhatsAppModal()" class="text-white hover:text-emerald-100 p-1">
                     <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
@@ -675,7 +649,7 @@
 
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">Tipo de Notificação</label>
-                    <select id="whatsapp-template-select" onchange="updateWhatsAppMessageTemplate()" class="modern-input text-xs cursor-pointer">
+                    <select id="whatsapp-template-select" data-change-action="updateWhatsAppMessageTemplate()" class="modern-input text-xs cursor-pointer">
                         <option value="pendency">Aviso de Documento Pendente / Correção Necessária</option>
                         <option value="completion">Aviso de Homologação / Matrícula Aprovada</option>
                         <option value="custom">Mensagem Personalizada</option>
@@ -689,8 +663,8 @@
             </div>
 
             <div class="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2 text-xs">
-                <button onclick="closeWhatsAppModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold rounded-xl">Cancelar</button>
-                <button onclick="dispatchWhatsAppMessage()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-1.5 shadow">
+                <button data-click-action="closeWhatsAppModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold rounded-xl">Cancelar</button>
+                <button data-click-action="dispatchWhatsAppMessage()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-1.5 shadow">
                     <i class="ph-bold ph-paper-plane-right"></i> Enviar Mensagem
                 </button>
             </div>
@@ -700,7 +674,7 @@
     <!-- ========================================================================= -->
     <!-- SCRIPT DA SECRETARIA GERAL                                                -->
     <!-- ========================================================================= -->
-    <script>
+    <script nonce="{{ csp_nonce }}">
         // SEGURANÇA E PRIVACIDADE: Previne vazamento no Console DevTools (F12)
         if (window.console) {
             ['log', 'info', 'warn', 'error', 'debug'].forEach(m => { try { window.console[m] = function(){}; } catch(e){} });
@@ -773,7 +747,7 @@
         }
         document.getElementById('admin-login-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-            const response = await fetch('/api/auth/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({institution_id:CURRENT_INSTITUTION_ID,key:document.getElementById('admin-login-key').value})});
+            const response = await fetch('/api/auth/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({institution_id:CURRENT_INSTITUTION_ID,username:document.getElementById('admin-username').value,otp:document.getElementById('admin-otp').value,key:document.getElementById('admin-login-key').value})});
             document.getElementById('admin-login-key').value = '';
             if (!response.ok) { document.getElementById('login-error').textContent = 'Credencial inválida ou acesso não configurado.'; return; }
             document.getElementById('login-error').textContent = '';
@@ -820,7 +794,7 @@
                         </td>
                         <td class="p-3.5 text-slate-500 font-mono text-[11px]">${escapeHtml(dateStr)}</td>
                         <td class="p-3.5 text-right">
-                            <button onclick="openSplitModal(${allDossiers.indexOf(d)})" class="px-3 py-1.5 btn-gold rounded-xl text-xs font-bold transition cursor-pointer shadow-sm flex items-center gap-1.5 ml-auto active:scale-95">
+                            <button data-click-action="openSplitModal(${allDossiers.indexOf(d)})" class="px-3 py-1.5 btn-gold rounded-xl text-xs font-bold transition cursor-pointer shadow-sm flex items-center gap-1.5 ml-auto active:scale-95">
                                 <i class="ph-bold ph-magnifying-glass"></i>
                                 <span>Conferir</span>
                             </button>
@@ -865,7 +839,7 @@
                 else if (item.status === 'rejected') badgeDot = "bg-rose-500";
 
                 return `
-                    <button onclick="selectDocByIndex(${idx})" class="px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 whitespace-nowrap transition cursor-pointer ${
+                    <button data-click-action="selectDocByIndex(${idx})" class="px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 whitespace-nowrap transition cursor-pointer ${
                         isActive
                             ? 'bg-[#0a2351] text-white shadow'
                             : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200'
@@ -1209,6 +1183,29 @@
         });
 
         fetchDossiers();
-    </script>
+
+        window.issueStudentCode=async function(){
+            const dossier=allDossiers[currentDossierIndex];if(!dossier)return;
+            const response=await fetch('/api/admin/student-access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({institution_id:CURRENT_INSTITUTION_ID,student_id:dossier.student_id})});
+            const data=await response.json();if(!response.ok){alert(data.error || 'Não foi possível gerar o código.');return;}
+            alert('Código individual: '+data.access_code+'\nEntregue somente ao titular ou responsável por canal autenticado. O código anterior foi revogado.');
+        };
+        const permittedActions = new Set(["issueStudentCode","adjustDocZoom", "approveCurrentDocDirect", "closeRefusalQuickBox", "closeSplitModal", "closeWhatsAppModal", "confirmRefusalSubmit", "dispatchWhatsAppMessage", "downloadExport", "navigateDoc", "openRefusalQuickBox", "openSplitModal", "resetDocTransform", "rotateDoc", "selectDocByIndex", "selectRefusalReason", "toggleDocFullscreen", "triggerErpSyncFromCurrent", "triggerWhatsAppModalFromCurrent", "updateWhatsAppMessageTemplate"]);
+        for (const type of ['click','change']) document.addEventListener(type, event => {
+            const target=event.target.closest('[data-'+type+'-action]');
+            if (!target) return;
+            const command=target.getAttribute('data-'+type+'-action');
+            const match=/^(\w+)\((.*)\)$/.exec(command);
+            if(!match || !permittedActions.has(match[1])) return;
+            const args=[];let remaining=match[2].trim();
+            while(remaining){
+                const token=/^(?:'([^']*)'|(-?\d+(?:\.\d+)?)|(this\.(?:files|checked)))(?:\s*,\s*|$)/.exec(remaining);
+                if(!token)return;
+                args.push(token[1]!==undefined?token[1]:token[2]!==undefined?Number(token[2]):token[3]==='this.files'?target.files:target.checked);
+                remaining=remaining.slice(token[0].length);
+            }
+            if(typeof window[match[1]]==='function')window[match[1]](...args);
+        });
+</script>
 </body>
 </html>

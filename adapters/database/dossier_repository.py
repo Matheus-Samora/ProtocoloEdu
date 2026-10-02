@@ -8,6 +8,7 @@ import os
 import re
 import json
 import logging
+from security.storage import production, component, contained, write_record, read_record
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
 
@@ -37,24 +38,24 @@ class DossierRepository:
 
     def _init_firestore(self):
         """Inicializa Firestore se houver credenciais ativas."""
-        if FIRESTORE_AVAILABLE:
+        if FIRESTORE_AVAILABLE and (not production() or os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()=='true'):
             try:
                 # Conecta ao Firestore padrão da conta Google Cloud
                 self.db = firestore.Client()
                 logger.info("Repositório de Dossiês conectado com sucesso ao Google Cloud Firestore.")
             except Exception as e:
-                logger.warning(f"Firestore não inicializado (usando persistência local): {e}")
+                logger.warning("Operation failed; inspect restricted security events")
                 self.db = None
 
     def _get_local_file_path(self, institution_id: str, student_id: str) -> str:
-        clean_inst = re.sub(r'[^a-zA-Z0-9_-]', '', str(institution_id)).strip() or "default"
-        inst_dir = os.path.join(self.local_dir, clean_inst)
-        os.makedirs(inst_dir, exist_ok=True)
-        clean_id = re.sub(r'[^a-zA-Z0-9_-]', '', str(student_id)).strip() or "anon"
-        return os.path.join(inst_dir, f"{clean_id}.json")
+        tenant, student = component(institution_id), component(student_id)
+        path = contained(self.local_dir, tenant, student + '.json')
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return str(path)
 
     def save_dossier(self, dossier: StudentDossier) -> bool:
         """Salva ou atualiza um dossiê no banco central (Supabase / Local)."""
+        component(dossier.institution_id);component(dossier.student_id)
         data = dossier.model_dump(mode='json')
 
         # 1. Tenta salvar no Supabase Database (PostgreSQL)
@@ -62,7 +63,7 @@ class DossierRepository:
             try:
                 self.supabase.save_dossier(dossier)
             except Exception as e_sb:
-                logger.warning(f"Aviso ao persistir dossiê no Supabase: {e_sb}")
+                logger.warning("Operation failed; inspect restricted security events")
 
         # 2. Tenta salvar no Firestore (se configurado)
         if self.db:
@@ -70,18 +71,17 @@ class DossierRepository:
                 collection_name = f"dossiers_{dossier.institution_id}"
                 doc_ref = self.db.collection(collection_name).document(dossier.student_id)
                 doc_ref.set(data, merge=True)
-                logger.info(f"[FIRESTORE] Dossiê salvo para '{dossier.student_name}' na instituição '{dossier.institution_id}'.")
+                logger.debug(f"[FIRESTORE] Dossiê salvo para '{dossier.student_name}' na instituição '{dossier.institution_id}'.")
             except Exception as e:
-                logger.error(f"Erro ao salvar no Firestore: {e}", exc_info=True)
+                logger.error("Operation failed; inspect restricted security events")
 
         # 3. Persiste cópia local para redundância e desenvolvimento offline
         try:
             path = self._get_local_file_path(dossier.institution_id, dossier.student_id)
-            with open(path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+            write_record(path, data, dossier.institution_id, dossier.student_id)
             return True
         except Exception as e:
-            logger.error(f"Erro ao salvar dossiê em disco local: {e}")
+            logger.error("Operation failed; inspect restricted security events")
             return False
 
     def get_or_create_dossier(self, institution_id, student_id, student_name, course_name, cpf=None):
@@ -97,6 +97,7 @@ class DossierRepository:
 
     def get_dossier(self, institution_id: str, student_id: str) -> Optional[StudentDossier]:
         """Obtém o dossiê do estudante para a instituição especificada."""
+        component(institution_id);component(student_id)
         # 1. Tenta buscar no Supabase Database
         if self.supabase.is_active:
             try:
@@ -104,7 +105,7 @@ class DossierRepository:
                 if sb_dossier:
                     return sb_dossier
             except Exception as e_sb:
-                logger.warning(f"Falha ao buscar no Supabase, tentando fallback: {e_sb}")
+                logger.warning("Operation failed; inspect restricted security events")
 
         # 2. Tenta buscar no Firestore
         if self.db:
@@ -114,17 +115,15 @@ class DossierRepository:
                 if doc.exists:
                     return StudentDossier(**doc.to_dict())
             except Exception as e:
-                logger.warning(f"Falha ao buscar no Firestore, tentando armazenamento local: {e}")
+                logger.warning("Operation failed; inspect restricted security events")
 
         # 3. Busca local
         path = self._get_local_file_path(institution_id, student_id)
         if os.path.exists(path):
             try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    return StudentDossier(**data)
+                return StudentDossier(**read_record(path, institution_id, student_id))
             except Exception as e:
-                logger.error(f"Erro ao ler dossiê local '{path}': {e}")
+                logger.error("Operation failed; inspect restricted security events")
 
         return None
 
@@ -135,6 +134,7 @@ class DossierRepository:
         course_name: Optional[str] = None
     ) -> List[StudentDossier]:
         """Lista todos os prontuários de uma instituição com filtros opcionais."""
+        component(institution_id)
         dossiers = []
 
         # 1. Se Supabase estiver conectado
@@ -146,7 +146,7 @@ class DossierRepository:
                         return [d for d in sb_list if d.course_name == course_name]
                     return sb_list
             except Exception as e_sb:
-                logger.warning(f"Falha ao listar no Supabase, tentando fallback: {e_sb}")
+                logger.warning("Operation failed; inspect restricted security events")
 
         # 2. Se Firestore estiver conectado
         if self.db:
@@ -162,25 +162,26 @@ class DossierRepository:
                     dossiers.append(StudentDossier(**doc.to_dict()))
                 return dossiers
             except Exception as e:
-                logger.warning(f"Falha na listagem do Firestore: {e}. Usando cópia local.")
+                logger.warning("Operation failed; inspect restricted security events")
 
         # 2. Leitura local
-        inst_dir = os.path.join(self.local_dir, institution_id)
+        inst_dir = str(contained(self.local_dir, component(institution_id)))
         if not os.path.exists(inst_dir):
             return []
 
         for fname in os.listdir(inst_dir):
             if fname.endswith(".json"):
                 try:
-                    with open(os.path.join(inst_dir, fname), 'r', encoding='utf-8') as f:
-                        d = StudentDossier(**json.load(f))
-                        if status and d.status.value != status:
-                            continue
-                        if course_name and d.course_name != course_name:
-                            continue
-                        dossiers.append(d)
+                    path = contained(self.local_dir, component(institution_id), fname)
+                    d = StudentDossier(**read_record(path, institution_id, fname[:-5]))
+                    if status and d.status.value != status:
+                        continue
+                    if course_name and d.course_name != course_name:
+                        continue
+                    dossiers.append(d)
                 except Exception:
-                    continue
+                    logger.warning("Dossier record unavailable: integrity or read failure")
+                    if production():raise ValueError("Dossier integrity failure")
 
         return dossiers
 
@@ -202,7 +203,7 @@ class DossierRepository:
             try:
                 self.supabase.delete_dossier(institution_id, student_id)
             except Exception as e_sb:
-                logger.warning(f"Erro ao deletar dossiê no Supabase: {e_sb}")
+                logger.warning("Operation failed; inspect restricted security events")
 
         path = self._get_local_file_path(institution_id, student_id)
         if os.path.exists(path):
@@ -210,7 +211,7 @@ class DossierRepository:
                 os.remove(path)
                 return True
             except Exception as e:
-                logger.error(f"Erro ao remover arquivo local '{path}': {e}")
+                logger.error("Operation failed; inspect restricted security events")
                 return False
         return True
 
