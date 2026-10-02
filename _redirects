@@ -1,5 +1,0 @@
-# Regras de Redirecionamento Unificadas (ProtocoloEdu)
-# Redireciona /admin e /secretaria para a Central Unificada de Registros no Super Admin
-/admin        /superadmin.html    302
-/secretaria   /superadmin.html    302
-/super-admin  /superadmin.html    302

@@ -363,11 +363,6 @@ def root_index():
     return redirect(f"/portal/{g.tenant_id}")
 
 
-@app.route('/showcase')
-def showcase_page():
-    """Showcase Interativo Completo com alternador de perfis e simulação."""
-    return render_template('showcase.html')
-
 
 @app.route('/search-student', methods=['POST'])
 @app.route('/api/student/search', methods=['POST'])

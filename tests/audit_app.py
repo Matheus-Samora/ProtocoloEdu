@@ -34,8 +34,9 @@ def seed(inst='imes',sid='QA100',name='Marina Ficticia QA'):
  co.dossier_repo.save_dossier(d);return d
 seed();seed('auroraqa','QA100','Aluno Aurora Ficticio')
 co.dossier_repo.delete_dossier('imes','NAOCADASTRADOQA')
-for path in ['/portal/imes','/portal/auroraqa','/admin/imes','/superadmin','/showcase']:
+for path in ['/portal/imes','/portal/auroraqa','/admin/imes','/superadmin']:
  case('Render '+path,'telas',lambda p=path:status('get',p,200))
+case('Retired showcase is not exposed','telas',lambda:status('get','/showcase',404))
 case('Unknown institution must not open another portal','isolamento',lambda:status('get','/portal/inexistenteqa',404))
 case('Institution branding updates persist','funcional',lambda:require(co.update_institution_branding('auroraqa',portal_title='Portal Aurora QA',primary_color='#16685a').branding.portal_title=='Portal Aurora QA','Branding atualizado e persistido no catalogo isolado'))
 case('Administrative list requires authentication','seguranca',lambda:status('get','/api/admin/dossiers?institution_id=imes',401))

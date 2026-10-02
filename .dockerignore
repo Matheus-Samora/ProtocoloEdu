@@ -18,3 +18,14 @@ private
 venv
 __pycache__
 *.pyc
+
+# Documentação, verificações e artefatos de desenvolvimento não vão para a imagem.
+tests
+docs
+.github
+test-results
+outputs
+*.md
+*.zip
+*.txt
+!requirements.txt
