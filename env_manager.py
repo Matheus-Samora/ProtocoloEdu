@@ -111,7 +111,7 @@ def load_encrypted_env(master_key_hex):
     if not master_key_hex and not ENC_FILE_PATH.exists():
         try:
             from dotenv import load_dotenv
-            load_dotenv()
+            load_dotenv(dotenv_path=os.environ["PROTOCOL_ENV_FILE"]) if os.environ.get("PROTOCOL_ENV_FILE") else None
             return
         except ImportError:
             return

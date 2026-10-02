@@ -7,6 +7,9 @@ os.environ['SUPER_ADMIN_KEY']='qa-fixture-master'
 os.environ['FLASK_SECRET_KEY']='qa-isolated-session-only'
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 os.chdir(os.environ['QA_WORKDIR'])
+os.environ['PROTOCOL_DATA_DIR']=os.environ['QA_WORKDIR']
+os.environ.pop('PROTOCOL_ENV_FILE',None)
+os.environ['ENABLE_EXTERNAL_PROCESSING']='true'
 logging.disable(logging.CRITICAL)
 original_connect=socket.socket.connect
 original_dns=socket.getaddrinfo
@@ -21,10 +24,5 @@ def dns(host,*args,**kwargs):
  return original_dns(host,*args,**kwargs)
 socket.socket.connect=connect
 socket.getaddrinfo=dns
-try:
- from google.cloud import firestore
- def no_firestore(*args,**kwargs): raise RuntimeError('Cloud disabled in QA')
- firestore.Client=no_firestore
-except ImportError: pass
 
 output_dir = pathlib.Path(os.environ['QA_OUTPUT_DIR'])

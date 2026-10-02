@@ -104,7 +104,7 @@ def processar_ficheiro_para_atualizacao(cliente_solis, nome_ficheiro):
 def main():
     """Função principal que executa o ciclo de atualização."""
     print("--- 🚀 Atualizador de Dados SolisGE ---")
-    load_dotenv()
+    load_dotenv(dotenv_path=os.environ["PROTOCOL_ENV_FILE"]) if os.environ.get("PROTOCOL_ENV_FILE") else None
     
     for pasta in [PASTA_ENTRADA, PASTA_PROCESSADOS, PASTA_ERROS]:
         if not os.path.exists(pasta):

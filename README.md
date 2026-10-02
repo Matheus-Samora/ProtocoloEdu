@@ -1,3 +1,7 @@
+# Versão independente
+
+Esta instalação usa dados e configuração próprios. Consulte [separação e inicialização](docs/independencia.md). O servidor anterior do Google Cloud não é utilizado por esta versão.
+
 # protocoloEdu
 
 Aplicativo Flask para recebimento, conferência e custódia de documentos acadêmicos por instituição. A apresentação comercial é uma demonstração independente.
@@ -32,7 +36,7 @@ Login: `/admin/<institution_id>` e `/superadmin`. As credenciais são enviadas a
 
 `pyHanko==0.35.1` verifica criptograficamente o conteúdo assinado. PDF adulterado e certificado autoassinado não recebem confirmação ICP-Brasil. `ICP_BRASIL_TRUST_ROOTS_FILE` aponta para um conjunto PEM de raízes confiáveis selecionado pelo responsável. A validação exige evidência de revogação e não presume confiança quando faltam raízes ou comprovação. Cadeia real, revogação e carimbo de autoridade precisam de homologação específica; nenhum rótulo desta aplicação equivale a certificação jurídica ou do MEC.
 
-WhatsApp, e-mail, ERP, Supabase/Firestore/Drive e Gemini precisam de testes de ponta a ponta no sandbox de implantação. Estados ausentes permanecem não confirmados e simulações são identificadas. Hash/tamanho antigos não registrados não são inventados. Documentos recebidos para revisão são retidos para conferência humana.
+WhatsApp, e-mail, ERP, Supabase opcional e Gemini precisam de testes de ponta a ponta no sandbox de implantação. Estados ausentes permanecem não confirmados e simulações são identificadas. Hash/tamanho antigos não registrados não são inventados. Documentos recebidos para revisão são retidos para conferência humana.
 
 ## Implantação
 

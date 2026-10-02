@@ -22,8 +22,8 @@ from collections import defaultdict
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timezone, timedelta
 
-from dotenv import load_dotenv
-load_dotenv()
+from security.isolation import initialize_runtime
+initialize_runtime()
 from security.policy import validate_config, external_processing_allowed
 validate_config()
 
@@ -1010,7 +1010,6 @@ def create_institution_super_admin():
     tier = data.get('plan_tier', 'PROFISSIONAL')
     limit = int(data.get('monthly_limit', 500))
     key = generate_password_hash(data.get('admin_access_key') or secrets.token_urlsafe(32))
-    folder = data.get('drive_folder_id', 'ROOT_FOLDER_ID')
     inst_type = data.get('institution_type', 'FACULDADE')
 
     new_profile = InstitutionProfile(

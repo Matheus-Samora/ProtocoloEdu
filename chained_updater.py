@@ -88,7 +88,7 @@ def registrar_erro(cpf, dados_aluno, motivo):
 def main():
     """ Função principal que lê os dados pendentes e os processa em cadeia. """
     print("--- 🚀 Atualizador com Pesquisa em Cadeia ---")
-    load_dotenv()
+    load_dotenv(dotenv_path=os.environ["PROTOCOL_ENV_FILE"]) if os.environ.get("PROTOCOL_ENV_FILE") else None
     
     api_url = os.getenv("SOLIS_API_URL")
     jwt_token = os.getenv("SOLIS_JWT_TOKEN")

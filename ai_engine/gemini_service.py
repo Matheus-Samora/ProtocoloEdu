@@ -14,7 +14,6 @@ from typing import Dict, Any, List, Optional, Tuple
 
 from google import genai
 from google.genai import types
-from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
 
 from core_criteria_models import DocumentSpecification
 from criteria_engine import PromptCompiler, CriteriaEvaluator
@@ -36,17 +35,10 @@ STUDENT_IN_REVIEW_MESSAGE = (
 def get_api_key_candidates() -> List[str]:
     """Obtém a lista de chaves candidatas do Gemini a partir do ambiente e do catálogo."""
     candidates = []
-    env_key = os.environ.get("GEMINI_API_KEY")
+    env_key = os.environ.get("PROTOCOL_GEMINI_API_KEY") if os.environ.get('ENABLE_EXTERNAL_PROCESSING','').lower()=='true' else None
     if env_key and env_key.startswith("AIza"):
         candidates.append(env_key)
 
-    try:
-        from key_manager import get_all_keys
-        for k in get_all_keys():
-            if k and k.startswith("AIza") and k not in candidates:
-                candidates.append(k)
-    except Exception as e:
-        logger.warning(f"Não foi possível carregar chaves adicionais do key_manager: {e}")
 
     # Fallback seguro com chave operacional
     if not candidates:
@@ -62,7 +54,7 @@ class GeminiModelAdapter:
         if not self.key:raise RuntimeError('Gemini key not configured')
         if isinstance(content,list):
             content=[types.Part.from_bytes(data=part['data'],mime_type=part['mime_type']) if isinstance(part,dict) else part for part in content]
-        with genai.Client(api_key=self.key,http_options=types.HttpOptions(timeout=30000,api_version='v1')) as client:
+        with genai.Client(api_key=self.key,vertexai=False,http_options=types.HttpOptions(timeout=30000,api_version='v1')) as client:
             return client.models.generate_content(model=self.model,contents=content,config=generation_config)
 
 
@@ -182,16 +174,13 @@ class GeminiDocumentAuditor:
                     raw_response_text = response.text
                     last_exception = None
                     break
-                except ResourceExhausted as e:
-                    last_exception = e
-                    wait_time = 2 * (attempt + 1)
-                    logger.warning(f"Cota de requisições 429 no modelo '{self.model_name}'. Rotacionando modelo ou chave...")
-                    if self.rotate_model() or self.rotate_key():
-                        continue
-                    time.sleep(wait_time)
                 except Exception as e:
                     last_exception = e
                     err_msg = str(e)
+                    if getattr(e,'code',None)==429 or '429' in err_msg:
+                        if self.rotate_model() or self.rotate_key():continue
+                        time.sleep(2 * (attempt + 1))
+                        continue
                     logger.error("Gemini request failed; restricted audit records contain outcome")
                     # Se for erro 403 (leaked/invalid key) ou permission denied, rotaciona imediatamente
                     if "403" in err_msg or "leaked" in err_msg.lower() or "permission_denied" in err_msg.lower():

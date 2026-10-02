@@ -17,7 +17,7 @@ def validate_config():
     backup_key=os.environ.get('BACKUP_ENCRYPTION_KEY')
     if backup_key and backup_key==os.environ.get('DATA_ENCRYPTION_KEY'):raise RuntimeError('Use separate data and backup encryption keys')
 
-def external_processing_allowed():return not production() or os.environ.get('ENABLE_EXTERNAL_PROCESSING','').lower()=='true'
+def external_processing_allowed():return os.environ.get('ENABLE_EXTERNAL_PROCESSING','').lower()=='true'
 
 def validate_remote_url(value):
     parsed=urlsplit(value or '')

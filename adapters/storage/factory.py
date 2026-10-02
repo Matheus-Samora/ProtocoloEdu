@@ -1,13 +1,12 @@
 """
 Fábrica de Provedores de Armazenamento (Storage Factory).
-Instancia Google Drive, Cloud Storage Próprio (SaaS) ou Local de acordo com a instituição.
+Instancia armazenamento local ou Supabase explicitamente configurado.
 """
 
 import os
 from typing import Optional, Any
 from adapters.storage.base import StorageProvider
 from adapters.storage.local_storage import LocalDiskStorageProvider
-from adapters.storage.saas_cloud_adapter import SaaSCloudBucketStorageProvider
 from core_institution_models import InstitutionProfile
 
 
@@ -24,6 +23,7 @@ class StorageFactory:
             if provider_type in ("supabase", "supabase_storage"):
                 from adapters.storage.supabase_storage import SupabaseStorageProvider
                 return SupabaseStorageProvider(bucket_name="documentos-alunos", institution_id=inst_id)
+            if provider_type != "local":raise ValueError("Configure local ou supabase")
             return LocalDiskStorageProvider(base_directory=base_dir, institution_id=inst_id)
 
         institution = institution_or_type
@@ -42,17 +42,4 @@ class StorageFactory:
             bucket = getattr(storage_cfg, "root_folder_id", "documentos-alunos") or "documentos-alunos"
             return SupabaseStorageProvider(bucket_name=bucket, institution_id=inst_id)
 
-        # Suporte legado caso configurado expressamente como cloud
-        if provider_type in ("cloud_storage", "s3", "saas"):
-            bucket = getattr(storage_cfg, "root_folder_id", "protocolo-documentos-instituicoes") or "protocolo-documentos-instituicoes"
-            return SaaSCloudBucketStorageProvider(bucket_name=bucket)
-
-        # Se for explicitamente google_drive mas não houver credenciais, faz fallback gracioso para local
-        if provider_type == "google_drive" and os.path.exists("credentials.json"):
-            try:
-                from adapters.storage.drive_adapter import GoogleDriveStorageAdapter
-                return GoogleDriveStorageAdapter(topology=storage_cfg)
-            except Exception:
-                pass
-
-        return LocalDiskStorageProvider(base_directory=base_dir, institution_id=inst_id)
+        raise ValueError("Provedor descontinuado nesta versão independente; configure local ou supabase")

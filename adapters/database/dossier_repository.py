@@ -1,6 +1,6 @@
 """
 Repositório de Persistência do Dossiê Central de Documentos.
-Suporta Google Cloud Firestore (Produção) com fallback transparente para armazenamento local.
+Persistência local cifrada e Supabase opcional, configurado para esta instalação.
 Garante o isolamento multi-tenant por 'institution_id'.
 """
 
@@ -17,35 +17,13 @@ from adapters.database.supabase_dossier_repository import supabase_dossier_repo
 
 logger = logging.getLogger("DOSSIER_REPOSITORY")
 
-# Tenta carregar Firestore do Google Cloud
-FIRESTORE_AVAILABLE = False
-try:
-    from google.cloud import firestore
-    FIRESTORE_AVAILABLE = True
-except ImportError:
-    pass
-
-
 class DossierRepository:
     """Gerenciador de leitura e gravação dos dossiês de alunos no banco de dados central (Supabase / Local)."""
 
     def __init__(self, local_storage_dir: str = "data_dossiers"):
         self.local_dir = os.path.abspath(local_storage_dir)
         os.makedirs(self.local_dir, exist_ok=True)
-        self.db = None
         self.supabase = supabase_dossier_repo
-        self._init_firestore()
-
-    def _init_firestore(self):
-        """Inicializa Firestore se houver credenciais ativas."""
-        if FIRESTORE_AVAILABLE and (not production() or os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()=='true'):
-            try:
-                # Conecta ao Firestore padrão da conta Google Cloud
-                self.db = firestore.Client()
-                logger.info("Repositório de Dossiês conectado com sucesso ao Google Cloud Firestore.")
-            except Exception as e:
-                logger.warning("Operation failed; inspect restricted security events")
-                self.db = None
 
     def _get_local_file_path(self, institution_id: str, student_id: str) -> str:
         tenant, student = component(institution_id), component(student_id)
@@ -64,16 +42,6 @@ class DossierRepository:
                 self.supabase.save_dossier(dossier)
             except Exception as e_sb:
                 logger.warning("Operation failed; inspect restricted security events")
-
-        # 2. Tenta salvar no Firestore (se configurado)
-        if self.db:
-            try:
-                collection_name = f"dossiers_{dossier.institution_id}"
-                doc_ref = self.db.collection(collection_name).document(dossier.student_id)
-                doc_ref.set(data, merge=True)
-                logger.debug(f"[FIRESTORE] Dossiê salvo para '{dossier.student_name}' na instituição '{dossier.institution_id}'.")
-            except Exception as e:
-                logger.error("Operation failed; inspect restricted security events")
 
         # 3. Persiste cópia local para redundância e desenvolvimento offline
         try:
@@ -107,16 +75,6 @@ class DossierRepository:
             except Exception as e_sb:
                 logger.warning("Operation failed; inspect restricted security events")
 
-        # 2. Tenta buscar no Firestore
-        if self.db:
-            try:
-                collection_name = f"dossiers_{institution_id}"
-                doc = self.db.collection(collection_name).document(student_id).get()
-                if doc.exists:
-                    return StudentDossier(**doc.to_dict())
-            except Exception as e:
-                logger.warning("Operation failed; inspect restricted security events")
-
         # 3. Busca local
         path = self._get_local_file_path(institution_id, student_id)
         if os.path.exists(path):
@@ -146,22 +104,6 @@ class DossierRepository:
                         return [d for d in sb_list if d.course_name == course_name]
                     return sb_list
             except Exception as e_sb:
-                logger.warning("Operation failed; inspect restricted security events")
-
-        # 2. Se Firestore estiver conectado
-        if self.db:
-            try:
-                collection_name = f"dossiers_{institution_id}"
-                query = self.db.collection(collection_name)
-                if status:
-                    query = query.where("status", "==", status)
-                if course_name:
-                    query = query.where("course_name", "==", course_name)
-
-                for doc in query.stream():
-                    dossiers.append(StudentDossier(**doc.to_dict()))
-                return dossiers
-            except Exception as e:
                 logger.warning("Operation failed; inspect restricted security events")
 
         # 2. Leitura local

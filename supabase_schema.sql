@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- PROTOCOLOEDU / IMES - ESQUEMA DE BANCO DE DADOS & STORAGE PARA O SUPABASE
--- Projeto Supabase: https://phipudvmceitxcajggus.supabase.co
+-- Aplicar apenas ao projeto próprio desta instalação independente.
 -- Execute este script no SQL Editor do Supabase para criar as tabelas e o bucket.
 -- ==============================================================================
 

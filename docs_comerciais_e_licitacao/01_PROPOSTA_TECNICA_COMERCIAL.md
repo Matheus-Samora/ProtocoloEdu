@@ -59,7 +59,7 @@ A plataforma **ProtocoloEdu** contemplará o fornecimento contínuo dos seguinte
 
 ## 3. GARANTIAS TÉCNICAS E NÍVEL DE SERVIÇO (SLA)
 * **Disponibilidade Mensal Garantida**: 99,5% (vinte e quatro horas por dia, sete dias por semana).
-* **Infraestrutura**: Servidores em nuvem corporativa (Google Cloud Platform) sediados em São Paulo/SP (região `southamerica-east1`), garantindo soberania nacional e cumprimento integral da LGPD.
+* **Infraestrutura**: Instalação independente; provedor, região, contratos e requisitos de privacidade serão definidos antes da produção.
 * **Tempo Máximo de Resposta para Suporte**:
   * Chamados Críticos: até 2 (duas) horas úteis.
   * Chamados Administrativos: até 8 (oito) horas úteis.

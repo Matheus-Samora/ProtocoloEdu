@@ -5,6 +5,8 @@ o Storage Provider e o Repositório Central de Dossiês.
 """
 
 import os
+from security.isolation import initialize_runtime
+initialize_runtime()
 import json
 from security.storage import atomic_write, production
 from werkzeug.security import generate_password_hash

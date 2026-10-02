@@ -47,9 +47,8 @@ class BrandingConfig(BaseModel):
 
 class StorageTopology(BaseModel):
     """Configuração de armazenamento local ou em nuvem para a instituição."""
-    provider: str = Field("local", description="Provedor (local, google_drive, s3)")
+    provider: str = Field("local", description="Provedor desta instalação (local, supabase)")
     base_path: str = Field("storage", description="Caminho base no disco local para salvar arquivos")
-    drive_id: Optional[str] = Field(None, description="ID do Drive Compartilhado (legado)")
     root_folder_id: Optional[str] = Field("storage_root", description="ID da pasta raiz")
     partitioning_mode: str = Field("ALPHABETICAL_A_Z", description="Tipo de divisão: 'ALPHABETICAL_A_Z' (pastas de A a Z), 'COURSE_SPLIT' ou 'FLAT'")
     partitions: Dict[str, str] = Field(default_factory=dict, description="Mapeamento de partições")

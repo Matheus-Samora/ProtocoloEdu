@@ -1,5 +1,5 @@
 {
-  "comment": "Versão Limpa e Segura para o Novo Cloud Run. Removemos dependências de IDs antigos e formatamos para leitura rápida.",
+  "comment": "Critérios da versão independente do protocoloEdu.",
   "1ª Graduação": {
     "RG": {
       "display_name": "Carteira de Identidade (RG)",

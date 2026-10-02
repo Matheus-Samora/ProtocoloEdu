@@ -2,7 +2,7 @@
 """
 Gerenciador Central de Conexão com o Supabase (Database & Storage).
 Projeto: ProtocoloEdu / IMES
-URL Base: https://phipudvmceitxcajggus.supabase.co
+URL definida explicitamente para a instalação independente.
 """
 
 import os
@@ -13,12 +13,12 @@ from security.policy import validate_remote_url
 from security.storage import production
 from dotenv import load_dotenv
 
-load_dotenv()
+
 
 logger = logging.getLogger("SUPABASE_CLIENT")
 
 # Configurações padrão do projeto Supabase informado
-DEFAULT_SUPABASE_URL = "https://phipudvmceitxcajggus.supabase.co"
+DEFAULT_SUPABASE_URL = ""
 DEFAULT_STORAGE_BUCKET = "documentos-alunos"
 
 
@@ -37,7 +37,7 @@ class SupabaseClientManager:
 
     def _init_client(self):
         """Inicializa o cliente oficial da biblioteca supabase se a chave estiver configurada."""
-        if production() and os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()!='true':self._client=None;return
+        if os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()!='true':self._client=None;return
         if self.key:validate_remote_url(self.url)
         if not self.key:
             logger.info("Chave do Supabase (SUPABASE_KEY) ainda não configurada no ambiente. Conexão em modo passivo.")
@@ -65,7 +65,7 @@ class SupabaseClientManager:
     @property
     def is_configured(self) -> bool:
         """Retorna True se as credenciais mínimas estiverem presentes."""
-        return bool(self.url and self.key and (not production() or os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()=='true'))
+        return bool(self.url and self.key and os.environ.get('ENABLE_EXTERNAL_STORAGE','').lower()=='true')
 
     @property
     def client(self):

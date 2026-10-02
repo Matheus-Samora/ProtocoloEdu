@@ -25,9 +25,10 @@ COPY . .
 
 # Runtime data directories only; source code remains root-owned.
 RUN useradd --uid 10001 --create-home appuser && \
-    mkdir -p /app/storage /app/data_dossiers /app/security-state && \
-    chown appuser:appuser /app/storage /app/data_dossiers /app/security-state && \
-    chmod 700 /app/storage /app/data_dossiers /app/security-state
+    mkdir -p /app/runtime /app/storage /app/data_dossiers /app/security-state && \
+    chown appuser:appuser /app/runtime /app/storage /app/data_dossiers /app/security-state && \
+    chmod 700 /app/runtime /app/storage /app/data_dossiers /app/security-state
+ENV PROTOCOL_DATA_DIR=/app/runtime
 ENV PROTOCOL_ENV=production
 ENV COOKIE_SECURE=true
 USER appuser
