@@ -8,10 +8,14 @@ Separação estrita de acessos em 3 camadas:
 
 import os
 import io
+import json
 import gc
 import re
 import time
 import threading
+import secrets
+import hmac
+from urllib.parse import urlsplit
 import logging
 from functools import wraps
 from collections import defaultdict
@@ -21,7 +25,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 load_dotenv()
 
-from flask import Flask, request, jsonify, render_template, send_file, Response, g, make_response, redirect
+from flask import Flask, request, jsonify, render_template, send_file, Response, g, make_response, redirect, session
 from flask_cors import CORS
 
 from core_dossier_models import DocumentAuditItem
@@ -46,10 +50,12 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
 app.config['JSON_AS_ASCII'] = False
 
 # 2. SEGURANÇA: CORS restrito e sem credenciais em wildcard
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
+CORS(app, resources={r"/api/*": {"origins": os.environ.get("ALLOWED_ORIGINS", "").split(",") if os.environ.get("ALLOWED_ORIGINS") else []}}, supports_credentials=False)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax", SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "false").lower() == "true")
 
 # Chave mestra de autenticação do proprietário do aplicativo (SaaS Super Admin)
-SUPER_ADMIN_KEY = os.environ.get("SUPER_ADMIN_KEY", "master-protocolo-2026")
+SUPER_ADMIN_KEY = os.environ.get("SUPER_ADMIN_KEY", "")
 
 # Instância única do Coordenador Central
 coordinator = ProtocolCoordinator()
@@ -92,36 +98,78 @@ def get_client_ip() -> str:
 # DECORADORES DE SEGURANÇA E AUTORIZAÇÃO SEGREGADA
 # ==============================================================================
 
+def valid_key(supplied, expected):
+    return bool(supplied and expected and expected not in {"secretaria-2026", "protocolo-admin-2026", "master-protocolo-2026"} and hmac.compare_digest(str(supplied), str(expected)))
+
+def request_key():
+    return request.headers.get("X-Admin-Key", "")
+
+def is_master():
+    return valid_key(request_key(), SUPER_ADMIN_KEY) or (bool(SUPER_ADMIN_KEY) and session.get("master") is True)
+
+def mutation_origin_allowed():
+    origin = request.headers.get("Origin")
+    return not origin or origin.rstrip("/") == request.host_url.rstrip("/")
+
 def require_super_admin_auth(f):
-    """Modo Aberto para Configuração: Acesso liberado sem exigência de senha."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if not is_master():
+            return jsonify({"error": "Autenticação administrativa requerida."}), 401
+        if request.method not in ("GET", "HEAD") and not mutation_origin_allowed():
+            return jsonify({"error": "Origem não autorizada."}), 403
         return f(*args, **kwargs)
     return decorated_function
 
-
 def require_institution_admin_auth(f):
-    """Modo Aberto para Configuração: Acesso liberado sem exigência de senha."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         data = request.get_json(silent=True) or {}
-        tenant_id = (
-            kwargs.get('institution_id')
-            or request.args.get('institution_id')
-            or data.get('institution_id')
-            or request.headers.get('X-Tenant-ID')
-            or g.get('tenant_id', 'imes')
-        )
-        clean_tenant = re.sub(r'[^a-zA-Z0-9_-]', '', str(tenant_id)).lower().strip() or 'imes'
-        inst = coordinator.get_institution(clean_tenant)
+        data = data if isinstance(data, dict) else {}
+        tenant = kwargs.get("institution_id") or request.args.get("institution_id") or data.get("institution_id") or request.headers.get("X-Tenant-ID") or g.tenant_id
+        tenant = str(tenant).lower().strip()
+        inst = coordinator.get_institution(tenant)
         if not inst:
-            inst = coordinator.get_institution('imes')
-
-        g.tenant_id = inst.id if inst else clean_tenant
-        g.active_inst = inst
+            return jsonify({"error": "Instituição não localizada."}), 404
+        allowed = is_master() or valid_key(request_key(), inst.subscription.admin_access_key) or session.get("admin_tenant") == inst.id
+        if not allowed:
+            return jsonify({"error": "Autenticação da instituição requerida."}), 401
+        if request.method not in ("GET", "HEAD") and not mutation_origin_allowed():
+            return jsonify({"error": "Origem não autorizada."}), 403
+        g.tenant_id, g.active_inst = inst.id, inst
         return f(*args, **kwargs)
     return decorated_function
 
+@app.route('/api/auth/login', methods=['POST'])
+def login_endpoint():
+    if not mutation_origin_allowed():
+        return jsonify({"error": "Origem não autorizada."}), 403
+    if not rate_limiter.is_allowed("login:" + (request.remote_addr or "local"), 10, 60):
+        return jsonify({"error": "Aguarde antes de tentar novamente."}), 429
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict): return jsonify({"error": "Formato inválido."}), 400
+    key = data.get("key", "")
+    tenant = data.get("institution_id", "")
+    inst = coordinator.get_institution(tenant) if tenant else None
+    master = valid_key(key, SUPER_ADMIN_KEY)
+    if not master and not (inst and valid_key(key, inst.subscription.admin_access_key)):
+        return jsonify({"error": "Credencial inválida ou acesso não configurado."}), 401
+    session.clear()
+    if master: session['master'] = True
+    else: session['admin_tenant'] = inst.id
+    return jsonify({"success": True}), 200
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout_endpoint():
+    if not mutation_origin_allowed(): return jsonify({"error": "Origem não autorizada."}), 403
+    session.clear()
+    return jsonify({"success": True})
+
+def public_audit_result(value):
+    if isinstance(value, dict):
+        return {k: public_audit_result(v) for k,v in value.items() if k not in {'admin_diagnostic', 'swarm_trace', 'extracted_data', 'diagnostics', 'storage_url'}}
+    if isinstance(value, list): return [public_audit_result(v) for v in value]
+    return value
 
 def resolve_tenant_id() -> str:
     """Resolve o tenant_id da requisição corrente."""
@@ -192,6 +240,12 @@ def student_portal_route(institution_id: str):
         is_suspended=is_suspended
     )
 
+
+@app.route('/api/institutions/<institution_id>/profile')
+def public_institution_profile(institution_id):
+    inst = coordinator.get_institution(institution_id)
+    if not inst: return jsonify({"error": "Instituição não localizada."}), 404
+    return jsonify({"id": inst.id, "name": inst.name, "institution_type": inst.institution_type.value, "branding": inst.branding.model_dump(), "enabled_courses": inst.enabled_courses, "require_student_cpf": inst.require_student_cpf, "is_active": inst.subscription.is_active})
 
 @app.route('/')
 @app.route('/index.html')
@@ -316,28 +370,10 @@ def audit_documents_endpoint():
             course_name=course_type,
             uploaded_files_map=grouped_files
         )
-        return jsonify(verdict), 200
+        return jsonify(public_audit_result(verdict)), 200
     except Exception as e:
         logger.error(f"Erro na auditoria de documentos: {e}", exc_info=True)
-        # Resposta de contingência segura: nunca expõe falhas técnicas ou APIs para o aluno
-        fallback_results = {}
-        for dk in grouped_files.keys():
-            fallback_results[dk] = {
-                "document_id": dk,
-                "status": "in_review",
-                "is_approved": False,
-                "system_error": True,
-                "reason": "Documento recebido com sucesso no protocolo institucional. O arquivo foi encaminhado para conferência da Secretaria Acadêmica.",
-                "admin_diagnostic": f"[EXCEÇÃO NÃO TRATADA]: {type(e).__name__}: {str(e)}",
-                "criteria_results": []
-            }
-        return jsonify({
-            "success": True,
-            "institution_id": tenant_id,
-            "student_id": clean_id,
-            "dossier_status": "EM_ANALISE",
-            "results": fallback_results
-        }), 200
+        return jsonify({"success": False, "code": "RECEIPT_NOT_CONFIRMED", "error": "Não foi possível confirmar o armazenamento. Tente novamente ou contate a secretaria."}), 503
     finally:
         gc.collect()
 
@@ -380,6 +416,8 @@ def verify_signature_endpoint():
             except Exception as e:
                 return jsonify({"success": False, "error": f"Base64 inválido: {e}"}), 400
         elif data.get('student_id') and data.get('document_id'):
+            check = require_institution_admin_auth(lambda: None)()
+            if check is not None: return check
             student_id = re.sub(r'[^a-zA-Z0-9]', '', str(data['student_id']))
             doc_id = data['document_id']
             tenant_id = data.get('institution_id') or g.tenant_id
@@ -387,7 +425,9 @@ def verify_signature_endpoint():
             if not dossier or doc_id not in dossier.documents:
                 return jsonify({"success": False, "error": f"Documento '{doc_id}' do aluno '{student_id}' não localizado."}), 404
             item = dossier.documents[doc_id]
-            file_path = item.file_name or ""
+            inst = coordinator.get_institution(tenant_id)
+            provider = __import__('adapters.storage.factory', fromlist=['StorageFactory']).StorageFactory.get_provider(inst)
+            file_path = provider.get_file_absolute_path(dossier.student_name, item.file_name) if item.file_name and hasattr(provider, 'get_file_absolute_path') else ''
             if os.path.isfile(file_path):
                 with open(file_path, "rb") as f:
                     file_bytes = f.read()
@@ -427,21 +467,7 @@ def admin_page_by_institution(institution_id: str):
     if not inst:
         return jsonify({"error": f"Instituição '{institution_id}' não localizada."}), 404
 
-    admin_key_param = request.args.get('admin_key')
-    expected_key = getattr(inst.subscription, "admin_access_key", "protocolo-admin-2026")
-    sub_data = inst.subscription.model_dump() if hasattr(inst, "subscription") else {}
-    # NUNCA expor chave administrativa no contexto do template Jinja / HTML
-    sub_data.pop("admin_access_key", None)
-    
-    response = make_response(render_template(
-        'admin.html',
-        institution=inst.model_dump(),
-        subscription=sub_data,
-        portal_title=f"Secretaria Digital - {inst.name}"
-    ))
-    if admin_key_param and (admin_key_param == expected_key or admin_key_param == SUPER_ADMIN_KEY):
-        response.set_cookie(f'admin_session_{inst.id}', admin_key_param, httponly=True, samesite='Lax', max_age=86400)
-    return response
+    return render_template('admin.html', institution={"id": inst.id, "name": inst.name, "branding": inst.branding.model_dump(), "storage": inst.storage.model_dump()}, subscription=inst.subscription.model_dump(exclude={"admin_access_key"}), portal_title=f"Secretaria Digital - {inst.name}")
 
 
 @app.route('/admin')
@@ -594,6 +620,8 @@ def sync_erp_endpoint():
 
     clean_id = re.sub(r'[^a-zA-Z0-9]', '', str(student_id))
     force = bool(data.get('force') or data.get('force_sync', False))
+    if not coordinator.dossier_repo.get_dossier(g.tenant_id, clean_id):
+        return jsonify({"success": False, "error": "Dossiê não localizado."}), 404
 
     try:
         sync_res = coordinator.sync_dossier_to_erp(
@@ -621,11 +649,7 @@ def sync_erp_endpoint():
 @app.route('/master-admin')
 def super_admin_page():
     """Painel Master do Dono do Aplicativo para controle de planos e clientes."""
-    super_key = request.args.get('super_key')
-    response = make_response(render_template('super_admin.html'))
-    if super_key == SUPER_ADMIN_KEY:
-        response.set_cookie('super_admin_session', super_key, httponly=True, samesite='Lax', max_age=86400)
-    return response
+    return render_template('super_admin.html')
 
 
 @app.route('/api/super-admin/institutions', methods=['GET'])
@@ -715,36 +739,13 @@ def system_health_super_admin():
             elif doc.status == 'rejected':
                 rejected_docs += 1
 
-    conversion_rate = round((approved_docs / total_docs * 100), 1) if total_docs > 0 else 94.2
-
-    return jsonify({
-        "success": True,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "gemini": {
-            "status": "ONLINE",
-            "model": "gemini-2.5-flash",
-            "latency_ms": 1280,
-            "success_rate": 99.8,
-            "rpm_quota": "60/60 RPM livres",
-            "health_level": "Ótimo"
-        },
-        "system": {
-            "average_latency_sec": 1.45,
-            "conversion_rate": conversion_rate,
-            "total_dossiers": total_dossiers,
-            "total_documents": total_docs,
-            "approved_documents": approved_docs,
-            "rejected_documents": rejected_docs,
-            "storage_status": "ONLINE",
-            "storage_provider": "local",
-            "db_status": "ONLINE"
-        },
-        "swarm": coordinator.get_swarm_status()
-    }), 200
+    stats = coordinator.telemetry.get_latency_stats()
+    return jsonify({"success": True, "gemini": {"status": "NOT_PROBED", "latency_ms": stats.avg_ms if stats.count else None, "sample_count": stats.count}, "system": {"total_dossiers": total_dossiers, "total_documents": total_docs, "approved_documents": approved_docs, "rejected_documents": rejected_docs, "conversion_rate": round(approved_docs / total_docs * 100, 1) if total_docs else 0}, "swarm": coordinator.get_swarm_status()}), 200
 
 
 @app.route('/api/system/health-telemetry', methods=['GET'])
 @app.route('/api/super-admin/system/health-telemetry', methods=['GET'])
+@require_super_admin_auth
 def system_health_telemetry_endpoint():
     """
     Monitoramento em tempo real da saúde da infraestrutura, latência do Gemini
@@ -770,6 +771,7 @@ def system_health_telemetry_endpoint():
 
 @app.route('/api/system/swarm-status', methods=['GET'])
 @app.route('/api/super-admin/system/swarm-status', methods=['GET'])
+@require_super_admin_auth
 def system_swarm_status_endpoint():
     """
     Retorna o status operacional em tempo real de todo o Enxame Multi-Agentes (ProtocoloEdu MAS).
@@ -790,6 +792,7 @@ def system_swarm_status_endpoint():
 
 @app.route('/api/system/supabase/status', methods=['GET'])
 @app.route('/api/super-admin/system/supabase/status', methods=['GET'])
+@require_super_admin_auth
 def supabase_status_endpoint():
     """Retorna diagnóstico detalhado em tempo real da conexão com o Supabase (Database & Storage)."""
     try:
@@ -857,36 +860,12 @@ def list_inbound_outbound_records():
     """
     records = []
     for inst_id, inst in coordinator.institutions.items():
-        dossiers = coordinator.dossier_repo.list_dossiers(inst_id)
-        for d in dossiers:
+        for d in coordinator.dossier_repo.list_dossiers(inst_id):
+            notifications = coordinator.notification_service.get_history(institution_id=inst_id, student_id=d.student_id)
+            latest = notifications[-1] if notifications else None
             for doc_id, doc in d.documents.items():
-                records.append({
-                    "id": f"{d.student_id}_{doc_id}",
-                    "student_id": d.student_id,
-                    "student_name": d.student_name,
-                    "course_name": d.course_name,
-                    "institution_id": inst_id,
-                    "institution_name": inst.name,
-                    "doc_name": getattr(doc, 'display_name', None) or getattr(doc, 'document_id', 'Documento'),
-                    "file_size": f"{getattr(doc, 'file_size', 1850000) / 1024 / 1024:.1f} MB",
-                    "inbound_hash": getattr(doc, 'sha256_hash', None) or (doc.extracted_data.get('hash') if isinstance(doc.extracted_data, dict) else None) or "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                    "inbound_time": doc.updated_at.strftime("Hoje às %H:%M:%S") if hasattr(doc, 'updated_at') and doc.updated_at else "Hoje às 10:04",
-                    "flow_type": "OUTBOUND_ERP" if doc.status == 'approved' else ("PENDING" if doc.status == 'rejected' else "INBOUND"),
-                    "status": "APPROVED" if doc.status == 'approved' else ("PENDING" if doc.status == 'rejected' else "ANALYSIS"),
-                    "erp_status": "SINCRONIZADO" if doc.status == 'approved' else "PENDENTE",
-                    "erp_id": f"#SL-2026-{abs(hash(d.student_id + doc_id)) % 90000 + 10000}" if doc.status == 'approved' else "Pendente",
-                    "notif_status": "ENTREGUE",
-                    "notif_phone": "+55 (35) 99876-4321",
-                    "ai_time": "3.8s",
-                    "notes": getattr(doc, 'notes', "Auditoria regulatória MEC 315 concluída com sucesso.")
-                })
-
-    return jsonify({
-        "success": True,
-        "total_records": len(records),
-        "records": records
-    }), 200
-
+                records.append({"id": f"{inst_id}:{d.student_id}:{doc_id}", "student_id": d.student_id, "student_name": d.student_name, "course_name": d.course_name, "institution_id": inst_id, "institution_name": inst.name, "doc_name": doc.display_name, "status": doc.status, "file_size": doc.file_size_bytes, "inbound_hash": doc.sha256_hash, "inbound_time": doc.updated_at.isoformat(), "erp_status": "SINCRONIZADO" if d.metadata.get("erp_synced") and not str(d.metadata.get("erp_protocol", "")).startswith("ERP-MOCK") else "NAO_CONFIRMADO", "erp_id": d.metadata.get("erp_protocol") if d.metadata.get("erp_synced") else None, "notif_status": latest.status.value if latest else "NAO_ENVIADO", "notif_phone": latest.recipient if latest else None, "ai_time": None, "notes": doc.reason})
+    return jsonify({"success": True, "total_records": len(records), "records": records}), 200
 
 
 @app.route('/api/super-admin/institution/create', methods=['POST'])
@@ -904,7 +883,7 @@ def create_institution_super_admin():
 
     tier = data.get('plan_tier', 'PROFISSIONAL')
     limit = int(data.get('monthly_limit', 500))
-    key = data.get('admin_access_key') or f"{inst_id}-admin-2026"
+    key = data.get('admin_access_key') or secrets.token_urlsafe(32)
     folder = data.get('drive_folder_id', 'ROOT_FOLDER_ID')
     inst_type = data.get('institution_type', 'FACULDADE')
 
@@ -939,12 +918,15 @@ def create_institution_super_admin():
 
 @app.route('/api/institutions/<institution_id>/students/batch-sync', methods=['POST'])
 @app.route('/api/super-admin/institutions/<institution_id>/students/batch-import', methods=['POST'])
+@require_institution_admin_auth
 def batch_import_students_endpoint(institution_id: str):
     """
     Importação em lote de alunos para a base de dados de uma instituição.
     Aceita arquivo CSV/JSON ou payload JSON direto via API (ERP SolisGE/TOTVS).
     """
     clean_tenant = re.sub(r'[^a-zA-Z0-9_-]', '', str(institution_id)).lower().strip()
+    inst = coordinator.get_institution(clean_tenant)
+    if not inst: return jsonify({"error": "Instituição não localizada."}), 404
     data = request.get_json(silent=True)
     students_list = []
 
@@ -956,7 +938,8 @@ def batch_import_students_endpoint(institution_id: str):
         uploaded_file = request.files['file']
         content = uploaded_file.read().decode('utf-8', errors='ignore')
         if uploaded_file.filename.endswith('.json'):
-            students_list = json.loads(content)
+            try: students_list = json.loads(content)
+            except (ValueError, TypeError): return jsonify({"error": "Arquivo JSON inválido."}), 400
         else:
             import csv
             reader = csv.DictReader(content.splitlines(), delimiter=';' if ';' in content else ',')
@@ -970,18 +953,19 @@ def batch_import_students_endpoint(institution_id: str):
                     "phone": row.get('telefone') or row.get('whatsapp') or row.get('Telefone')
                 })
 
-    if not students_list:
+    if not isinstance(students_list, list) or not students_list:
         return jsonify({"error": "Nenhum registro de aluno fornecido para importação."}), 400
 
     imported = []
     from adapters.supabase_client import supabase_manager
     sb_records = []
     for s in students_list:
-        name = s.get('name', '').strip()
+        if not isinstance(s, dict): continue
+        name = str(s.get('name') or '').strip()
         cpf_clean = re.sub(r'\D', '', str(s.get('cpf', '')))
-        student_id = s.get('student_id') or cpf_clean
+        student_id = re.sub(r'[^a-zA-Z0-9_-]', '', str(s.get('student_id') or cpf_clean))
         course = s.get('course', 'graduacao_1')
-        if not name or not cpf_clean:
+        if not name or not student_id:
             continue
 
         coordinator.dossier_repo.get_or_create_dossier(
@@ -997,11 +981,11 @@ def batch_import_students_endpoint(institution_id: str):
             "student_id": student_id,
             "student_name": name,
             "course_name": course,
-            "cpf": cpf_clean,
+            "cpf": cpf_clean or None,
             "status": "PENDENTE",
             "documents_json": {}
         })
-        imported.append({"id": student_id, "name": name, "cpf": cpf_clean, "course": course})
+        imported.append({"id": student_id, "name": name, "cpf": cpf_clean or None, "course": course})
 
     if sb_records and supabase_manager.is_configured:
         try:
@@ -1018,6 +1002,7 @@ def batch_import_students_endpoint(institution_id: str):
 
 
 @app.route('/api/institutions/<institution_id>/students', methods=['GET'])
+@require_institution_admin_auth
 def list_institution_students_endpoint(institution_id: str):
     """Retorna os alunos cadastrados no banco de dados daquela instituição."""
     clean_tenant = re.sub(r'[^a-zA-Z0-9_-]', '', str(institution_id)).lower().strip()
@@ -1086,6 +1071,7 @@ def ask_assistant_endpoint():
 
 
 @app.route('/api/storage/file/<institution_id>/<letter>/<student_name>/<subfolder>/<filename>', methods=['GET'])
+@require_institution_admin_auth
 def get_stored_file_endpoint(institution_id: str, letter: str, student_name: str, subfolder: str, filename: str):
     """
     Serve arquivos custodiados no storage local com proteção estrita contra Directory Traversal.
@@ -1106,7 +1092,7 @@ def get_stored_file_endpoint(institution_id: str, letter: str, student_name: str
     )
 
     # Prevenção contra Directory Traversal (LFI / Path Traversal)
-    if not target_file.startswith(abs_base):
+    if os.path.commonpath([abs_base, target_file]) != abs_base:
         return jsonify({"error": "Acesso não autorizado ao caminho especificado."}), 403
 
     if not os.path.exists(target_file) or not os.path.isfile(target_file):

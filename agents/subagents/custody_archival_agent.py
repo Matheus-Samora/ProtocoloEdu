@@ -41,7 +41,7 @@ class CustodyArchivalAgent(BaseSubagent):
         storage_provider = StorageFactory.get_provider(institution_profile) if institution_profile else LocalDiskStorageProvider()
 
         # GUARDIÃO DE CUSTÓDIA: Se o documento NÃO foi aprovado por todas as etapas periciais
-        if not is_globally_approved:
+        if not is_globally_approved and not task.payload.get("retain_for_review", False):
             # Expurgar qualquer arquivo que possa ter sido salvo anteriormente para este documento
             if legacy_file_name and hasattr(storage_provider, "delete_document"):
                 storage_provider.delete_document(student_name, legacy_file_name)
@@ -89,7 +89,7 @@ class CustodyArchivalAgent(BaseSubagent):
 
         return {
             "success": True,
-            "gatekeeper_action": "SAVED_AND_AUTHENTICATED",
+            "gatekeeper_action": "SAVED_AND_AUTHENTICATED" if is_globally_approved else "RETAINED_FOR_REVIEW",
             "stored_file_name": stored_file_name,
             "storage_url": storage_url,
             "sha256_hash": sha256_hash,

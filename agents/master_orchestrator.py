@@ -205,6 +205,7 @@ class MasterOrchestratorAgent:
                 "spec": spec,
                 "media_list": sanitized_media_list,
                 "is_globally_approved": is_globally_approved,
+                "retain_for_review": item_status == "in_review",
                 "doc_key": doc_key,
                 "legacy_file_name": legacy_file
             }
@@ -226,8 +227,10 @@ class MasterOrchestratorAgent:
             admin_diagnostic=trace.admin_diagnostic,
             system_error=ocr_data.get("system_error", False),
             extracted_data=extracted_data,
-            file_name=stored_file_name if is_globally_approved else None,
-            storage_url=storage_url if is_globally_approved else None
+            file_name=stored_file_name,
+            sha256_hash=res_custody.data.get("sha256_hash"),
+            file_size_bytes=res_custody.data.get("file_size_bytes"),
+            storage_url=storage_url
         )
         dossier.documents[doc_key] = audit_item
 
@@ -266,15 +269,7 @@ class MasterOrchestratorAgent:
         """
         item = dossier.documents.get(doc_id)
         if not item:
-            spec = self.criteria_catalog.get_document_spec(doc_id)
-            disp_name = spec.display_name if spec else doc_id
-            item = DocumentAuditItem(
-                document_id=doc_id,
-                display_name=disp_name,
-                status=new_status,
-                reason=admin_notes or ("Homologado manualmente pela Secretaria Acadêmica." if new_status == 'approved' else "Documento com pendência conforme apontamento da Secretaria.")
-            )
-            dossier.documents[doc_id] = item
+            raise ValueError("Documento não recebido no dossiê.")
         else:
             item.status = new_status
             item.system_error = False

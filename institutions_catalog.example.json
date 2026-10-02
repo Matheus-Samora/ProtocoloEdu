@@ -1,0 +1,12 @@
+{
+  "institutions": {
+    "sua_instituicao": {
+      "id": "sua_instituicao", "name": "Sua instituição", "institution_type": "FACULDADE",
+      "branding": {"portal_title": "Portal do Aluno", "primary_color": "#0a2351"},
+      "storage": {"provider": "local", "base_path": "storage"},
+      "erp": {"erp_type": "mock"}, "enabled_courses": ["1ª Graduação"],
+      "require_student_cpf": true,
+      "subscription": {"admin_access_key": "", "monthly_limit": 50}
+    }
+  }
+}

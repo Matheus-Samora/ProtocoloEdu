@@ -28,6 +28,8 @@ class DocumentAuditItem(BaseModel):
     system_error: bool = Field(False, description="Flag indicando se a verificação automática sofreu falha de infraestrutura")
     extracted_data: Dict[str, Any] = Field(default_factory=dict, description="Dados extraídos (CPF, RG, Datas, etc.)")
     file_name: Optional[str] = Field(None, description="Nome do arquivo arquivado")
+    sha256_hash: Optional[str] = None
+    file_size_bytes: Optional[int] = None
     storage_url: Optional[str] = Field(None, description="URL ou chave de acesso ao arquivo")
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

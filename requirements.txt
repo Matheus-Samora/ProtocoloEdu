@@ -45,3 +45,6 @@ google-auth
 cryptography
 bcrypt
 supabase>=2.31.0
+
+# Verificação criptográfica PDF/CMS e cadeia configurada
+pyHanko==0.35.1

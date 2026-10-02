@@ -25,7 +25,7 @@ LOCATION = os.environ.get("GCP_LOCATION") or os.environ.get("LOCATION") or "us-c
 
 # --- CONFIGURAÇÃO DA API DO GEMINI ---
 # Chave da API ativa e validada com rotação automática
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AIzaSyBbxXALaM60hn-Es-kjKY0yopJ4qaDXF-s"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or ""
 
 # --- LOG DE DEPURACAO ---
 logging.info(f"Configuração carregada: PROJECT_ID='{PROJECT_ID}', LOCATION='{LOCATION}'")

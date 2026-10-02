@@ -36,7 +36,7 @@ def build_true_portal():
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://phipudvmceitxcajggus.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_D7czHMQRr9f2u1YfPi-_lA_HZOVzqAw";
+        const SUPABASE_ANON_KEY = "";
         let supabaseClient = null;
         try {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

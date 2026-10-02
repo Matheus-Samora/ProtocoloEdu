@@ -1,12 +1,1214 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=superadmin.html#records">
-  <title>Central de Registros Unificada • Super Admin</title>
-  <script>window.location.replace("superadmin.html#records");</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ portal_title or ("Mesa da Secretaria Acadêmica - " ~ institution.name) }}</title>
+
+    <link rel="icon" type="image/jpeg" href="{{ institution.branding.logo_url if institution.branding and institution.branding.logo_url else '/static/images/logo-imes.jpg' }}">
+
+    <!-- Tailwind CSS Oficial via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        imes: {
+                            blue: '{{ institution.branding.primary_color if institution.branding and institution.branding.primary_color else "#0a2351" }}',
+                            blueLight: '#153a7a',
+                            gold: '{{ institution.branding.secondary_color if institution.branding and institution.branding.secondary_color else "#fdb913" }}',
+                            goldHover: '#e8a800',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.06);
+            --shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body.dark-mode {
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body.dark-mode .custom-scroll::-webkit-scrollbar-thumb { background: #334155; }
+
+        .modern-card {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.25s ease;
+        }
+        body.dark-mode .modern-card {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3);
+        }
+
+        .modern-card:hover {
+            box-shadow: var(--shadow-hover);
+            border-color: #fdb913;
+        }
+
+        .modern-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.8rem;
+            border-radius: 0.75rem;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            transition: all 0.25s ease;
+            font-weight: 600;
+        }
+        body.dark-mode .modern-input {
+            background-color: #1e293b;
+            color: white;
+            border-color: #334155;
+        }
+        .modern-input:focus {
+            outline: none;
+            border-color: #0a2351;
+            box-shadow: 0 0 0 3px rgba(10, 35, 81, 0.12);
+        }
+        body.dark-mode .modern-input:focus {
+            border-color: #fdb913;
+            box-shadow: 0 0 0 3px rgba(253, 185, 19, 0.15);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #fdb913 0%, #f59e0b 100%);
+            color: #0a2351;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(253, 185, 19, 0.25);
+        }
+        .btn-gold:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+
+        /* Switch Theme */
+        .switch { font-size: 9px; position: relative; display: inline-block; width: 4.4em; height: 2.3em; border-radius: 30px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #1e293b; transition: 0.4s; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .slider:before { position: absolute; content: ""; height: 1.4em; width: 1.4em; border-radius: 50%; left: 0.45em; bottom: 0.4em; transition: 0.4s; background: white; }
+        input:checked + .slider { background-color: #3b82f6; }
+        input:checked + .slider:before { transform: translateX(2.1em); background: #fdb913; }
+
+        /* Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .badge-pending { background-color: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+        .badge-success { background-color: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+        .badge-review  { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
+        body.dark-mode .badge-pending { background-color: #451a03; color: #fbbf24; border-color: #92400e; }
+        body.dark-mode .badge-success { background-color: #064e3b; color: #4ade80; border-color: #065f46; }
+        body.dark-mode .badge-review  { background-color: #172554; color: #60a5fa; border-color: #1e3a8a; }
+
+        /* Fundo quadriculado técnico para inspeção de documentos */
+        .workbench-canvas {
+            background-color: #0f172a;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .key-badge-dark {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+    </style>
 </head>
-<body style="background:#0B132B;color:#E2E8F0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
-  <p>Redirecionando para a Central Unificada de Registros no Super Admin...</p>
+<body class="min-h-screen flex flex-col font-sans"><section id="admin-login" class="p-6 bg-white text-slate-800" hidden><h2>Entrar na secretaria</h2><form id="admin-login-form"><label for="admin-login-key">Credencial da instituição</label><input id="admin-login-key" type="password" autocomplete="current-password" required><button type="submit">Entrar</button></form><p id="login-error" role="alert"></p></section>
+
+    <!-- ========================================================================= -->
+    <!-- CABEÇALHO CORPORATIVO DA SECRETARIA COM IDENTIDADE IMES                   -->
+    <!-- ========================================================================= -->
+    <header class="bg-[#0a2351] text-white px-4 sm:px-6 py-4 shadow-lg border-b border-slate-700/60 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <img src="{{ institution.branding.logo_url if institution.branding and institution.branding.logo_url else '/static/images/logo-imes.jpg' }}"
+                     alt="Logo {{ institution.name }}"
+                     class="w-11 h-11 rounded-xl bg-white p-1 object-contain shadow-md border border-white/20"
+                     onerror="this.onerror=null;this.src='https://placehold.co/96x96/0a2351/fdb913?text=IMES';">
+                <div>
+                    <h1 class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
+                        <span>Secretaria Geral Acadêmica</span>
+                        <span class="text-[10px] font-extrabold bg-imes-gold text-imes-blue px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            Mesa de Análise &amp; Dossiês
+                        </span>
+                    </h1>
+                    <p class="text-xs text-blue-200 font-medium">{{ institution.name }} • Custódia documental &amp; conferência institucional</p>
+                </div>
+            </div>
+
+            <!-- BOTÕES DE EXPORTAÇÃO, PORTAL E TEMA -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <!-- Theme Switcher -->
+                <div class="flex items-center gap-2 mr-1">
+                    <label class="switch" title="Alternar Tema">
+                        <input checked="true" id="theme-toggle" type="checkbox" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button onclick="downloadExport('csv')"
+                   class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer active:scale-95">
+                    <i class="ph-bold ph-file-csv text-base"></i>
+                    <span>Exportar Excel</span>
+                </button>
+
+                <button onclick="downloadExport('zip')"
+                   class="px-3.5 py-2 btn-gold rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer active:scale-95">
+                    <i class="ph-bold ph-archive text-base"></i>
+                    <span>Dossiês (ZIP)</span>
+                </button>
+
+                <a href="/portal/{{ institution.id }}" target="_blank" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 border border-white/20">
+                    <i class="ph-bold ph-arrow-square-out text-base"></i>
+                    <span>Portal do Aluno</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- PAINEL CENTRAL (MESA DE ANÁLISE)                                          -->
+    <!-- ========================================================================= -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- BANNER DE IDENTIFICAÇÃO DO CONTRATANTE E ARMAZENAMENTO -->
+        <div class="modern-card p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-imes-blue text-white dark:bg-imes-gold dark:text-imes-blue flex items-center justify-center text-2xl font-bold shadow-inner">
+                    <i class="ph-fill ph-buildings"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-extrabold text-base text-slate-800 dark:text-white">{{ institution.name }}</span>
+                        <span class="text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 px-2.5 py-0.5 rounded-full">
+                            {{ subscription.plan_name or "Plano Institucional Pro" }}
+                        </span>
+                        <span class="text-[11px] font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            Armazenamento Local A-Z Ativo
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Caminho de custódia: <span class="font-mono text-imes-blue dark:text-imes-gold font-bold">storage/{{ institution.id }}/{LETRA}/{NOME}/DOC</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- CONTADOR DE CONSUMO DA FRANQUIA -->
+            <div class="flex items-center gap-4 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-3 md:pt-0 md:pl-5 w-full md:w-auto justify-between md:justify-start">
+                <div class="text-right">
+                    <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Consumo da Franquia</span>
+                    <span class="text-sm font-black text-slate-800 dark:text-white">
+                        {{ subscription.used_this_month or 0 }} / {{ subscription.monthly_limit or 500 }}
+                    </span>
+                </div>
+                <div class="w-24 bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                    {% set pct = ((subscription.used_this_month or 0) / (subscription.monthly_limit or 500) * 100) | round | int %}
+                    <div class="bg-imes-blue dark:bg-imes-gold h-2.5 rounded-full" style="width: {{ pct if pct <= 100 else 100 }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- 4 CARDS DE INDICADORES / METRICAS DA SECRETARIA                      -->
+        <!-- ===================================================================== -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="modern-card p-5 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total de Dossiês</span>
+                    <span id="stat-total" class="text-2xl font-black text-slate-800 dark:text-white mt-1 block">0</span>
+                    <span class="text-[11px] text-slate-400">Inscritos e Matriculados</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-imes-blue dark:text-blue-400 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-folder-user"></i>
+                </div>
+            </div>
+
+            <div class="modern-card p-5 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">Homologados</span>
+                    <span id="stat-complete" class="text-2xl font-black text-emerald-600 mt-1 block">0</span>
+                    <span class="text-[11px] text-slate-400">Documentos exigidos aprovados</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-check-circle"></i>
+                </div>
+            </div>
+
+            <div class="modern-card p-5 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-wider block">Com Pendências</span>
+                    <span id="stat-pending" class="text-2xl font-black text-amber-500 mt-1 block">0</span>
+                    <span class="text-[11px] text-slate-400">Aguardando Envio de Fotos</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-500 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-clock"></i>
+                </div>
+            </div>
+
+            <div class="modern-card p-5 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-bold text-rose-500 uppercase tracking-wider block">Necessitam Correção</span>
+                    <span id="stat-rejected" class="text-2xl font-black text-rose-500 mt-1 block">0</span>
+                    <span class="text-[11px] text-slate-400">Requer Notificação do Aluno</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-500 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-warning-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TABELA DE DOSSIÊS COM FILTROS DE PESQUISA EM TEMPO REAL               -->
+        <!-- ===================================================================== -->
+        <div class="modern-card p-6 space-y-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <!-- Campo de Busca Rápida -->
+                <div class="input-group w-full md:w-96">
+                    <input type="text" id="filter-search" class="modern-input text-xs" placeholder="Buscar por Nome do Aluno ou CPF...">
+                    <i class="ph-bold ph-magnifying-glass input-icon text-base"></i>
+                </div>
+
+                <!-- Botões de Filtro Rápido -->
+                <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+                    <button data-status="ALL" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-[#0a2351] text-white shadow-sm cursor-pointer">
+                        Todos
+                    </button>
+                    <button data-status="COMPLETO" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                        Homologados
+                    </button>
+                    <button data-status="COM_PENDENCIA" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                        Pendentes
+                    </button>
+                    <button data-status="EM_ANALISE" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                        Em Análise
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabela Estilizada -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 custom-scroll">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold uppercase tracking-wider text-[11px]">
+                        <tr>
+                            <th class="p-3.5">Estudante</th>
+                            <th class="p-3.5">CPF / Matrícula</th>
+                            <th class="p-3.5">Curso / Nível</th>
+                            <th class="p-3.5">Situação Documental</th>
+                            <th class="p-3.5">Última Atualização</th>
+                            <th class="p-3.5 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dossiers-table-body" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-400">Carregando dossiês da secretaria...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL DUAL-PANE SPLIT-SCREEN: MESA DE CONFERÊNCIA DOCUMENTAL               -->
+    <!-- ========================================================================= -->
+    <div id="split-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-7xl h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+
+            <!-- Barra Superior do Modal -->
+            <div class="bg-[#0a2351] text-white p-3.5 sm:p-4 flex items-center justify-between border-b border-slate-700 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-imes-gold text-imes-blue flex items-center justify-center font-bold text-base shadow flex-shrink-0">
+                        <i class="ph-fill ph-student"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="split-modal-student-name" class="font-extrabold text-sm sm:text-base text-white truncate">Nome do Estudante</h3>
+                        <p id="split-modal-student-info" class="text-xs text-blue-200 truncate font-mono"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="triggerWhatsAppModalFromCurrent()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="Notificar Estudante via WhatsApp">
+                        <i class="ph-bold ph-whatsapp-logo text-base"></i>
+                        <span class="hidden sm:inline">WhatsApp</span>
+                    </button>
+                    <button onclick="triggerErpSyncFromCurrent()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="Sincronizar Dossiê no ERP">
+                        <i class="ph-bold ph-arrows-clockwise text-base"></i>
+                        <span class="hidden sm:inline">Sincronizar ERP</span>
+                    </button>
+                    <button onclick="closeSplitModal()" class="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer">
+                        <i class="ph-bold ph-x text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs de Navegação dos Documentos -->
+            <div id="split-doc-tabs" class="bg-slate-100 dark:bg-slate-800 p-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-1.5 overflow-x-auto custom-scroll flex-shrink-0"></div>
+
+            <!-- Corpo Dual-Pane Split-Screen -->
+            <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+                <!-- LADO ESQUERDO: VISUALIZADOR TÉCNICO DE DOCUMENTO -->
+                <div id="viewer-container" class="lg:w-1/2 bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 relative select-none">
+                    <!-- Toolbar Superior do Viewer -->
+                    <div class="bg-slate-900/90 border-b border-slate-800 p-2.5 flex items-center justify-between z-10 text-white">
+                        <span class="text-xs font-bold flex items-center gap-1.5 text-imes-gold">
+                            <i class="ph-bold ph-eye"></i> Inspeção Visual do Arquivo
+                        </span>
+
+                        <div class="flex items-center gap-1">
+                            <button onclick="adjustDocZoom(-0.2)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Reduzir Zoom (-)">
+                                <i class="ph-bold ph-magnifying-glass-minus text-sm"></i>
+                            </button>
+                            <button onclick="resetDocTransform()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold transition">
+                                100%
+                            </button>
+                            <button onclick="adjustDocZoom(0.2)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Aumentar Zoom (+)">
+                                <i class="ph-bold ph-magnifying-glass-plus text-sm"></i>
+                            </button>
+                            <div class="h-4 w-px bg-slate-700 mx-1"></div>
+                            <button onclick="rotateDoc(90)" class="px-2.5 py-1 rounded-lg bg-imes-gold text-imes-blue font-bold text-xs hover:bg-imes-goldHover transition flex items-center gap-1" title="Girar 90°">
+                                <i class="ph-bold ph-arrow-clockwise"></i>
+                                <span>90°</span>
+                            </button>
+                            <button onclick="toggleDocFullscreen()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Tela Cheia">
+                                <i class="ph-bold ph-corners-out text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Workbench de Renderização -->
+                    <div class="flex-1 workbench-canvas flex items-center justify-center p-4 overflow-hidden relative">
+                        <div id="doc-render-wrapper" class="transition-transform duration-150 ease-out flex items-center justify-center max-w-full max-h-full">
+                            <img id="viewer-image" src="" alt="Documento" class="max-h-[60vh] max-w-full object-contain rounded-lg shadow-2xl">
+                            <div id="viewer-document-sheet" class="hidden bg-white text-slate-900 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-300 space-y-4 text-xs font-sans">
+                                <div class="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-black text-sm uppercase tracking-wide">Prontuário Digital Oficial</h4>
+                                        <p class="text-[11px] text-slate-500 font-mono">Portaria MEC nº 315/2018</p>
+                                    </div>
+                                    <i class="ph-fill ph-seal-check text-3xl text-imes-blue"></i>
+                                </div>
+                                <div id="viewer-sheet-fields" class="space-y-2 font-mono"></div>
+                                <div class="pt-3 border-t border-dashed border-slate-300 flex items-center justify-between text-[11px] text-slate-500">
+                                    <span>Custódia Digital A-Z</span>
+                                    <span class="text-emerald-700 font-bold font-mono">HOMOLOGADO</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer do Viewer -->
+                    <div class="bg-slate-900/90 border-t border-slate-800 px-4 py-2 flex items-center justify-between text-[11px] text-slate-400">
+                        <span id="viewer-file-name" class="font-mono truncate max-w-xs">arquivo.pdf</span>
+                        <span id="viewer-rotation-indicator" class="font-mono">Rotação: 0° | Zoom: 100%</span>
+                    </div>
+                </div>
+
+                <!-- LADO DIREITO: DADOS DE OCR, CRITÉRIOS MEC E AÇÕES POWER-USER -->
+                <div class="lg:w-1/2 bg-white dark:bg-slate-900 flex flex-col overflow-y-auto p-5 sm:p-6 space-y-4 text-xs custom-scroll">
+
+                    <!-- Cabeçalho do Documento Atual -->
+                    <div class="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Tipo Documental</span>
+                            <h4 id="split-doc-title" class="font-extrabold text-base text-slate-800 dark:text-white">Documento</h4>
+                            <p id="split-doc-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
+                        </div>
+                        <span id="split-doc-status-badge" class="status-badge badge-pending shrink-0">
+                            Pendente
+                        </span>
+                    </div>
+
+                    <!-- Bloco 1: Metadados Extraídos pelo Gemini OCR -->
+                    <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-800 dark:text-white flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                                <i class="ph-bold ph-sparkle text-imes-gold text-sm"></i>
+                                Metadados Extraídos (OCR Vision)
+                            </span>
+                            <span class="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded-full">
+                                Conferir dados extraídos
+                            </span>
+                        </div>
+                        <div id="split-extracted-data-grid" class="grid grid-cols-2 gap-2 text-xs"></div>
+                    </div>
+
+                    <!-- Bloco 2: Checklist Regulatório MEC -->
+                    <div class="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 space-y-2.5">
+                        <span class="font-bold text-slate-800 dark:text-white flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                            <i class="ph-bold ph-check-square text-emerald-500 text-sm"></i>
+                            Checklist de conferência manual
+                        </span>
+
+                        <div id="split-mec-checklist" class="space-y-1.5">
+                            <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 text-emerald-600 rounded">
+                                <div>
+                                    <span class="font-bold text-slate-800 dark:text-white block">Legibilidade Integral do Documento</span>
+                                    <span class="text-[10px] text-slate-400">Textos, números de registro e assinaturas nítidos</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 text-emerald-600 rounded">
+                                <div>
+                                    <span class="font-bold text-slate-800 dark:text-white block">Integridade Visual (Sem Cortes)</span>
+                                    <span class="text-[10px] text-slate-400">Bordas completas preservando frente e verso</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 text-emerald-600 rounded">
+                                <div>
+                                    <span class="font-bold text-slate-800 dark:text-white block">Conferência com Original &amp; Assinatura</span>
+                                    <span class="text-[10px] text-slate-400">Chancela da autoridade expedidora ou certificação ICP-Brasil</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Bloco 3: Parecer Institucional -->
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block uppercase tracking-wider text-[11px]">
+                            Parecer Registrado para o Estudante:
+                        </label>
+                        <div id="split-doc-reason" class="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 font-medium">
+                            Aguardando conferência da Secretaria Acadêmica.
+                        </div>
+                    </div>
+
+                    <!-- Bloco 4: Trilha de Auditoria Criptográfica -->
+                    <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 space-y-1 font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-1 font-sans">
+                            <span class="font-bold text-slate-800 dark:text-white flex items-center gap-1">
+                                <i class="ph-bold ph-fingerprint text-base text-imes-blue dark:text-imes-gold"></i> Trilha de Custódia A-Z
+                            </span>
+                            <span class="text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">SHA-256</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span>Atualizado em:</span>
+                            <strong id="audit-timestamp" class="text-slate-800 dark:text-white">-</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Avaliador:</span>
+                            <strong id="audit-evaluator" class="text-slate-800 dark:text-white">Secretaria Acadêmica</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Hash SHA-256:</span>
+                            <strong id="audit-hash" class="text-imes-blue dark:text-imes-gold truncate max-w-[200px]">e3b0c442...</strong>
+                        </div>
+                    </div>
+
+                    <!-- Bloco 5: Barra de Ações Rápidas (Power-User) -->
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 mt-auto">
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <button onclick="navigateDoc(-1)" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer" title="Documento Anterior (Seta Esquerda)">
+                                <i class="ph-bold ph-arrow-left"></i> <span class="hidden sm:inline">Anterior</span>
+                            </button>
+                            <button onclick="navigateDoc(1)" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl font-bold flex items-center gap-1 cursor-pointer" title="Próximo Documento (Seta Direita)">
+                                <span class="hidden sm:inline">Próximo</span> <i class="ph-bold ph-arrow-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <!-- Recusar (R) -->
+                            <button onclick="openRefusalQuickBox()" class="px-4 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded-xl font-bold flex items-center gap-1.5 shadow transition cursor-pointer active:scale-95">
+                                <i class="ph-bold ph-x-circle text-base"></i>
+                                <span>Solicitar Correção</span>
+                                <span class="key-badge-dark ml-1">R</span>
+                            </button>
+
+                            <!-- Aprovar (A) -->
+                            <button onclick="approveCurrentDocDirect()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl flex items-center gap-1.5 shadow transition cursor-pointer active:scale-95">
+                                <i class="ph-bold ph-check-circle text-base"></i>
+                                <span>Homologar</span>
+                                <span class="key-badge-dark ml-1">A</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- CAIXA RÁPIDA DE RECUSA COM MOTIVOS PADRONIZADOS                           -->
+    <!-- ========================================================================= -->
+    <div id="refusal-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+            <div class="p-4 bg-rose-700 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="ph-bold ph-warning-octagon text-xl text-rose-200"></i>
+                    <h3 class="font-bold text-sm text-white">Solicitar Correção de Documento</h3>
+                </div>
+                <button onclick="closeRefusalQuickBox()" class="text-rose-200 hover:text-white p-1 text-lg cursor-pointer">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-800 dark:text-white uppercase tracking-wider text-[11px] mb-2">
+                        Selecione um motivo padronizado institucional:
+                    </label>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="selectRefusalReason('Falta carimbo do verso com a assinatura da diretoria ou secretaria escolar.')"
+                                class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
+                            📌 Falta carimbo do verso
+                        </button>
+                        <button type="button" onclick="selectRefusalReason('Documento ilegível / foto com baixa resolução que impede a leitura dos dados.')"
+                                class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
+                            📌 Documento ilegível
+                        </button>
+                        <button type="button" onclick="selectRefusalReason('Data de validade vencida. Favor apresentar comprovante ou certidão atualizada.')"
+                                class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
+                            📌 Validade vencida
+                        </button>
+                        <button type="button" onclick="selectRefusalReason('Documento incompleto. É obrigatório o envio das páginas de frente e verso.')"
+                                class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
+                            📌 Documento incompleto
+                        </button>
+                        <button type="button" onclick="selectRefusalReason('Corte de bordas ou reflexo sobre informações essenciais (CPF, Nome ou Assinatura).')"
+                                class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white transition cursor-pointer">
+                            📌 Corte de bordas / reflexo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="refusal-custom-text" class="block font-bold text-slate-800 dark:text-white uppercase tracking-wider text-[11px]">
+                        Mensagem explicativa para o estudante:
+                    </label>
+                    <textarea id="refusal-custom-text" rows="3" class="modern-input w-full p-3 text-xs" placeholder="Selecione um motivo acima ou digite instruções personalizadas..."></textarea>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2 text-xs">
+                <button onclick="closeRefusalQuickBox()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-white font-bold rounded-xl cursor-pointer">
+                    Cancelar
+                </button>
+                <button onclick="confirmRefusalSubmit()" class="px-5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl shadow transition cursor-pointer">
+                    Confirmar Recusa e Notificar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL DE NOTIFICAÇÃO VIA WHATSAPP                                         -->
+    <!-- ========================================================================= -->
+    <div id="whatsapp-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[65] animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+            <div class="p-4 bg-emerald-600 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="ph-bold ph-whatsapp-logo text-xl"></i>
+                    <h3 class="font-bold text-sm">Disparo de Notificação WhatsApp</h3>
+                </div>
+                <button onclick="closeWhatsAppModal()" class="text-white hover:text-emerald-100 p-1">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">Telefone do Estudante</label>
+                    <input type="text" id="whatsapp-recipient-phone" class="modern-input text-xs" placeholder="(11) 99999-9999">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">Tipo de Notificação</label>
+                    <select id="whatsapp-template-select" onchange="updateWhatsAppMessageTemplate()" class="modern-input text-xs cursor-pointer">
+                        <option value="pendency">Aviso de Documento Pendente / Correção Necessária</option>
+                        <option value="completion">Aviso de Homologação / Matrícula Aprovada</option>
+                        <option value="custom">Mensagem Personalizada</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">Mensagem que será enviada</label>
+                    <textarea id="whatsapp-message-body" rows="4" class="modern-input text-xs"></textarea>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2 text-xs">
+                <button onclick="closeWhatsAppModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold rounded-xl">Cancelar</button>
+                <button onclick="dispatchWhatsAppMessage()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-1.5 shadow">
+                    <i class="ph-bold ph-paper-plane-right"></i> Enviar Mensagem
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SCRIPT DA SECRETARIA GERAL                                                -->
+    <!-- ========================================================================= -->
+    <script>
+        // SEGURANÇA E PRIVACIDADE: Previne vazamento no Console DevTools (F12)
+        if (window.console) {
+            ['log', 'info', 'warn', 'error', 'debug'].forEach(m => { try { window.console[m] = function(){}; } catch(e){} });
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+        const CURRENT_INSTITUTION_ID = "{{ institution.id }}";
+        let allDossiers = [];
+        let currentDossierIndex = null;
+        let currentDocKeys = [];
+        let currentDocKeyIndex = 0;
+        let docViewerState = { zoom: 1.0, rotation: 0 };
+
+        // --- TEMA (DARK / LIGHT) ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.documentElement.classList.add('dark');
+            if (themeToggle) themeToggle.checked = false;
+        } else {
+            document.body.classList.remove('dark-mode');
+            document.documentElement.classList.remove('dark');
+            if (themeToggle) themeToggle.checked = true;
+        }
+
+        if (themeToggle) {
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    document.body.classList.remove('dark-mode');
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.body.classList.add('dark-mode');
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function getAdminKey() { return ''; }
+        function downloadExport(fmt) { window.open(`/api/admin/export/${fmt}?institution_id=${encodeURIComponent(CURRENT_INSTITUTION_ID)}`, '_blank'); }
+        async function fetchDossiers() {
+            const response = await fetch(`/api/admin/dossiers?institution_id=${encodeURIComponent(CURRENT_INSTITUTION_ID)}`);
+            if (response.status === 401) {
+                document.getElementById('admin-login').hidden = false;
+                document.getElementById('dossiers-table-body').innerHTML = '<tr><td colspan="6">Entre com a credencial da instituição para consultar os registros.</td></tr>';
+                return;
+            }
+            if (!response.ok) { document.getElementById('login-error').textContent = 'Não foi possível carregar os registros.'; return; }
+            document.getElementById('admin-login').hidden = true;
+            const payload = await response.json();
+            allDossiers = payload.dossiers;
+            renderTable(allDossiers);
+            document.getElementById('stat-total').textContent = allDossiers.length;
+            document.getElementById('stat-complete').textContent = allDossiers.filter(d=>d.status==='COMPLETO').length;
+            document.getElementById('stat-pending').textContent = allDossiers.filter(d=>d.status==='PENDENTE').length;
+            document.getElementById('stat-rejected').textContent = allDossiers.filter(d=>d.status==='COM_PENDENCIA').length;
+        }
+        document.getElementById('admin-login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const response = await fetch('/api/auth/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({institution_id:CURRENT_INSTITUTION_ID,key:document.getElementById('admin-login-key').value})});
+            document.getElementById('admin-login-key').value = '';
+            if (!response.ok) { document.getElementById('login-error').textContent = 'Credencial inválida ou acesso não configurado.'; return; }
+            document.getElementById('login-error').textContent = '';
+            await fetchDossiers();
+        });
+
+        function renderTable(list) {
+            const tbody = document.getElementById('dossiers-table-body');
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-medium">Nenhum estudante localizado para este filtro.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map((d, index) => {
+                let badgeClass = "badge-pending";
+                let statusLabel = "Com Pendências";
+                if (d.status === 'COMPLETO') {
+                    badgeClass = "badge-success";
+                    statusLabel = "Homologado";
+                } else if (d.status === 'EM_ANALISE') {
+                    badgeClass = "badge-review";
+                    statusLabel = "Em Análise";
+                } else if (d.status === 'PENDENTE') {
+                    badgeClass = "badge-pending";
+                    statusLabel = "Aguardando Envio";
+                }
+
+                const dateStr = d.updated_at ? new Date(d.updated_at).toLocaleDateString('pt-BR') : '-';
+
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                        <td class="p-3.5 font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-imes-blue text-white dark:bg-imes-gold dark:text-imes-blue font-bold flex items-center justify-center text-xs">
+                                ${escapeHtml(d.student_name.slice(0, 1).toUpperCase())}
+                            </div>
+                            <span>${escapeHtml(d.student_name)}</span>
+                        </td>
+                        <td class="p-3.5 font-mono font-bold text-slate-700 dark:text-slate-300">${escapeHtml(d.cpf || d.student_id)}</td>
+                        <td class="p-3.5 text-slate-600 dark:text-slate-400 font-medium">${escapeHtml(d.course_name)}</td>
+                        <td class="p-3.5">
+                            <span class="status-badge ${badgeClass}">
+                                ${escapeHtml(statusLabel)}
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-slate-500 font-mono text-[11px]">${escapeHtml(dateStr)}</td>
+                        <td class="p-3.5 text-right">
+                            <button onclick="openSplitModal(${allDossiers.indexOf(d)})" class="px-3 py-1.5 btn-gold rounded-xl text-xs font-bold transition cursor-pointer shadow-sm flex items-center gap-1.5 ml-auto active:scale-95">
+                                <i class="ph-bold ph-magnifying-glass"></i>
+                                <span>Conferir</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- SPLIT-SCREEN MODAL ---
+        window.openSplitModal = function(index) {
+            currentDossierIndex = index;
+            const d = allDossiers[index];
+            if (!d) return;
+
+            document.getElementById('split-modal-student-name').textContent = d.student_name;
+            document.getElementById('split-modal-student-info').textContent = `CPF: ${d.cpf || d.student_id} • ${d.course_name}`;
+
+            const docsEntries = Object.entries(d.documents || {});
+            currentDocKeys = docsEntries.map(e => e[0]);
+            currentDocKeyIndex = 0;
+
+            renderDocTabs();
+            renderSelectedDoc();
+
+            document.getElementById('split-modal').classList.remove('hidden');
+        };
+
+        window.closeSplitModal = function() {
+            document.getElementById('split-modal').classList.add('hidden');
+        };
+
+        function renderDocTabs() {
+            const d = allDossiers[currentDossierIndex];
+            const container = document.getElementById('split-doc-tabs');
+
+            container.innerHTML = currentDocKeys.map((k, idx) => {
+                const item = d.documents[k];
+                const isActive = (idx === currentDocKeyIndex);
+                let badgeDot = "bg-amber-400";
+                if (item.status === 'approved') badgeDot = "bg-emerald-500";
+                else if (item.status === 'rejected') badgeDot = "bg-rose-500";
+
+                return `
+                    <button onclick="selectDocByIndex(${idx})" class="px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 whitespace-nowrap transition cursor-pointer ${
+                        isActive
+                            ? 'bg-[#0a2351] text-white shadow'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200'
+                    }">
+                        <span class="w-2 h-2 rounded-full ${badgeDot}"></span>
+                        <span>${escapeHtml(item.display_name || k)}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        window.selectDocByIndex = function(idx) {
+            currentDocKeyIndex = idx;
+            renderDocTabs();
+            renderSelectedDoc();
+        };
+
+        window.navigateDoc = function(dir) {
+            const nextIdx = currentDocKeyIndex + dir;
+            if (nextIdx >= 0 && nextIdx < currentDocKeys.length) {
+                selectDocByIndex(nextIdx);
+            }
+        };
+
+        function renderSelectedDoc() {
+            const d = allDossiers[currentDossierIndex];
+            const docKey = currentDocKeys[currentDocKeyIndex];
+            if (!docKey) return;
+            const item = d.documents[docKey];
+
+            docViewerState.zoom = 1.0;
+            docViewerState.rotation = 0;
+            applyDocTransform();
+
+            document.getElementById('split-doc-title').textContent = item.display_name || docKey;
+            document.getElementById('split-doc-sub').textContent = item.file_name ? `Arquivo anexado: ${item.file_name}` : "Documento arquivado no prontuário do aluno";
+
+            const badge = document.getElementById('split-doc-status-badge');
+            if (item.status === 'approved') {
+                badge.className = "status-badge badge-success shrink-0";
+                badge.textContent = "Homologado";
+            } else if (item.status === 'rejected') {
+                badge.className = "status-badge badge-pending text-rose-700 border-rose-300 shrink-0";
+                badge.textContent = "Requer Correção";
+            } else {
+                badge.className = "status-badge badge-review shrink-0";
+                badge.textContent = "Em Conferência";
+            }
+
+            document.getElementById('split-doc-reason').textContent = item.reason || "Nenhum parecer registrado.";
+
+            document.getElementById('audit-timestamp').textContent = item.updated_at ? new Date(item.updated_at).toLocaleString('pt-BR') : 'Não registrado';
+            document.getElementById('audit-evaluator').textContent = 'Autoria não registrada neste documento';
+            document.getElementById('audit-hash').textContent = item.sha256_hash || 'Não calculado para este registro';
+            document.querySelectorAll('#split-mec-checklist input').forEach(input => { input.checked = false; });
+            const grid = document.getElementById('split-extracted-data-grid');
+            const dataObj = item.extracted_data || {};
+            grid.innerHTML = Object.entries(dataObj).map(([k, v]) => `
+                <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">${escapeHtml(k)}</span>
+                    <span class="font-bold text-slate-800 dark:text-white font-mono text-xs">${escapeHtml(String(v))}</span>
+                </div>
+            `).join('') || '<p>Sem metadados extraídos registrados.</p>';
+
+            const imgEl = document.getElementById('viewer-image');
+            const sheetEl = document.getElementById('viewer-document-sheet');
+            document.getElementById('viewer-file-name').textContent = item.file_name || 'Sem arquivo anexado';
+
+            // Verifica se o arquivo é imagem ou documento arquivado no storage local
+            if (item.file_name && (item.file_name.endsWith('.jpg') || item.file_name.endsWith('.png') || item.file_name.endsWith('.jpeg'))) {
+                const firstLetter = (d.student_name || 'A').slice(0, 1).toUpperCase();
+                imgEl.src = `/api/storage/file/${CURRENT_INSTITUTION_ID}/${firstLetter}/${encodeURIComponent(d.student_name)}/DOC/${encodeURIComponent(item.file_name)}`;
+                imgEl.onerror = () => { imgEl.classList.add('hidden'); document.getElementById('viewer-file-name').textContent = 'Arquivo indisponível: verificar custódia'; };
+                imgEl.classList.remove('hidden');
+                sheetEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                sheetEl.classList.remove('hidden');
+                document.getElementById('viewer-sheet-fields').innerHTML = `
+                    <div><strong>ESTUDANTE:</strong> ${escapeHtml(d.student_name)}</div>
+                    <div><strong>CPF/MATRÍCULA:</strong> ${escapeHtml(d.cpf || d.student_id)}</div>
+                    <div><strong>DOCUMENTO:</strong> ${escapeHtml(item.display_name || docKey)}</div>
+                    <div><strong>CURSO/SÉRIE:</strong> ${escapeHtml(d.course_name)}</div>
+                    <div><strong>VISUALIZAÇÃO:</strong> Resumo do cadastro. Abra o arquivo original para conferir seu conteúdo.</div>
+                `;
+            }
+        }
+
+        // --- CONTROLES DE ZOOM E ROTAÇÃO ---
+        window.adjustDocZoom = function(delta) {
+            docViewerState.zoom = Math.max(0.5, Math.min(3.5, docViewerState.zoom + delta));
+            applyDocTransform();
+        };
+
+        window.resetDocTransform = function() {
+            docViewerState.zoom = 1.0;
+            docViewerState.rotation = 0;
+            applyDocTransform();
+        };
+
+        window.rotateDoc = function(deg) {
+            docViewerState.rotation = (docViewerState.rotation + deg) % 360;
+            applyDocTransform();
+        };
+
+        window.toggleDocFullscreen = function() {
+            const elem = document.getElementById('viewer-container');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => {});
+            } else {
+                document.exitFullscreen();
+            }
+        };
+
+        function applyDocTransform() {
+            const wrapper = document.getElementById('doc-render-wrapper');
+            wrapper.style.transform = `scale(${docViewerState.zoom}) rotate(${docViewerState.rotation}deg)`;
+            document.getElementById('viewer-rotation-indicator').textContent = `Rotação: ${docViewerState.rotation}° | Zoom: ${Math.round(docViewerState.zoom * 100)}%`;
+        }
+
+        // --- ATALHOS DE TECLADO POWER-USER ---
+        window.addEventListener('keydown', (e) => {
+            const splitModal = document.getElementById('split-modal');
+            if (splitModal.classList.contains('hidden')) return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'a' || e.key === 'A') {
+                e.preventDefault();
+                approveCurrentDocDirect();
+            } else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                openRefusalQuickBox();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                navigateDoc(-1);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                navigateDoc(1);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                const refusalModal = document.getElementById('refusal-modal');
+                if (!refusalModal.classList.contains('hidden')) {
+                    closeRefusalQuickBox();
+                } else {
+                    closeSplitModal();
+                }
+            }
+        });
+
+        // --- AÇÕES: HOMOLOGAÇÃO E RECUSA ---
+        window.approveCurrentDocDirect = async function() {
+            const d = allDossiers[currentDossierIndex];
+            const docKey = currentDocKeys[currentDocKeyIndex];
+            if (!d || !docKey) return;
+
+            await submitReview(d.student_id, docKey, 'approved', "Documento homologado em conformidade com as exigências da Secretaria Acadêmica.");
+            if (currentDocKeyIndex < currentDocKeys.length - 1) {
+                navigateDoc(1);
+            }
+        };
+
+        window.openRefusalQuickBox = function() {
+            document.getElementById('refusal-custom-text').value = '';
+            document.getElementById('refusal-modal').classList.remove('hidden');
+        };
+
+        window.closeRefusalQuickBox = function() {
+            document.getElementById('refusal-modal').classList.add('hidden');
+        };
+
+        window.selectRefusalReason = function(reasonText) {
+            document.getElementById('refusal-custom-text').value = reasonText;
+        };
+
+        window.confirmRefusalSubmit = async function() {
+            const d = allDossiers[currentDossierIndex];
+            const docKey = currentDocKeys[currentDocKeyIndex];
+            const reason = document.getElementById('refusal-custom-text').value.trim();
+            if (!reason) {
+                alert("Por favor, selecione ou digite o motivo da recusa.");
+                return;
+            }
+
+            closeRefusalQuickBox();
+            await submitReview(d.student_id, docKey, 'rejected', reason);
+            if (currentDocKeyIndex < currentDocKeys.length - 1) {
+                navigateDoc(1);
+            }
+        };
+
+        async function submitReview(studentId, docId, status, reason) {
+            const adminKey = getAdminKey();
+            try {
+                const res = await fetch('/api/admin/dossier/review-document', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': adminKey,
+                        'X-Tenant-ID': CURRENT_INSTITUTION_ID
+                    },
+                    body: JSON.stringify({
+                        institution_id: CURRENT_INSTITUTION_ID,
+                        student_id: studentId,
+                        document_id: docId,
+                        status: status,
+                        reason: reason
+                    })
+                });
+
+                if (res.ok) {
+                    await fetchDossiers();
+                    const updatedIdx = allDossiers.findIndex(d => String(d.student_id) === String(studentId));
+                    if (updatedIdx >= 0) {
+                        currentDossierIndex = updatedIdx;
+                        renderDocTabs();
+                        renderSelectedDoc();
+                    }
+                }
+            } catch (err) {}
+        }
+
+        // --- WHATSAPP DISPATCH MODAL ---
+        window.triggerWhatsAppModalFromCurrent = function() {
+            const d = allDossiers[currentDossierIndex];
+            if (!d) return;
+
+            document.getElementById('whatsapp-recipient-phone').value = d.phone || '';
+            updateWhatsAppMessageTemplate();
+            document.getElementById('whatsapp-modal').classList.remove('hidden');
+        };
+
+        window.closeWhatsAppModal = function() {
+            document.getElementById('whatsapp-modal').classList.add('hidden');
+        };
+
+        window.updateWhatsAppMessageTemplate = function() {
+            const d = allDossiers[currentDossierIndex];
+            const type = document.getElementById('whatsapp-template-select').value;
+            const textarea = document.getElementById('whatsapp-message-body');
+            const studentName = d ? d.student_name : 'Aluno(a)';
+
+            if (type === 'pendency') {
+                textarea.value = `Olá, ${studentName}! Constatamos pendências na conferência dos seus documentos de matrícula na {{ institution.name }}. Por favor, acerte as fotos pelo link oficial: https://protocoloimes.com.br/`;
+            } else if (type === 'completion') {
+                textarea.value = `Parabéns, ${studentName}! Todos os seus documentos foram conferidos e homologados com sucesso pela Secretaria Acadêmica da {{ institution.name }}. Sua matrícula está regularizada.`;
+            } else {
+                textarea.value = `Olá, ${studentName}! Entramos em contato a respeito da sua documentação acadêmica na {{ institution.name }}.`;
+            }
+        };
+
+        window.dispatchWhatsAppMessage = async function() {
+            const d = allDossiers[currentDossierIndex];
+            if (!d) return;
+
+            const phone = document.getElementById('whatsapp-recipient-phone').value.trim();
+            const message = document.getElementById('whatsapp-message-body').value.trim();
+            const adminKey = getAdminKey();
+
+            try {
+                const res = await fetch('/api/admin/notify-student', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': adminKey,
+                        'X-Tenant-ID': CURRENT_INSTITUTION_ID
+                    },
+                    body: JSON.stringify({
+                        student_id: d.student_id,
+                        channel: 'whatsapp',
+                        phone: phone,
+                        custom_message: message
+                    })
+                });
+
+                closeWhatsAppModal();
+                if (res.ok) {
+                    const result = await res.json(); alert("Status da notificação: " + (result.notification?.status || "não confirmado"));
+                } else {
+                    alert("Falha no disparo da notificação.");
+                }
+            } catch (e) {
+                closeWhatsAppModal();
+                alert("Erro ao disparar mensagem via WhatsApp.");
+            }
+        };
+
+        // --- SINCRONIZAÇÃO COM ERP ---
+        window.triggerErpSyncFromCurrent = async function() {
+            const d = allDossiers[currentDossierIndex];
+            if (!d) return;
+            const adminKey = getAdminKey();
+
+            try {
+                const res = await fetch('/api/admin/erp/sync', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': adminKey,
+                        'X-Tenant-ID': CURRENT_INSTITUTION_ID
+                    },
+                    body: JSON.stringify({
+                        student_id: d.student_id,
+                        force_sync: true
+                    })
+                });
+
+                if (res.ok) {
+                    const result = await res.json(); alert(result.sync_result?.erp_protocol?.startsWith("ERP-MOCK") ? "Simulação de ERP; nenhuma integração externa foi confirmada." : "Solicitação de integração processada. Consulte o resultado registrado.");
+                } else {
+                    alert("Falha na sincronização com o ERP.");
+                }
+            } catch (e) {
+                alert("Erro ao comunicar com o conector ERP.");
+            }
+        };
+
+        // Filtro em tempo real por texto
+        document.getElementById('filter-search').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allDossiers.filter(d =>
+                d.student_name.toLowerCase().includes(q) || (d.cpf && d.cpf.includes(q))
+            );
+            renderTable(filtered);
+        });
+
+        // Filtros por Status
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.className = "filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer";
+                });
+                btn.className = "filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-[#0a2351] text-white shadow-sm cursor-pointer";
+
+                const st = btn.dataset.status;
+                if (st === 'ALL') {
+                    renderTable(allDossiers);
+                } else {
+                    renderTable(allDossiers.filter(d => d.status === st));
+                }
+            });
+        });
+
+        fetchDossiers();
+    </script>
 </body>
 </html>

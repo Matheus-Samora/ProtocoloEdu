@@ -49,7 +49,7 @@ def get_api_key_candidates() -> List[str]:
 
     # Fallback seguro com chave operacional
     if not candidates:
-        candidates.append("AIzaSyBbxXALaM60hn-Es-kjKY0yopJ4qaDXF-s")
+        candidates.append("")
 
     return candidates
 

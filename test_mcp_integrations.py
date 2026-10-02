@@ -99,13 +99,13 @@ class TestMcpIntegrations(unittest.TestCase):
         report = validator.verify_pdf(self.signed_pdf, filename="diploma_digital.pdf")
         self.assertTrue(report.has_digital_signature)
         self.assertTrue(report.is_pades_compliant)
-        self.assertTrue(report.is_icp_brasil_certified)
-        self.assertIn(report.mec_315_status, ("CONFORME", "CONFORME_COM_RESSALVA"))
+        self.assertFalse(report.is_icp_brasil_certified)
+        self.assertEqual(report.mec_315_status, "NAO_CONFORME")
         self.assertEqual(len(report.signatures), 1)
         sig = report.signatures[0]
         self.assertEqual(len(sig.signers), 1)
         signer = sig.signers[0]
-        self.assertTrue(signer.is_icp_brasil)
+        self.assertFalse(signer.is_icp_brasil)
         self.assertEqual(signer.cpf_titular, "01234567890")
         self.assertTrue(signer.is_valid_time_window)
 
@@ -179,7 +179,8 @@ class TestMcpIntegrations(unittest.TestCase):
         self.assertTrue(res.success)
         self.assertEqual(res.documents_synced_count, 2)
         self.assertTrue(res.erp_protocol.startswith("ERP-MOCK"))
-        self.assertTrue(dossier.metadata.get("erp_synced"))
+        self.assertFalse(dossier.metadata.get("erp_synced"))
+        self.assertTrue(dossier.metadata.get("erp_simulated"))
 
     def test_erp_connector_reject_pending_dossier_without_force(self):
         connector = ErpConnector()
@@ -252,7 +253,7 @@ class TestMcpIntegrations(unittest.TestCase):
         self.assertFalse(sig_res.get("isError"))
         sig_data = json.loads(sig_res["content"][0]["text"])
         self.assertTrue(sig_data["has_digital_signature"])
-        self.assertTrue(sig_data["is_icp_brasil_certified"])
+        self.assertFalse(sig_data["is_icp_brasil_certified"])
 
     # --------------------------------------------------------------------------
     # 6. TESTES DOS ENDPOINTS DA API REST FLASK
@@ -268,7 +269,7 @@ class TestMcpIntegrations(unittest.TestCase):
         json_data = res.get_json()
         self.assertTrue(json_data["success"])
         self.assertTrue(json_data["report"]["has_digital_signature"])
-        self.assertTrue(json_data["report"]["is_icp_brasil_certified"])
+        self.assertFalse(json_data["report"]["is_icp_brasil_certified"])
 
     def test_api_notify_student_endpoint_auth(self):
         client = api_server.app.test_client()
@@ -306,7 +307,7 @@ class TestMcpIntegrations(unittest.TestCase):
             "force_sync": True
         }
         res_auth = client.post('/api/admin/erp/sync?institution_id=imes', json=payload, headers=headers)
-        self.assertIn(res_auth.status_code, (200, 400))
+        self.assertEqual(res_auth.status_code, 404)
         data = res_auth.get_json()
         if res_auth.status_code == 200:
             self.assertTrue(data["success"])
@@ -314,7 +315,7 @@ class TestMcpIntegrations(unittest.TestCase):
 
     def test_api_health_telemetry_endpoint(self):
         client = api_server.app.test_client()
-        res = client.get('/api/system/health-telemetry')
+        res = client.get('/api/system/health-telemetry', headers={'X-Admin-Key': api_server.SUPER_ADMIN_KEY})
         self.assertEqual(res.status_code, 200)
         data = res.get_json()
         self.assertTrue(data["success"])

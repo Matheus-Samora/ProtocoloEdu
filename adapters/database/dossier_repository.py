@@ -84,6 +84,17 @@ class DossierRepository:
             logger.error(f"Erro ao salvar dossiê em disco local: {e}")
             return False
 
+    def get_or_create_dossier(self, institution_id, student_id, student_name, course_name, cpf=None):
+        dossier = self.get_dossier(institution_id, student_id)
+        if dossier is None:
+            dossier = StudentDossier(institution_id=institution_id, student_id=student_id, student_name=student_name, course_name=course_name, cpf=cpf or None)
+        else:
+            dossier.student_name = student_name
+            dossier.course_name = course_name
+            dossier.cpf = cpf or dossier.cpf
+        if not self.save_dossier(dossier): raise IOError("Cadastro não persistido.")
+        return dossier
+
     def get_dossier(self, institution_id: str, student_id: str) -> Optional[StudentDossier]:
         """Obtém o dossiê do estudante para a instituição especificada."""
         # 1. Tenta buscar no Supabase Database

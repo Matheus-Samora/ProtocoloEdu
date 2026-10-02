@@ -172,7 +172,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans"><section id="admin-login" class="p-6 bg-white text-slate-800" hidden><h2>Entrar na secretaria</h2><form id="admin-login-form"><label for="admin-login-key">Credencial da instituição</label><input id="admin-login-key" type="password" autocomplete="current-password" required><button type="submit">Entrar</button></form><p id="login-error" role="alert"></p></section>
 
     <!-- ========================================================================= -->
     <!-- CABEÇALHO CORPORATIVO DA SECRETARIA COM IDENTIDADE IMES                   -->
@@ -191,7 +191,7 @@
                             Mesa de Análise &amp; Dossiês
                         </span>
                     </h1>
-                    <p class="text-xs text-blue-200 font-medium">{{ institution.name }} • Custódia Local A-Z &amp; Homologação MEC</p>
+                    <p class="text-xs text-blue-200 font-medium">{{ institution.name }} • Custódia documental &amp; conferência institucional</p>
                 </div>
             </div>
 
@@ -287,7 +287,7 @@
                 <div>
                     <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">Homologados</span>
                     <span id="stat-complete" class="text-2xl font-black text-emerald-600 mt-1 block">0</span>
-                    <span class="text-[11px] text-slate-400">100% Aptos para Matrícula</span>
+                    <span class="text-[11px] text-slate-400">Documentos exigidos aprovados</span>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center text-2xl">
                     <i class="ph-duotone ph-check-circle"></i>
@@ -487,7 +487,7 @@
                                 Metadados Extraídos (OCR Vision)
                             </span>
                             <span class="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded-full">
-                                Alta Confiança
+                                Conferir dados extraídos
                             </span>
                         </div>
                         <div id="split-extracted-data-grid" class="grid grid-cols-2 gap-2 text-xs"></div>
@@ -497,26 +497,26 @@
                     <div class="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 space-y-2.5">
                         <span class="font-bold text-slate-800 dark:text-white flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
                             <i class="ph-bold ph-check-square text-emerald-500 text-sm"></i>
-                            Checklist Regulatório (Portaria MEC nº 315/2018)
+                            Checklist de conferência manual
                         </span>
 
                         <div id="split-mec-checklist" class="space-y-1.5">
                             <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
-                                <input type="checkbox" checked class="w-4 h-4 text-emerald-600 rounded">
+                                <input type="checkbox" class="w-4 h-4 text-emerald-600 rounded">
                                 <div>
                                     <span class="font-bold text-slate-800 dark:text-white block">Legibilidade Integral do Documento</span>
                                     <span class="text-[10px] text-slate-400">Textos, números de registro e assinaturas nítidos</span>
                                 </div>
                             </label>
                             <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
-                                <input type="checkbox" checked class="w-4 h-4 text-emerald-600 rounded">
+                                <input type="checkbox" class="w-4 h-4 text-emerald-600 rounded">
                                 <div>
                                     <span class="font-bold text-slate-800 dark:text-white block">Integridade Visual (Sem Cortes)</span>
                                     <span class="text-[10px] text-slate-400">Bordas completas preservando frente e verso</span>
                                 </div>
                             </label>
                             <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
-                                <input type="checkbox" checked class="w-4 h-4 text-emerald-600 rounded">
+                                <input type="checkbox" class="w-4 h-4 text-emerald-600 rounded">
                                 <div>
                                     <span class="font-bold text-slate-800 dark:text-white block">Conferência com Original &amp; Assinatura</span>
                                     <span class="text-[10px] text-slate-400">Chancela da autoridade expedidora ou certificação ICP-Brasil</span>
@@ -544,7 +544,7 @@
                             <span class="text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded">SHA-256</span>
                         </div>
                         <div class="flex items-center justify-between pt-1">
-                            <span>Carimbo Temporal:</span>
+                            <span>Atualizado em:</span>
                             <strong id="audit-timestamp" class="text-slate-800 dark:text-white">-</strong>
                         </div>
                         <div class="flex items-center justify-between">
@@ -752,71 +752,33 @@
             return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        function getAdminKey() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const keyFromUrl = urlParams.get('admin_key');
-            if (keyFromUrl) {
-                sessionStorage.setItem(`admin_key_${CURRENT_INSTITUTION_ID}`, keyFromUrl.trim());
-                return keyFromUrl.trim();
-            }
-            return sessionStorage.getItem(`admin_key_${CURRENT_INSTITUTION_ID}`) || '';
-        }
-
-        function downloadExport(fmt) {
-            const key = getAdminKey();
-            window.open(`/api/admin/export/${fmt}?institution_id=${CURRENT_INSTITUTION_ID}&admin_key=${encodeURIComponent(key)}`, '_blank');
-        }
-
+        function getAdminKey() { return ''; }
+        function downloadExport(fmt) { window.open(`/api/admin/export/${fmt}?institution_id=${encodeURIComponent(CURRENT_INSTITUTION_ID)}`, '_blank'); }
         async function fetchDossiers() {
-            let adminKey = getAdminKey();
-            if (!adminKey) {
-                const pass = prompt(`Acesso da Secretaria de {{ institution.name }}: Digite a chave de segurança:`);
-                if (pass) {
-                    sessionStorage.setItem(`admin_key_${CURRENT_INSTITUTION_ID}`, pass.trim());
-                    adminKey = pass.trim();
-                } else {
-                    document.getElementById('dossiers-table-body').innerHTML = `
-                        <tr><td colspan="6" class="p-8 text-center text-amber-600 font-bold">Chave de acesso requerida. Recarregue a página e informe a credencial.</td></tr>
-                    `;
-                    return;
-                }
+            const response = await fetch(`/api/admin/dossiers?institution_id=${encodeURIComponent(CURRENT_INSTITUTION_ID)}`);
+            if (response.status === 401) {
+                document.getElementById('admin-login').hidden = false;
+                document.getElementById('dossiers-table-body').innerHTML = '<tr><td colspan="6">Entre com a credencial da instituição para consultar os registros.</td></tr>';
+                return;
             }
-
-            try {
-                const res = await fetch(`/api/admin/dossiers?institution_id=${CURRENT_INSTITUTION_ID}`, {
-                    headers: { 
-                        'X-Admin-Key': adminKey,
-                        'X-Tenant-ID': CURRENT_INSTITUTION_ID
-                    }
-                });
-
-                if (res.status === 401) {
-                    sessionStorage.removeItem(`admin_key_${CURRENT_INSTITUTION_ID}`);
-                    const pass = prompt(`Credencial incorreta. Digite a chave da Secretaria de {{ institution.name }}:`);
-                    if (pass) {
-                        sessionStorage.setItem(`admin_key_${CURRENT_INSTITUTION_ID}`, pass.trim());
-                        return fetchDossiers();
-                    }
-                    return;
-                }
-
-                const data = await res.json();
-                allDossiers = data.dossiers || [];
-                renderTable(allDossiers);
-                updateStats(allDossiers);
-            } catch (err) {
-                document.getElementById('dossiers-table-body').innerHTML = `
-                    <tr><td colspan="6" class="p-8 text-center text-red-500 font-bold">Erro ao conectar com a secretaria acadêmica.</td></tr>
-                `;
-            }
+            if (!response.ok) { document.getElementById('login-error').textContent = 'Não foi possível carregar os registros.'; return; }
+            document.getElementById('admin-login').hidden = true;
+            const payload = await response.json();
+            allDossiers = payload.dossiers;
+            renderTable(allDossiers);
+            document.getElementById('stat-total').textContent = allDossiers.length;
+            document.getElementById('stat-complete').textContent = allDossiers.filter(d=>d.status==='COMPLETO').length;
+            document.getElementById('stat-pending').textContent = allDossiers.filter(d=>d.status==='PENDENTE').length;
+            document.getElementById('stat-rejected').textContent = allDossiers.filter(d=>d.status==='COM_PENDENCIA').length;
         }
-
-        function updateStats(list) {
-            document.getElementById('stat-total').textContent = list.length;
-            document.getElementById('stat-complete').textContent = list.filter(d => d.status === 'COMPLETO').length;
-            document.getElementById('stat-pending').textContent = list.filter(d => d.status === 'COM_PENDENCIA' || d.status === 'PENDENTE').length;
-            document.getElementById('stat-rejected').textContent = list.filter(d => Object.values(d.documents || {}).some(doc => doc.status === 'rejected')).length;
-        }
+        document.getElementById('admin-login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const response = await fetch('/api/auth/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({institution_id:CURRENT_INSTITUTION_ID,key:document.getElementById('admin-login-key').value})});
+            document.getElementById('admin-login-key').value = '';
+            if (!response.ok) { document.getElementById('login-error').textContent = 'Credencial inválida ou acesso não configurado.'; return; }
+            document.getElementById('login-error').textContent = '';
+            await fetchDossiers();
+        });
 
         function renderTable(list) {
             const tbody = document.getElementById('dossiers-table-body');
@@ -858,7 +820,7 @@
                         </td>
                         <td class="p-3.5 text-slate-500 font-mono text-[11px]">${escapeHtml(dateStr)}</td>
                         <td class="p-3.5 text-right">
-                            <button onclick="openSplitModal(${index})" class="px-3 py-1.5 btn-gold rounded-xl text-xs font-bold transition cursor-pointer shadow-sm flex items-center gap-1.5 ml-auto active:scale-95">
+                            <button onclick="openSplitModal(${allDossiers.indexOf(d)})" class="px-3 py-1.5 btn-gold rounded-xl text-xs font-bold transition cursor-pointer shadow-sm flex items-center gap-1.5 ml-auto active:scale-95">
                                 <i class="ph-bold ph-magnifying-glass"></i>
                                 <span>Conferir</span>
                             </button>
@@ -953,40 +915,30 @@
                 badge.textContent = "Em Conferência";
             }
 
-            document.getElementById('split-doc-reason').textContent = item.reason || "Conferido de acordo com as diretrizes do MEC e da Secretaria Acadêmica.";
+            document.getElementById('split-doc-reason').textContent = item.reason || "Nenhum parecer registrado.";
 
-            const now = new Date();
-            document.getElementById('audit-timestamp').textContent = now.toLocaleDateString('pt-BR') + " às " + now.toLocaleTimeString('pt-BR');
-            document.getElementById('audit-evaluator').textContent = `Secretaria Geral [${CURRENT_INSTITUTION_ID}]`;
-            const docHash = item.file_name ? Array.from(item.file_name).reduce((acc, c) => ((acc << 5) - acc) + c.charCodeAt(0), 0) : 123456789;
-            document.getElementById('audit-hash').textContent = `sha256:${Math.abs(docHash).toString(16).padStart(16, '0')}7f2a8901c`;
-
+            document.getElementById('audit-timestamp').textContent = item.updated_at ? new Date(item.updated_at).toLocaleString('pt-BR') : 'Não registrado';
+            document.getElementById('audit-evaluator').textContent = 'Autoria não registrada neste documento';
+            document.getElementById('audit-hash').textContent = item.sha256_hash || 'Não calculado para este registro';
+            document.querySelectorAll('#split-mec-checklist input').forEach(input => { input.checked = false; });
             const grid = document.getElementById('split-extracted-data-grid');
-            const dataObj = item.extracted_data || {
-                "Titular": d.student_name,
-                "CPF Detectado": d.cpf || d.student_id,
-                "Órgão Emissor": "SSP / Identificação Oficial",
-                "Data de Expedição": "14/08/2021",
-                "Assinatura Legível": "Sim (Conforme)",
-                "Frente e Verso": "Detectados"
-            };
-
+            const dataObj = item.extracted_data || {};
             grid.innerHTML = Object.entries(dataObj).map(([k, v]) => `
                 <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
                     <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">${escapeHtml(k)}</span>
                     <span class="font-bold text-slate-800 dark:text-white font-mono text-xs">${escapeHtml(String(v))}</span>
                 </div>
-            `).join('');
+            `).join('') || '<p>Sem metadados extraídos registrados.</p>';
 
             const imgEl = document.getElementById('viewer-image');
             const sheetEl = document.getElementById('viewer-document-sheet');
-            document.getElementById('viewer-file-name').textContent = item.file_name || `${docKey}_Homologado.pdf`;
+            document.getElementById('viewer-file-name').textContent = item.file_name || 'Sem arquivo anexado';
 
             // Verifica se o arquivo é imagem ou documento arquivado no storage local
             if (item.file_name && (item.file_name.endsWith('.jpg') || item.file_name.endsWith('.png') || item.file_name.endsWith('.jpeg'))) {
                 const firstLetter = (d.student_name || 'A').slice(0, 1).toUpperCase();
                 imgEl.src = `/api/storage/file/${CURRENT_INSTITUTION_ID}/${firstLetter}/${encodeURIComponent(d.student_name)}/DOC/${encodeURIComponent(item.file_name)}`;
-                imgEl.onerror = () => { imgEl.src = "/static/images/logo-imes.jpg"; };
+                imgEl.onerror = () => { imgEl.classList.add('hidden'); document.getElementById('viewer-file-name').textContent = 'Arquivo indisponível: verificar custódia'; };
                 imgEl.classList.remove('hidden');
                 sheetEl.classList.add('hidden');
             } else {
@@ -997,7 +949,7 @@
                     <div><strong>CPF/MATRÍCULA:</strong> ${escapeHtml(d.cpf || d.student_id)}</div>
                     <div><strong>DOCUMENTO:</strong> ${escapeHtml(item.display_name || docKey)}</div>
                     <div><strong>CURSO/SÉRIE:</strong> ${escapeHtml(d.course_name)}</div>
-                    <div><strong>CHAVE DE REGISTRO:</strong> MEC-${Math.abs(docHash).toString(36).toUpperCase()}</div>
+                    <div><strong>VISUALIZAÇÃO:</strong> Resumo do cadastro. Abra o arquivo original para conferir seu conteúdo.</div>
                 `;
             }
         }
@@ -1190,7 +1142,7 @@
 
                 closeWhatsAppModal();
                 if (res.ok) {
-                    alert("Notificação WhatsApp disparada com sucesso!");
+                    const result = await res.json(); alert("Status da notificação: " + (result.notification?.status || "não confirmado"));
                 } else {
                     alert("Falha no disparo da notificação.");
                 }
@@ -1221,7 +1173,7 @@
                 });
 
                 if (res.ok) {
-                    alert("Dossiê e vínculos de custódia sincronizados com o ERP institucional com sucesso!");
+                    const result = await res.json(); alert(result.sync_result?.erp_protocol?.startsWith("ERP-MOCK") ? "Simulação de ERP; nenhuma integração externa foi confirmada." : "Solicitação de integração processada. Consulte o resultado registrado.");
                 } else {
                     alert("Falha na sincronização com o ERP.");
                 }

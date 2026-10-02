@@ -33,7 +33,7 @@ class SubscriptionConfig(BaseModel):
     monthly_limit: int = Field(500, description="Limite mensal de análises de documentos (0 = Ilimitado)")
     current_month_usage: int = Field(0, description="Quantidade de análises consumidas no mês atual")
     is_active: bool = Field(True, description="Status da assinatura: True=Ativo, False=Suspenso")
-    admin_access_key: str = Field("secretaria-2026", description="Chave secreta exclusiva da secretaria daquela instituição")
+    admin_access_key: str = Field("", description="Chave secreta exclusiva da secretaria daquela instituição")
     billing_day: int = Field(1, description="Dia do mês do fechamento/renovação do ciclo")
 
 

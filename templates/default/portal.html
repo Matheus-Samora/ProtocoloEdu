@@ -331,19 +331,8 @@
     </style>
     <!-- FontAwesome para ícones complementares -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS Client v2 Oficial -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = "https://phipudvmceitxcajggus.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_D7czHMQRr9f2u1YfPi-_lA_HZOVzqAw";
-        let supabaseClient = null;
-        try {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log("[Supabase] Cliente conectado em:", SUPABASE_URL);
-        } catch(e) {
-            console.warn("[Supabase] Modo offline:", e);
-        }
-    </script>
+    <script>const supabaseClient = null;</script>
+
 
 </head>
 <body class="antialiased text-slate-700 dark:text-slate-300">
@@ -758,20 +747,6 @@
     <!-- JAVASCRIPT DE GERENCIAMENTO DO PORTAL                                     -->
     <!-- ========================================================================= -->
     <script>
-        // SEGURANÇA E PRIVACIDADE: Previne vazamento no Console DevTools (F12)
-        if (window.console) {
-            ['log', 'info', 'warn', 'error', 'debug'].forEach(m => { try { window.console[m] = function(){}; } catch(e){} });
-        }
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
-                e.preventDefault();
-                return false;
-            }
-        });
-        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-
-        
-        // =========================================================================
         // MOTOR MULTI-TENANT: RESOLUÇÃO DE INSTITUIÇÃO E BRANDING DINÂMICO
         // =========================================================================
         let CURRENT_INSTITUTION_ID = "imes";
@@ -856,29 +831,26 @@
             CURRENT_INSTITUTION_ID = slug;
             localStorage.setItem('last_active_institution', slug);
 
-            let inst = INSTITUTIONS_CATALOG[slug];
-            if (supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient.from('institutions').select('*').eq('id', slug).single();
-                    if (!error && data) {
-                        inst = {
-                            id: data.id,
-                            name: data.name,
-                            institution_type: data.institution_type,
-                            branding: data.branding || {},
-                            allowed_courses: data.enabled_courses || (data.institution_type === 'COLEGIO' ? ['ensino_medio'] : ['graduacao_1', 'graduacao_2', 'pos_graduacao'])
-                        };
-                    }
-                } catch(e) {}
+            let inst;
+            try {
+                const response = await fetch(`/api/institutions/${encodeURIComponent(slug)}/profile`);
+                if (!response.ok) throw new Error('Instituição não disponível');
+                const data = await response.json();
+                const courseIds = {"1ª Graduação":"graduacao_1","2ª Graduação":"graduacao_2","Pós-Graduação":"pos_graduacao","Ensino Médio":"ensino_medio","Ensino Fundamental":"ensino_fundamental"};
+                inst = {...data, allowed_courses:data.enabled_courses.map(course => courseIds[course] || course)};
+                if (!data.is_active) { showModal('Portal pausado','O recebimento está temporariamente pausado.'); return; }
+            } catch (error) {
+                document.getElementById('portal-inst-subtitle').textContent = 'Instituição não disponível. Confirme o endereço com a secretaria.';
+                document.getElementById('search-cpf-btn').disabled = true;
+                return;
             }
-
-            if (!inst) {
-                inst = INSTITUTIONS_CATALOG['imes'];
-                CURRENT_INSTITUTION_ID = 'imes';
-            }
-
             CURRENT_INSTITUTION_DATA = inst;
             applyBrandingToDOM(inst);
+            if (inst.require_student_cpf === false) {
+                const input = document.getElementById('student-cpf');
+                document.querySelector('label[for="student-cpf"]').textContent = 'Matrícula ou identificador do aluno';
+                input.type = 'text'; input.maxLength = 80; input.placeholder = 'Digite a matrícula cadastrada';
+            }
             initCourseSelect(inst.allowed_courses);
         }
 
@@ -902,7 +874,7 @@
                 }
             }
 
-            if (titleEl) titleEl.textContent = "Portal do Aluno";
+            if (titleEl) titleEl.textContent = b.portal_title || "Portal do Aluno";
             if (subtitleEl) subtitleEl.textContent = `${inst.name} • Envio e Validação`;
             if (b.portal_title) document.title = b.portal_title;
 
@@ -1074,6 +1046,7 @@
 
         function initMasks() {
             studentCpfInput.addEventListener('input', (e) => {
+                if (CURRENT_INSTITUTION_DATA.require_student_cpf === false) return;
                 let v = e.target.value.replace(/\D/g, '');
                 if (v.length <= 11) {
                     v = v.replace(/(\d{3})(\d)/, '$1.$2');
@@ -1129,9 +1102,10 @@
 
         // --- BUSCA DO ESTUDANTE ---
         async function handleStudentSearch() {
-            const raw = studentCpfInput.value.replace(/\D/g, '');
-            if (raw.length < 11) {
-                showModal("Atenção", "Por favor, digite um CPF válido com 11 dígitos para buscar.");
+            const requiresCpf = CURRENT_INSTITUTION_DATA.require_student_cpf !== false;
+            const raw = requiresCpf ? studentCpfInput.value.replace(/\D/g, '') : studentCpfInput.value.trim();
+            if ((requiresCpf && raw.length !== 11) || !raw) {
+                showModal("Atenção", "Por favor, informe o identificador cadastrado solicitado pela instituição.");
                 return;
             }
 
@@ -1192,7 +1166,7 @@
                     }
                     showModal(
                         "Aluno não encontrado na base de dados.",
-                        `O CPF informado (<strong>${escapeHtml(studentCpfInput.value)}</strong>) não possui cadastro ativo no banco de dados de <strong>${escapeHtml(CURRENT_INSTITUTION_DATA.name)}</strong>.<br><br><span class="text-xs text-slate-500 dark:text-slate-400">Verifique o CPF digitado ou solicite à secretaria acadêmica a inclusão da sua matrícula.</span>`
+                        `O identificador informado (<strong>${escapeHtml(studentCpfInput.value)}</strong>) não possui cadastro ativo no banco de dados de <strong>${escapeHtml(CURRENT_INSTITUTION_DATA.name)}</strong>.<br><br><span class="text-xs text-slate-500 dark:text-slate-400">Verifique o identificador digitado ou solicite à secretaria acadêmica a inclusão da sua matrícula.</span>`
                     );
                     // Bloqueia qualquer avanço
                     resetStudentSearch();
@@ -1247,7 +1221,7 @@
             const displayLabel = selectedConfig.label;
 
             document.getElementById('dashboard-student-name').textContent = studentData.name;
-            document.getElementById('dashboard-student-cpf').textContent = `CPF: ${studentData.cpf}`;
+            document.getElementById('dashboard-student-cpf').textContent = `Identificador: ${studentData.cpf || studentData.id}`;
             document.getElementById('dashboard-course-name').textContent = displayLabel;
 
             try {
@@ -1832,49 +1806,7 @@
         }
     
 
-        // Auto-carregamento imediato do aluno modelo para exibição direta da REVISÃO VISUAL COMPLETA
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log("[Portal] Inicializando Portal com a Revisão Visual Completa...");
-            setTimeout(() => {
-                // Aluno modelo pré-carregado
-                studentData = {
-                    id: "202610482",
-                    name: "Lucas Gabriel Mendonça",
-                    cpf: "123.456.789-00",
-                    existingDocs: {
-                        "RG": { encontrado: true, status: "approved", nome_arquivo: "Lucas Gabriel Mendonça - RG.pdf" },
-                        "CPF": { encontrado: true, status: "approved", nome_arquivo: "Lucas Gabriel Mendonça - CPF.pdf" },
-                        "CERTIDAO_NASCIMENTO": { encontrado: true, status: "approved", nome_arquivo: "Lucas Gabriel Mendonça - Certidão.pdf" }
-                    },
-                    originalDocs: {}
-                };
 
-                const firstName = studentData.name.split(' ')[0];
-                if (userGreeting) userGreeting.querySelector('strong').textContent = firstName;
-                if (studentNameDisplay) studentNameDisplay.textContent = studentData.name;
-                
-                // Configura Curso
-                if (courseTypeSelect) {
-                    courseTypeSelect.value = 'graduacao_1';
-                    courseTypeSelect.disabled = false;
-                }
-
-                // Dispara direto para o Screen 2 (Painel de Documentos)
-                const selectedConfig = criteria["graduacao_1"] || Object.values(criteria)[0];
-                const displayLabel = selectedConfig.label;
-
-                const dName = document.getElementById('dashboard-student-name');
-                const dCpf = document.getElementById('dashboard-student-cpf');
-                const dCourse = document.getElementById('dashboard-course-name');
-                if (dName) dName.textContent = studentData.name;
-                if (dCpf) dCpf.textContent = `CPF: ${studentData.cpf}`;
-                if (dCourse) dCourse.textContent = displayLabel;
-
-                renderizarDocumentosDoCurso();
-                showScreen2();
-            }, 100);
-        });
-    
 </script>
 </body>
 </html>

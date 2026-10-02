@@ -80,6 +80,10 @@ class ErpConnector:
                 message=f"Dossiê em estado '{getattr(dossier.status, 'value', str(dossier.status))}'. Apenas dossiês homologados/completos podem ser enviados ao ERP (use force_sync=True para contornar)."
             )
 
+        from adapters.erp.generic_rest_adapter import MockERPAdapter
+        simulated = isinstance(provider, MockERPAdapter)
+        if simulated: erp_type = "mock"
+
         # Monta dados cadastrais extraídos da auditoria com IA para atualizar no ERP
         fields_to_update: Dict[str, Any] = {
             "status_matricula": "DEFERIDO",
@@ -96,34 +100,41 @@ class ErpConnector:
                     fields_to_update[clean_k] = v
                     synced_fields.append(clean_k)
 
-        # Gera protocolo oficial de sincronização
+        # Gera identificador local da tentativa de sincronização
         erp_protocol = f"ERP-{erp_type.upper()}-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
 
         try:
             # 1. Envio específico por tipo de ERP
             if isinstance(provider, TotvsEducacionalAdapter):
-                provider.update_student_data(dossier.student_id, fields_to_update)
-                provider.sync_matricula_status(dossier.student_id, True, erp_protocol)
+                if not provider.update_student_data(dossier.student_id, fields_to_update):
+                    raise RuntimeError("ERP não confirmou a atualização.")
+                if not provider.sync_matricula_status(dossier.student_id, True, erp_protocol):
+                    raise RuntimeError("ERP não confirmou a matrícula.")
             elif isinstance(provider, SophiaERPAdapter):
-                provider.update_student_data(dossier.student_id, fields_to_update)
+                if not provider.update_student_data(dossier.student_id, fields_to_update):
+                    raise RuntimeError("ERP não confirmou a atualização.")
                 for doc_k, item in dossier.documents.items():
                     if item.status == "approved":
-                        provider.sync_document_delivery(
+                        confirmed = provider.sync_document_delivery(
                             student_id=dossier.student_id,
                             document_name=item.display_name or doc_k,
                             status=item.status,
                             url=item.storage_url or ""
                         )
+                        if not confirmed: raise RuntimeError("ERP não confirmou o documento.")
             elif isinstance(provider, SolisERPAdapter):
-                provider.update_student_data(dossier.student_id, fields_to_update)
+                if not provider.update_student_data(dossier.student_id, fields_to_update):
+                    raise RuntimeError("ERP não confirmou a atualização.")
             else:
                 # Provedor Mock ou Genérico
-                provider.update_student_data(dossier.student_id, fields_to_update)
+                if not provider.update_student_data(dossier.student_id, fields_to_update):
+                    raise RuntimeError("ERP não confirmou a atualização.")
 
             # 2. Atualiza metadados do dossiê
             approved_count = sum(1 for item in dossier.documents.values() if item.status == "approved")
             dossier.exported_at = datetime.now(timezone.utc)
-            dossier.metadata["erp_synced"] = True
+            dossier.metadata["erp_synced"] = not simulated
+            dossier.metadata["erp_simulated"] = simulated
             dossier.metadata["erp_type"] = erp_type
             dossier.metadata["erp_protocol"] = erp_protocol
             dossier.metadata["erp_synced_at"] = datetime.now(timezone.utc).isoformat()

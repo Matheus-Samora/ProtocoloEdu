@@ -1,131 +1,43 @@
-# 🎓 ProtocoloEdu • Plataforma SaaS de Custódia & Homologação Acadêmica Digital
+# protocoloEdu
 
-[![MEC Compliance](https://img.shields.io/badge/MEC-Portaria%20315%2F2018-blue.svg)](http://portal.mec.gov.br/)
-[![ICP-Brasil](https://img.shields.io/badge/ICP--Brasil-PAdES%20X.509-green.svg)](https://www.iti.gov.br/)
-[![Production Deploy](https://img.shields.io/badge/Netlify-Active%20Production-success.svg)](https://protocoloedu.netlify.app)
-[![Supabase](https://img.shields.io/badge/Database-Supabase%20Postgres-3ECF8E.svg)](https://supabase.com)
-[![AI Engine](https://img.shields.io/badge/Gemini%202.5-Multimodal%20Vision-orange.svg)](https://deepmind.google/technologies/gemini/)
+Aplicativo Flask para recebimento, conferência e custódia de documentos acadêmicos por instituição. A apresentação comercial é uma demonstração independente.
 
-O **ProtocoloEdu** é um ecossistema SaaS completo e especializado para Instituições de Ensino Superior (IES) e Educação Básica no Brasil. A plataforma automatiza 100% da recepção, perícia forense documental, conferência de assinaturas digitais ICP-Brasil e homologação de matrículas em conformidade com as **Portarias MEC nº 315/2018 e nº 360/2022** (Acervo Acadêmico Digital).
+## Correções da auditoria de 02/10/2026
 
----
+Autorização dos painéis e arquivos; rejeição de instituição inexistente; importação CSV/JSON por CPF ou matrícula; retenção de arquivos em revisão; confirmação de recebimento somente após persistência; remoção de diagnósticos da resposta pública; consulta respeitando a rejeição registrada; correção do filtro da secretaria; painéis alimentados pela API e indicadores sem sucessos externos presumidos; validação criptográfica de PDF e remoção de credenciais embutidas.
 
-## 🌟 Principais Recursos e Diferenciais
+As verificações locais estão em `tests/`. Elas usam dados sintéticos, diretório temporário e bloqueiam conexões externas. Não medem precisão de OCR, conformidade jurídica nem disponibilidade dos provedores reais.
 
-### 1. Multi-Tenant Nativo com Links Exclusivos
-- **Isolamento Total por Contratante:** Cada instituição possui seu portal de envio exclusivo (ex: `/portal/colegio_modelo`, `/portal/unimetro`, `/portal/imes`).
-- **Zero Burocracia para o Aluno:** O aluno não precisa selecionar a instituição — o link o direciona diretamente ao ambiente da sua escola/faculdade.
-- **Validação Estrita de Base de Dados:** O sistema valida o CPF do estudante contra a base cadastral da instituição no Supabase. Caso o CPF não conste no banco, o formulário é bloqueado com a mensagem *"Aluno não encontrado na base de dados"*.
+## Executar
 
-### 2. Portal do Aluno Moderno & Mobile-First
-- **Stepper de 3 Etapas Institucionais:** Orientação clara (`1. Identificação ➔ 2. Anexo de Documentos ➔ 3. Protocolo Concluído`).
-- **Smart Scanner com Câmera:** Obturador em tela cheia com alternância de câmera (frontal/traseira) e desligamento automático de stream.
-- **Pré-visualizador Forense com Zoom e Rotação 90°:** O candidato inspeciona, alinha e gira as páginas antes da submissão.
-- **Identidade Visual Dinâmica (White-Label):** O portal adota as cores, títulos e logotipo oficial da instituição ou o brasão acadêmico neutro institucional.
-
-### 3. Super Admin Master & Central de Registros Unificada
-- **Painel de Controle Central:** Telemetria de consumo em tempo real com gauges Chart.js.
-- **Central de Registros (Inbound & Outbound):** Trilha de auditoria criptográfica com hash SHA-256 de cada documento, status do ERP acadêmico (SolisGE, TOTVS) e disparos WhatsApp Cloud.
-- **Ingestão em Lote (.CSV & REST API):** Sincronização em massa de alunos por contratante através de planilha com preview dinâmico ou endpoint seguro.
-- **Editor White-Label Instantâneo:** Customização de branding por instituição com pré-visualização em tempo real e sincronização no Supabase.
-
-### 4. Arquitetura de Conectores MCP (Model Context Protocol)
-- `icp-brasil-validator`: Validação de assinaturas digitais em PDFs acadêmicos (carimbo do tempo, certificados X.509 da ICP-Brasil).
-- `system-telemetry`: Monitoramento de latência da IA e disponibilidade de infraestrutura.
-- `notification-dispatcher`: Mensageria ativa via WhatsApp e e-mail institucional.
-- `academic-erp-sync`: Integração modular com ERPs (SolisGE, TOTVS Educacional, Lyceum, Sophia).
-
----
-
-## 🏛️ Conformidade Regulatória MEC
-
-| Norma Regulamentar | Exigência | Como o ProtocoloEdu Atende |
-| :--- | :--- | :--- |
-| **Portaria MEC nº 315/2018** | Digitalização e indexação com fé pública | Metadados estruturados, hash SHA-256 e preservação no padrão TTD |
-| **Portaria MEC nº 360/2022** | Custódia e integridade do Acervo Acadêmico | Armazenamento seguro particionado com sincronização em nuvem |
-| **Diploma Digital (MEC)** | Assinatura ICP-Brasil no padrão PAdES | Validação automática da cadeia de certificação digital |
-| **LGPD (Lei 13.709/2018)** | Privacidade de dados sensíveis de estudantes | Isolamento multi-tenant, sanitização e rate-limiting |
-
----
-
-## 🚀 Como Executar o Projeto Localmente
-
-### Pré-requisitos
-- Python 3.10 ou superior
-- Git instalado
-
-### 1. Clonar o Repositório
-```bash
-git clone https://github.com/Matheus-Samora/ProtocoloEdu.git
-cd ProtocoloEdu
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe tests\run_regressions.py
 ```
 
-### 2. Configurar o Ambiente Virtual e Dependências
-```bash
-python -m venv venv
-# No Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-# No Linux/macOS:
-source venv/bin/activate
+Configure o ambiente e `institutions_catalog.json` antes de executar `python api_server.py`. O pacote de distribuição inclui `institutions_catalog.example.json`; copie-o para o nome efetivo e configure seus próprios dados. A pasta de dados de uma implantação existente deve ser preservada.
 
-pip install -r requirements.txt
-```
+- `FLASK_SECRET_KEY`: segredo estável e próprio do servidor para assinar as sessões.
+- `SUPER_ADMIN_KEY`: credencial própria do gestor. Ausência de configuração bloqueia o acesso; não há senha padrão.
+- `subscription.admin_access_key` no perfil de cada instituição: credencial da secretaria, distinta por instituição. Chaves padrão conhecidas são recusadas.
+- `GEMINI_API_KEY` e credenciais dos conectores: configure somente no servidor.
+- `COOKIE_SECURE=true` em implantação HTTPS. `ALLOWED_ORIGINS` aceita origens explícitas separadas por vírgula quando necessário.
+- `require_student_cpf=false` no perfil permite a identificação por matrícula no portal. Importações aceitam `student_id` sem CPF.
+- `PROTOCOL_DEMO_MODE=true` permite a busca pelo ERP mock; mantenha desativado na operação.
 
-### 3. Configurar Variáveis de Ambiente
-Copie o arquivo de exemplo e preencha suas chaves:
-```bash
-cp .env.example .env
-```
-Campos essenciais no `.env`:
-```ini
-PORT=8080
-GEMINI_API_KEY=sua_chave_gemini_aqui
-SUPABASE_URL=https://seu-projeto.supabase.co
-SUPABASE_KEY=sua_chave_service_role
-SUPABASE_STORAGE_BUCKET=documentos-alunos
-```
+Login: `/admin/<institution_id>` e `/superadmin`. As credenciais são enviadas ao formulário de login e a sessão usa cookie HttpOnly; não use credenciais em links. APIs administrativas aceitam `X-Admin-Key` para integrações autorizadas.
 
-### 4. Executar o Servidor de API e Backend
-```bash
-python api_server.py
-```
-O servidor iniciará em `http://127.0.0.1:8080`.
+## Assinaturas e integrações
 
----
+`pyHanko==0.35.1` verifica criptograficamente o conteúdo assinado. PDF adulterado e certificado autoassinado não recebem confirmação ICP-Brasil. `ICP_BRASIL_TRUST_ROOTS_FILE` aponta para um conjunto PEM de raízes confiáveis selecionado pelo responsável. A validação exige evidência de revogação e não presume confiança quando faltam raízes ou comprovação. Cadeia real, revogação e carimbo de autoridade precisam de homologação específica; nenhum rótulo desta aplicação equivale a certificação jurídica ou do MEC.
 
-## 🌐 Deploy em Produção
+WhatsApp, e-mail, ERP, Supabase/Firestore/Drive e Gemini precisam de testes de ponta a ponta no sandbox de implantação. Estados ausentes permanecem não confirmados e simulações são identificadas. Hash/tamanho antigos não registrados não são inventados. Documentos recebidos para revisão são retidos para conferência humana.
 
-- **Frontend (JAMstack Netlify):** [https://protocoloedu.netlify.app](https://protocoloedu.netlify.app)
-  - `/portal/imes`: Portal do Aluno
-  - `/portal/colegio_modelo`: Portal do Aluno (Ensino Médio)
-  - `/portal/unimetro`: Portal do Aluno (Universidade)
-  - `/superadmin`: Central Unificada de Registros & Gestão SaaS
-- **Backend / Database:** Supabase PostgreSQL + Storage S3
+## Implantação
 
----
+Este repositório contém as correções da auditoria. Publicar o código no GitHub não atualiza automaticamente o aplicativo em produção nem o site comercial. O aplicativo operacional precisa de um servidor Python com persistência e HTTPS. Hospedagem estática do HTML, sozinha, não executa a API nem constitui implantação desse backend. Use os templates Flask atualizados para os fluxos operacionais.
 
-## 📁 Estrutura de Diretórios
+Credenciais anteriormente expostas devem ser substituídas pelo proprietário nos provedores. Removê-las da árvore atual não apaga o histórico Git. Nenhuma conta externa ou credencial de produção foi alterada nesta correção.
 
-```text
-PROTOCOLO-EDU/
-├── .agents/skills/            # Skills de Conformidade MEC e Perícia Forense
-├── adapters/                  # Adaptadores de Integração (Supabase, Solis, ERPs)
-├── frontend/                  # Pacote Estático JAMstack (Netlify SPA)
-│   ├── index.html             # Portal do Aluno Multi-Tenant
-│   ├── superadmin.html        # Super Admin Master & Central de Registros
-│   ├── _redirects             # Regras SPA do Netlify
-│   └── netlify.toml           # Headers de Segurança
-├── mcp_services/              # Servidores e Ferramentas MCP (PAdES, Telemetria)
-├── static/                    # Assets Institucionais (CSS, Ícones, Imagens)
-├── templates/default/         # Templates Jinja2 Sincronizados
-├── api_server.py              # API REST Central & Coordenação de Dossiês
-├── config.py                  # Configurações de Ambiente
-├── criteria.json              # Catálogo de Requisitos Documentais do MEC
-├── deploy_to_netlify.py       # Automação de Deploy Contínuo no Netlify
-└── requirements.txt           # Dependências Python
-```
-
----
-
-## 📄 Licença
-Propriedade institucional de **ProtocoloEdu**. Todos os direitos reservados.
+Ainda precisam de verificação específica: câmera/dispositivos, upload pela interface, acessibilidade completa, carga/concorrência e limites por lote, recuperação de dados, autenticação individual do estudante e integrações reais. Os testes locais comprovam os casos exercitados, não a totalidade desses cenários.

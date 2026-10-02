@@ -82,11 +82,6 @@ class ProtocolCoordinator:
             return self.institutions.get("imes")
         clean_id = institution_id.lower().strip()
         inst = self.institutions.get(clean_id)
-        if not inst:
-            # Fallback seguro
-            if "imes" in self.institutions:
-                return self.institutions["imes"]
-            return None
         return inst
 
     def update_institution_subscription(
@@ -174,6 +169,7 @@ class ProtocolCoordinator:
         Se for o primeiro acesso, consulta o ERP (Solis/Outro) e cria o dossiê inicial.
         """
         inst = self.get_institution(institution_id)
+        if not inst: return None
         clean_id = str(identifier).replace('.', '').replace('-', '').strip()
 
         # 1. Verifica se já temos o dossiê registrado
@@ -190,6 +186,9 @@ class ProtocolCoordinator:
 
         # 2. Consulta conector de ERP da instituição
         erp_provider = ERPFactory.get_provider(inst)
+        from adapters.erp.generic_rest_adapter import MockERPAdapter
+        if isinstance(erp_provider, MockERPAdapter) and os.environ.get('PROTOCOL_DEMO_MODE', '').lower() != 'true':
+            return None
         profile = erp_provider.search_student(clean_id)
         if not profile:
             return None
@@ -235,23 +234,6 @@ class ProtocolCoordinator:
                     "nome_arquivo": item.file_name,
                     "reason": item.reason
                 }
-
-        # 2. Se o storage tiver arquivos físicos (ex: no Google Drive da instituição)
-        storage_provider = StorageFactory.get_provider(inst)
-        student_name = dossier.student_name if dossier else clean_id
-        drive_files = storage_provider.list_student_documents(student_name)
-        for df in drive_files:
-            df_upper = df.upper()
-            for doc_key, spec in self.criteria_catalog.documents.items():
-                for alias in spec.aliases:
-                    if alias.upper() in df_upper:
-                        if doc_key not in result_docs or not result_docs[doc_key]["encontrado"]:
-                            result_docs[doc_key] = {
-                                "encontrado": True,
-                                "status": "approved",
-                                "nome_arquivo": df,
-                                "reason": "Documento previamente arquivado no repositório institucional."
-                            }
 
         return {
             "institution_id": inst.id,
@@ -362,7 +344,8 @@ class ProtocolCoordinator:
         old_status = dossier.status.value if hasattr(dossier, "status") else None
         dossier.update_status(mandatory_keys)
         self.telemetry.record_dossier_status(inst.id, old_status, dossier.status.value)
-        self.dossier_repo.save_dossier(dossier)
+        if not self.dossier_repo.save_dossier(dossier):
+            raise IOError("Persistência do dossiê não confirmada.")
 
         return {
             "success": True,
@@ -397,7 +380,8 @@ class ProtocolCoordinator:
         inst_name = inst.name if inst else institution_id.upper()
         dossier = self.dossier_repo.get_dossier(institution_id, student_id)
         student_name = dossier.student_name if dossier else f"Estudante ({student_id})"
-        target_recipient = recipient or (dossier.metadata.get("phone") if dossier else None) or "5511999999999"
+        target_recipient = recipient or (dossier.metadata.get("phone") if dossier else None) or ""
+        if not target_recipient: raise ValueError("Destinatário não informado.")
         chan_enum = NotificationChannel(channel.lower())
 
         if notification_type == "pendency":

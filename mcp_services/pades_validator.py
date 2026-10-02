@@ -111,7 +111,7 @@ class SignatureDetail(BaseModel):
 
 
 class PadesVerificationReport(BaseModel):
-    """Relatório oficial de conformidade técnica e jurídica MEC."""
+    """Relatório técnico de verificação; não é certificação regulatória."""
     filename: str
     total_signatures_found: int = 0
     has_digital_signature: bool = False
@@ -248,7 +248,48 @@ class PadesSignatureValidator:
             report.mec_315_status = "NAO_CONFORME"
             report.mec_315_justification = "Certificado digital expirado ou inválido na data de verificação."
 
+        self._verify_cryptographic_pdf(pdf_bytes, report)
         return report
+
+    def _verify_cryptographic_pdf(self, pdf_bytes, report):
+        """Fail-closed: CMS, ByteRange, revisão PDF e confiança configurada."""
+        report.integrity_preserved = False
+        report.is_icp_brasil_certified = False
+        report.all_certificates_valid = False
+        report.has_valid_timestamp = False
+        report.mec_315_status = "NAO_CONFORME"
+        report.mec_315_justification = "Validação técnica não concluída. Este relatório não certifica conformidade jurídica."
+        try:
+            from pyhanko.pdf_utils.reader import PdfFileReader
+            from pyhanko.sign.validation import validate_pdf_signature
+            from pyhanko.sign.validation.status import SignatureCoverageLevel
+            from pyhanko.keys import load_certs_from_pemder
+            from pyhanko_certvalidator import ValidationContext
+            roots_file = os.environ.get("ICP_BRASIL_TRUST_ROOTS_FILE", "")
+            roots = list(load_certs_from_pemder([roots_file])) if roots_file else []
+            reader = PdfFileReader(io.BytesIO(pdf_bytes), strict=True)
+            signatures = reader.embedded_signatures
+            if not signatures: raise ValueError("Nenhuma assinatura PDF estruturalmente válida.")
+            statuses = []
+            for signature in signatures:
+                context = ValidationContext(trust_roots=roots, allow_fetching=False, revocation_mode="hard-fail", crls=[], ocsps=[])
+                statuses.append(validate_pdf_signature(signature, signer_validation_context=context))
+            report.integrity_preserved = all(status.intact and status.valid and status.coverage == SignatureCoverageLevel.ENTIRE_FILE for status in statuses)
+            trusted = bool(roots) and all(status.bottom_line for status in statuses)
+            report.all_certificates_valid = trusted
+            report.is_icp_brasil_certified = trusted and report.integrity_preserved
+            report.has_valid_timestamp = trusted and all(status.timestamp_validity and status.timestamp_validity.bottom_line for status in statuses)
+            report.is_pades_compliant = all(sig.sig_object.get('/SubFilter') == '/ETSI.CAdES.detached' for sig in signatures)
+            if report.is_icp_brasil_certified:
+                report.mec_315_status = "VERIFICADO_TECNICAMENTE"
+                report.mec_315_justification = "CMS íntegro e cadeia/revogação verificadas contra as âncoras configuradas. Não constitui certificação regulatória."
+            elif report.integrity_preserved:
+                report.mec_315_justification = "Assinatura criptográfica íntegra; confiança e/ou revogação não comprovadas. Requer conferência."
+            else:
+                report.mec_315_justification = "Integridade criptográfica não comprovada ou documento alterado."
+            if not roots: report.diagnostic_notes.append("Âncoras ICP-Brasil não configuradas. Nenhuma cadeia foi presumida confiável.")
+        except Exception as error:
+            report.diagnostic_notes.append("Verificação criptográfica não concluída: " + type(error).__name__)
 
     def _read_input_bytes(self, pdf_input: Union[bytes, str, io.BytesIO]) -> bytes:
         """Converte qualquer formato suportado para bytes brutos."""
@@ -516,22 +557,7 @@ class PadesSignatureValidator:
         subject_ou: List[str]
     ) -> bool:
         """Determina se o certificado pertence à cadeia ICP-Brasil oficial."""
-        haystack = f"{issuer_cn} {issuer_org or ''} {' '.join(subject_ou)} {cert.issuer.rfc4514_string()}".upper()
-        for trusted in ICP_BRASIL_TRUSTED_ISSUERS:
-            if trusted in haystack:
-                return True
-
-        # Verifica Certificate Policies OID 2.16.76.1.*
-        try:
-            for ext in cert.extensions:
-                if ext.oid == ExtensionOID.CERTIFICATE_POLICIES:
-                    policies = ext.value
-                    for pol in policies:
-                        if pol.policy_identifier.dotted_string.startswith(OID_ICP_BRASIL_PREFIX):
-                            return True
-        except Exception:
-            pass
-
+        # Textos de emissor e OIDs não provam cadeia de confiança.
         return False
 
     def _extract_cpf_from_cert(self, cert: x509.Certificate, subject_cn: str) -> Optional[str]:

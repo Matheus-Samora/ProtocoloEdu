@@ -50,8 +50,9 @@ class AgentRegistry:
             "total_registered": total,
             "total_active": healthy,
             "healthy_subagents": healthy,
-            "health_percentage": round((healthy / max(total, 1)) * 100, 1),
-            "status": "ALL_SYSTEMS_OPERATIONAL" if healthy == total else "DEGRADED",
+            "health_percentage": None,
+            "health_scope": "Registro local; serviços externos não verificados",
+            "status": "REGISTERED_NOT_PROBED" if healthy == total else "LOCAL_AGENT_INACTIVE",
             "subagents": subagents_dict,
             "agents": [a.get_metadata().model_dump() for a in self._agents.values()]
         }

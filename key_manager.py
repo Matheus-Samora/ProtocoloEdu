@@ -15,8 +15,5 @@ def get_all_keys():
     api_keys = []
     if env_key and env_key.startswith("AIza"):
         api_keys.append(env_key)
-    active_key = "AIzaSyBbxXALaM60hn-Es-kjKY0yopJ4qaDXF-s"
-    if active_key not in api_keys:
-        api_keys.append(active_key)
     return api_keys
 
